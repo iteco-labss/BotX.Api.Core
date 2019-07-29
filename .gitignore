@@ -5,3 +5,4 @@
 /.vs
 /src/BotX.Api.Core/obj
 /src/BotX.Api.Core/BotX.Api.csproj.user
+/src/BotX.Api.Core/.vs/BotX.Api/v16
