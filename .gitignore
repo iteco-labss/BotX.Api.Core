@@ -3,3 +3,5 @@
 ################################################################################
 
 /.vs
+/src/BotX.Api.Core/obj
+/src/BotX.Api.Core/BotX.Api.csproj.user

@@ -1,0 +1,216 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>BotX.Api</name>
+    </assembly>
+    <members>
+        <member name="T:BotX.Api.Abstract.IBotAction">
+            <summary>
+            Интерфейс контроллера действия бота. Используйте атрибут BotAction для указания команды, на которую должен реагировать данный контроллер.
+            </summary>
+        </member>
+        <member name="M:BotX.Api.Abstract.IBotAction.ExecuteAsync(BotX.Api.JsonModel.Request.UserMessage,System.String)">
+            <summary>
+            Метод, вызываемый при получении сообщения от пользователя
+            </summary>
+            <param name="userMessage">Пользовательское сообщение</param>
+            <param name="args">Дополнительные аргументы сообщения</param>
+            <returns></returns>
+        </member>
+        <member name="T:BotX.Api.ActionExecutor">
+            <summary>
+            Класс, производящий маршрутизацию команд бота между контроллерами
+            </summary>
+        </member>
+        <member name="T:BotX.Api.Attributes.BotActionAttribute">
+            <summary>
+            Атрибут применяемый к классу-контроллеру IBotAction, для указания команды, на которую будет реагировать контроллер
+            </summary>
+        </member>
+        <member name="M:BotX.Api.Attributes.BotActionAttribute.#ctor(System.String)">
+            <summary>
+            Указывает на какую команду должен реагировать данный контроллер
+            </summary>
+            <param name="action">Команда, например start. Недопускается ввод специальных символов и пробелов</param>
+        </member>
+        <member name="T:BotX.Api.Attributes.BotActionEventAttribute">
+            <summary>
+            Атрибут, применяемый к методу-событию внутри класса контроллера IBotAction, 
+            который будет вызываться при выполнении действий внутри данного класса (например нажатие на кнопки)
+            </summary>
+        </member>
+        <member name="M:BotX.Api.Attributes.BotActionEventAttribute.#ctor(System.String)">
+            <summary>
+            Указывает, что данный метод является обработчиком события действия бота
+            </summary>
+            <param name="eventName">Имя события, на которое будет реагировать данное событие</param>
+        </member>
+        <member name="T:BotX.Api.BotMessageSender">
+            <summary>
+            Клиент, реализующий отправку сообщений, используя BotX Api
+            </summary>
+        </member>
+        <member name="M:BotX.Api.BotMessageSender.#ctor(Microsoft.Extensions.Logging.ILogger{BotX.Api.BotMessageSender},System.String)">
+            <summary>
+            Инициализация нового экземпляра клиента
+            </summary>
+            <param name="logger"></param>
+            <param name="server"></param>
+        </member>
+        <member name="M:BotX.Api.BotMessageSender.SendTextMessageAsync(BotX.Api.JsonModel.Request.UserMessage,System.String)">
+            <summary>
+            Отправляет текстовое сообщение в ответ пользователю
+            </summary>
+            <param name="requestMessage">Сообщение от пользователя</param>
+            <param name="messageText">Текст ответа</param>
+            <returns></returns>
+        </member>
+        <member name="M:BotX.Api.BotMessageSender.SendTextMessageAsync(System.Guid,System.Guid,System.Guid,System.String)">
+            <summary>
+            Отправляет текстовое сообщение
+            </summary>
+            <param name="botId">Идентификатор бота</param>
+            <param name="syncId">Идентификатор чата</param>
+            <param name="to">Адресат сообщения</param>
+            <param name="messageText">Текст сообщения</param>
+            <returns></returns>
+        </member>
+        <member name="M:BotX.Api.BotMessageSender.SendTextMessageAsync(System.Guid,System.Guid,System.Guid,System.String,BotX.Api.BotUI.MessageButtonsGrid)">
+            <summary>
+            Отправляет текствое сообщение с кнопками
+            </summary>
+            <param name="botId">Идентификатор бота</param>
+            <param name="syncId">Идентификатор чата</param>
+            <param name="to">Адресат сообщения</param>
+            <param name="messageText">Текст сообщения</param>
+            <param name="buttons">Кнопки с действиями в сообщении</param>
+            <returns></returns>
+        </member>
+        <member name="M:BotX.Api.BotMessageSender.SendTextMessageAsync(BotX.Api.JsonModel.Request.UserMessage,System.String,BotX.Api.BotUI.MessageButtonsGrid)">
+            <summary>
+            Отправка текстового сообщения с кнопками (действиями) в ответ пользователю
+            </summary>
+            <param name="requestMessage">Сообщение пользователя</param>
+            <param name="messageText">Текст сообщения</param>
+            <param name="bubbles">Кнопки с действиями в сообщении</param>
+            <returns></returns>
+        </member>
+        <member name="M:BotX.Api.BotMessageSender.SendFileAsync(System.Guid,System.Guid,System.String,System.Byte[])">
+            <summary>
+            Отправка файла в чат
+            </summary>
+            <param name="botId">Идентификатор бота</param>
+            <param name="syncId">Идентификатор чата</param>
+            <param name="fileName">Имя фалйа</param>
+            <param name="data">Данные файла</param>
+            <returns></returns>
+        </member>
+        <member name="M:BotX.Api.BotMessageSender.SendFileAsync(BotX.Api.JsonModel.Request.UserMessage,System.String,System.Byte[])">
+            <summary>
+            Отправляет файл в ответ на пользовательское сообщение
+            </summary>
+            <param name="requestMessage">Сообщение от пользователя</param>
+            <param name="fileName">Имя файла</param>
+            <param name="data">Данные файла</param>
+            <returns></returns>
+        </member>
+        <member name="T:BotX.Api.BotUI.MessageButton">
+            <summary>
+            Кнопка, добавляемая в сообщение бота
+            </summary>
+        </member>
+        <member name="P:BotX.Api.BotUI.MessageButton.Title">
+            <summary>
+            Текст на кнопке
+            </summary>
+        </member>
+        <member name="P:BotX.Api.BotUI.MessageButton.Command">
+            <summary>
+            Команда, которая будет отправлена в чат, при нажатии этой кнопки
+            </summary>
+        </member>
+        <member name="P:BotX.Api.BotUI.MessageButton.Event">
+            <summary>
+            Событие, которое будет вызвано при нажатии на кнопку (либо получении команды из свойства Command)
+            Указанное событие должно быть предварительно зарегистрировано
+            </summary>
+        </member>
+        <member name="M:BotX.Api.BotUI.MessageButton.#ctor(System.String,BotX.Api.Delegates.BotEventHandler,System.String[])">
+            <summary>
+            Создаёт кнопку, привязанную к действию
+            </summary>
+            <param name="title">Текст на кнопке</param>
+            <param name="event">Событие, выполняемое при нажатии</param>
+            <param name="args"></param>
+        </member>
+        <member name="T:BotX.Api.BotUI.MessageButtonsGrid">
+            <summary>
+            Представляет сетку кнопок, встраивыемых в сообщение от бота
+            </summary>
+        </member>
+        <member name="P:BotX.Api.BotUI.MessageButtonsGrid.Rows">
+            <summary>
+            Строки с кнопками
+            </summary>
+        </member>
+        <member name="M:BotX.Api.BotUI.MessageButtonsGrid.AddRow">
+            <summary>
+            Добавляет новую строку к уже имеющимся
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:BotX.Api.BotUI.MessageButtonsRow">
+            <summary>
+            Строка, содержащая в себе кнопки, встраиваемые в сообщение от бота
+            </summary>
+        </member>
+        <member name="P:BotX.Api.BotUI.MessageButtonsRow.Buttons">
+            <summary>
+            Кнопки внутри данной строки
+            </summary>
+        </member>
+        <member name="M:BotX.Api.BotUI.MessageButtonsRow.AddButton(System.String,BotX.Api.Delegates.BotEventHandler,System.String[])">
+            <summary>
+            Создаёт кнопку внутри данной строки
+            </summary>
+            <param name="title">Текст на кнопке</param>
+            <param name="handler">Метод-обработчик нажатия на кнопку</param>
+            <param name="args">Дополнитеьные аргументы, которые будут возвращены в метод-обработчик</param>
+            <returns></returns>
+        </member>
+        <member name="T:BotX.Api.Delegates.BotEventHandler">
+            <summary>
+            Метод события контроллера BotAction
+            </summary>
+            <param name="userMessage">Входящее сообщение от пользователя</param>
+            <param name="args">Дополнительные аргументы, которые были заданы кнопке при её создании</param>
+            <returns></returns>
+        </member>
+        <member name="T:BotX.Api.ExpressBotService">
+            <summary>
+            Конфигурация бота
+            </summary>
+        </member>
+        <member name="M:BotX.Api.ExpressBotService.AddBaseCommand(System.String,System.String)">
+            <summary>
+            Добавляет команду для бота
+            </summary>
+            <param name="title">Название команды</param>
+            <param name="description">Описание команды</param>
+        </member>
+        <member name="T:BotX.Api.Extensions.ServiceCollectionExtension">
+            <summary>
+            Класс расширения IServiceCollection
+            </summary>
+        </member>
+        <member name="M:BotX.Api.Extensions.ServiceCollectionExtension.AddExpressBot(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.IMvcBuilder,System.String)">
+            <summary>
+            Добавляет поддержку BotX Api, позволяя создавать ботов для мессенджера Express
+            </summary>
+            <param name="externalServices"></param>
+            <param name="mvcBuilder"></param>
+            <param name="server"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
