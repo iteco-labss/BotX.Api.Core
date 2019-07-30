@@ -40,9 +40,13 @@ namespace BotX.Api.BotUI
 		/// <param name="args"></param>
 		internal MessageButton(string title, BotEventHandler @event, string[] args)
 		{
+			var pair = ActionExecutor.actionEvents.SingleOrDefault(x => x.Value == @event.GetMethodInfo());
+
+			if (!pair.Equals(default(KeyValuePair<string, MethodInfo>)))
+				InternalCommand = $"/{pair.Key}";
+
 			Title = title;
 			Event = @event;
-			InternalCommand = $"/{ActionExecutor.actionEvents.Single(x => x.Value == @event.GetMethodInfo()).Key}";
 			Arguments = args;
 
 			if (args != null && args.Length > 0)

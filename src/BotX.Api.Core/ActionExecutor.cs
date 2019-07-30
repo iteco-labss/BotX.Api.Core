@@ -20,11 +20,11 @@ namespace BotX.Api
 	public class ActionExecutor
 	{
 		private static Dictionary<string, Type> actions = new Dictionary<string, Type>();
+		internal static HashSet<Type> unnamedActions = new HashSet<Type>();
 		internal static Dictionary<string, MethodInfo> actionEvents = new Dictionary<string, MethodInfo>();
 
 		private readonly IServiceProvider serviceProvider;
 		private readonly ILogger<ActionExecutor> logger;
-		private const string UNNAMED_ACTION = "unnamed-action";
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 		public ActionExecutor(IServiceProvider serviceProvider, ILogger<ActionExecutor> logger)
@@ -40,16 +40,26 @@ namespace BotX.Api
 			if (attribute == null)
 				throw new InvalidOperationException($"The type {botActionClass.Name} doesn't have the {nameof(BotActionAttribute)} attribute");
 
-			var actionName = string.IsNullOrEmpty(attribute.Action) ? UNNAMED_ACTION : attribute.Action;
 			actions.Add(name, botActionClass);
-			ProcessEvents(actionName, botActionClass);
+			ProcessEvents(name, botActionClass);
+		}
+
+		internal static void AddUnnamedAction(Type botActionClass)
+		{
+			unnamedActions.Add(botActionClass);
+			ProcessEvents(botActionClass.Name, botActionClass);
+		}
+
+		internal static string MakeEventKey(string actionName, string eventName)
+		{
+			return $"{actionName} {eventName}";
 		}
 
 		private static void ProcessEvents(string actionName, Type botActionClass)
 		{
 			var methods = botActionClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
 				.Where(x => x.GetCustomAttribute<BotActionEventAttribute>() != null)
-				.ToDictionary(x => $"{actionName} {x.GetCustomAttribute<BotActionEventAttribute>().EventName}");
+				.ToDictionary(x => MakeEventKey(actionName, x.GetCustomAttribute<BotActionEventAttribute>().EventName));
 
 			foreach (var method in methods)
 				actionEvents.Add(method.Key, method.Value);
@@ -58,38 +68,59 @@ namespace BotX.Api
 		internal async Task ExecuteAsync(UserMessage request)
 		{
 			logger.LogInformation("Enter the 'Execute' method");
-			if (!request.Command.Body.StartsWith("/"))
-				return;
 
+			bool messageIsAction = request.Command.Body.StartsWith('/');
 			var msg = request.Command.Body.ToLower().Substring(1);
-			var words = msg.Split(' ');
-			var actionName = words.Length == 0 ? msg : words[0];
+			var words = messageIsAction ? msg.Split(' ') : new string[0];
+			var actionName = words.Length == 0 ? string.Empty : words.First();
 
-			if (actions.ContainsKey(actionName))
+			if (!string.IsNullOrEmpty(actionName) && actions.ContainsKey(actionName))
 			{
-				var action = (IBotAction)serviceProvider.GetService(actions[actionName]);
-
 				string command = null;
 				string[] args = null;
 
 				if (words.Length > 1)
 				{
 					command = words[1];
-					args = words.Skip(2).ToArray();
+					args = words.Skip(1).ToArray();
 				}
 
-				if (string.IsNullOrEmpty(command) || !actionEvents.ContainsKey($"{actionName} {command}"))
-				{
-					logger.LogInformation($"Executing {actionName} action");
-					await action.ExecuteAsync(request, string.Join(' ', words.Skip(1)));
-				}
+				var commandKey = MakeEventKey(actionName, command);
+
+				if (string.IsNullOrEmpty(command) || !actionEvents.ContainsKey(commandKey))
+					await InvokeNamedAction(request, actionName, args);
 				else
-				{
-					var @event = actionEvents[$"{actionName} {command}"];
-					var eventInstance = Delegate.CreateDelegate(typeof(BotEventHandler), action, @event) as BotEventHandler;
-					logger.LogInformation($"Executing {@event.Name} event inside the action {actionName}");
-					await eventInstance(request, args);
-				}
+					await InvokeEvent(
+						request: request, 
+						actionName: actionName, 
+						@event: actionEvents[commandKey], 
+						args: args.Skip(1).ToArray());
+			}
+			else
+			{
+				await InvokeUnnamedAction(request);
+			}
+		}
+
+		private async Task InvokeNamedAction(UserMessage request, string actionName, string[] args)
+		{			
+			var action = (IBotAction)serviceProvider.GetService(actions[actionName]);
+			await action.ExecuteAsync(request, args);
+		}
+
+		private async Task InvokeEvent(UserMessage request, string actionName, MethodInfo @event, string[] args)
+		{
+			var action = (IBotAction)serviceProvider.GetService(actions[actionName]);
+			var eventInstance = Delegate.CreateDelegate(typeof(BotEventHandler), action, @event) as BotEventHandler;
+			await eventInstance(request, args);
+		}
+
+		private async Task InvokeUnnamedAction(UserMessage request)
+		{
+			foreach (var actionType in unnamedActions)
+			{
+				var action = (IBotAction)serviceProvider.GetService(actionType);
+				await action.ExecuteAsync(request, null);
 			}
 		}
 	}

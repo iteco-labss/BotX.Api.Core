@@ -42,9 +42,13 @@ namespace BotX.Api.Extensions
 
 			foreach (var type in typesWithAttribute)
 			{
-				var actionName = type.GetCustomAttribute<BotActionAttribute>().Action;
+				var att = type.GetCustomAttribute<BotActionAttribute>();
 				services.AddTransient(type);
-				ActionExecutor.AddAction(actionName, type);
+
+				if (att.IsCommon)
+					ActionExecutor.AddUnnamedAction(type);
+				else
+					ActionExecutor.AddAction(att.Action, type);
 			}
 		}
 	}

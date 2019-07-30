@@ -9,7 +9,7 @@
   </PropertyGroup>
 
 	<PropertyGroup>
-	  <Version>0.0.13-alpha</Version>
+	  <Version>0.0.16-alpha</Version>
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 	  <Company>I-Teco</Company>
@@ -18,6 +18,9 @@
 	  <Copyright>I-Teco</Copyright>
 	  <PackageTags>Express Bot ChatBot BotX</PackageTags>
 	  <Description />
+	  <PackageReleaseNotes>добавлена поддержка действий, срабатывающих на все сообщения, которые не являются другими действиями</PackageReleaseNotes>
+	  <SignAssembly>true</SignAssembly>
+	  <AssemblyOriginatorKeyFile>key.pfx</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
 	<ItemGroup>

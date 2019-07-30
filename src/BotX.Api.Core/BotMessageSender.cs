@@ -115,7 +115,7 @@ namespace BotX.Api
 		/// </summary>
 		/// <param name="requestMessage">Сообщение пользователя</param>
 		/// <param name="messageText">Текст сообщения</param>
-		/// <param name="bubbles">Кнопки с действиями в сообщении</param>
+		/// <param name="buttons">Кнопки с действиями в сообщении</param>
 		/// <returns></returns>
 		public async Task SendTextMessageAsync(UserMessage requestMessage, string messageText, MessageButtonsGrid buttons)
 		{

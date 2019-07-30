@@ -18,7 +18,7 @@ namespace BotX.Api.Abstract
 		/// <param name="userMessage">Пользовательское сообщение</param>
 		/// <param name="args">Дополнительные аргументы сообщения</param>
 		/// <returns></returns>
-		Task ExecuteAsync(UserMessage userMessage, string args);
+		Task ExecuteAsync(UserMessage userMessage, string[] args);
 	}
 
 }

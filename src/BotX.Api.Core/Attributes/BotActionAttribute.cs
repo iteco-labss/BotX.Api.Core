@@ -23,6 +23,17 @@ namespace BotX.Api.Attributes
 			Action = action.ToLower();
 		}
 
+		/// <summary>
+		/// Указывает, что данный Action будет выполняться при получении любого сообщения от пользователя,
+		/// кроме сообщений, который отмечены именованным атрибутом
+		/// </summary>
+		public BotActionAttribute()
+		{
+			IsCommon = true;
+		}
+
 		internal string Action { get; }
+
+		internal bool IsCommon { get; } = false;
 	}
 }
