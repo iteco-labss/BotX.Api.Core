@@ -21,7 +21,8 @@ namespace BotX.Api
 	/// </summary>
 	public class BotMessageSender
     {
-        private const string API_SEND_MESSAGE = "api/v2/botx/command/callback";
+        private const string API_SEND_MESSAGE_ASNWER = "api/v2/botx/command/callback";
+		private const string API_SEND_MESSAGE_NOTIFICATION = "/api/v2/botx/notification/callback";
         private const string API_SEND_FILE = "api/v1/botx/file/callback";
         private readonly ILogger<BotMessageSender> logger;
 		private readonly string server;
@@ -51,6 +52,23 @@ namespace BotX.Api
 				to: requestMessage.From.Huid,
 				messageText: messageText
 				);
+		}
+
+		public async Task SendTextMessageAsync(Guid botId, Guid[] chatIds, Guid[] recipients, string messageText)
+		{
+			var notification = new NotificationMessage
+			{
+				BotId = botId,
+				GroupChatIds = chatIds,
+				Recipients = recipients,
+				Notification = new CommandResult
+				{
+					Status = "ok",
+					Body = messageText
+				}
+			};
+
+			await SendTextMessageAsync(notification);
 		}
 
 		/// <summary>
@@ -170,13 +188,26 @@ namespace BotX.Api
             logger.LogInformation("sending... " + JsonConvert.SerializeObject (message));
             using (HttpClient client = new HttpClient())
             {
-                var requestUri = new Uri(new Uri(server), API_SEND_MESSAGE);
+                var requestUri = new Uri(new Uri(server), API_SEND_MESSAGE_ASNWER);
                 logger.LogInformation(requestUri.ToString());
                 var result = await client.PostAsJsonAsync(requestUri, message);
                 if (!result.IsSuccessStatusCode)
                     throw new HttpRequestException(await result.Content.ReadAsStringAsync());
             }
         }
+
+		internal async Task SendTextMessageAsync(NotificationMessage message)
+		{
+			logger.LogInformation("sending... " + JsonConvert.SerializeObject(message));
+			using (HttpClient client = new HttpClient())
+			{
+				var requestUri = new Uri(new Uri(server), API_SEND_MESSAGE_NOTIFICATION);
+				logger.LogInformation(requestUri.ToString());
+				var result = await client.PostAsJsonAsync(requestUri, message);
+				if (!result.IsSuccessStatusCode)
+					throw new HttpRequestException(await result.Content.ReadAsStringAsync());
+			}
+		}
 
         internal async Task SendFileMessageAsync(Guid syncId, Guid botId, string fileName, byte[] data)
         {

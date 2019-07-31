@@ -16,11 +16,11 @@ namespace BotX.Api
 		/// <summary>
 		/// Добавляет команду для бота
 		/// </summary>
-		/// <param name="title">Название команды</param>
+		/// <param name="command">Имя команды</param>
 		/// <param name="description">Описание команды</param>
-		public ExpressBotService AddBaseCommand(string title, string description)
+		public ExpressBotService AddBaseCommand(string command, string description)
 		{
-			commands.Add(new Command { Name = title, Body = title, Description = description, Options = new Option { Clickable = true } });
+			commands.Add(new Command { Name = command, Body = command, Description = description, Options = new Option { Clickable = true } });
 			return this;
 		}
 	}

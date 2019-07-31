@@ -6,16 +6,13 @@ using System.Text;
 
 namespace BotX.Api.JsonModel.Request
 {
-	public class NotificationRequest
+	public class NotificationMessage
 	{
 		[JsonProperty("bot_id")]
 		public Guid BotId { get; set; }
 
-		[JsonProperty("sync_id")]
-		public Guid SyncId { get; set; }
-
-		[JsonProperty("to")]
-		public Guid Recipient { get; set; }
+		[JsonProperty("recipients")]
+		public Guid[] Recipients { get; set; }
 
 		[JsonProperty("group_chat_ids")]
 		public Guid[] GroupChatIds { get; set; }
