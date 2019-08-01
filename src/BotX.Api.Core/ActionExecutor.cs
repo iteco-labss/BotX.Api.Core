@@ -17,7 +17,7 @@ namespace BotX.Api
 	/// <summary>
 	/// Класс, производящий маршрутизацию команд бота между контроллерами
 	/// </summary>
-	public class ActionExecutor
+	public class ActionExecutor : IDisposable
 	{
 		private static Dictionary<string, Type> actions = new Dictionary<string, Type>();
 		internal static HashSet<Type> unnamedActions = new HashSet<Type>();
@@ -25,6 +25,7 @@ namespace BotX.Api
 
 		private readonly IServiceProvider serviceProvider;
 		private readonly ILogger<ActionExecutor> logger;
+		private readonly IServiceScope scope;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 		public ActionExecutor(IServiceProvider serviceProvider, ILogger<ActionExecutor> logger)
@@ -32,6 +33,7 @@ namespace BotX.Api
 		{
 			this.serviceProvider = serviceProvider;
 			this.logger = logger;
+			this.scope = serviceProvider.CreateScope();
 		}
 
 		internal static void AddAction(string name, Type botActionClass) // where T : class, IBotAction
@@ -107,11 +109,9 @@ namespace BotX.Api
 			logger.LogInformation("Enter InvokeNamedAction");
 			try
 			{
-				using (var scope = serviceProvider.CreateScope())
-				{					
-					var action = (IBotAction)scope.ServiceProvider.GetService(actions[actionName]);
-					await action.ExecuteAsync(request, args);
-				}
+				
+				var action = (IBotAction)scope.ServiceProvider.GetService(actions[actionName]);
+				await action.ExecuteAsync(request, args);
 			}
 			catch(Exception ex)
 			{
@@ -123,7 +123,7 @@ namespace BotX.Api
 		private async Task InvokeEvent(UserMessage request, string actionName, MethodInfo @event, string[] args)
 		{
 			logger.LogInformation("Enter InvokeEvent");
-			var action = (IBotAction)serviceProvider.GetService(actions[actionName]);
+			var action = (IBotAction)scope.ServiceProvider.GetService(actions[actionName]);
 			var eventInstance = Delegate.CreateDelegate(typeof(BotEventHandler), action, @event) as BotEventHandler;
 			await eventInstance(request, args);
 		}
@@ -133,9 +133,16 @@ namespace BotX.Api
 			logger.LogInformation("Enter InvokeUnnamedAction");
 			foreach (var actionType in unnamedActions)
 			{
-				var action = (IBotAction)serviceProvider.GetService(actionType);
+				var action = (IBotAction)scope.ServiceProvider.GetService(actionType);
 				await action.ExecuteAsync(request, null);
 			}
+		}
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+		public void Dispose()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+		{
+			this.scope.Dispose();
 		}
 	}
 }
