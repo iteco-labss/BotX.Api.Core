@@ -21,9 +21,10 @@ namespace BotX.Api.Extensions
 		/// </summary>
 		/// <param name="externalServices"></param>
 		/// <param name="mvcBuilder"></param>
-		/// <param name="server"></param>
+		/// <param name="server">Адрес сервера cts</param>
+		/// <param name="inChatExceptions">Нужно ли выводить сообщения об ошибках в чат</param>
 		/// <returns></returns>
-		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices, IMvcBuilder mvcBuilder, string server)
+		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices, IMvcBuilder mvcBuilder, string server, bool inChatExceptions = false)
 		{
 			mvcBuilder.AddApplicationPart(Assembly.Load(new AssemblyName("BotX.Api")));
 			externalServices.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), server));
@@ -31,7 +32,7 @@ namespace BotX.Api.Extensions
 			externalServices.AddSingleton<ActionExecutor>();
 			ConfigureBotActions(Assembly.GetEntryAssembly(), externalServices);
 
-			return new ExpressBotService();
+			return new ExpressBotService(inChatExceptions);
 		}
 
 		private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)
@@ -50,6 +51,18 @@ namespace BotX.Api.Extensions
 				else
 					ActionExecutor.AddAction(att.Action, type);
 			}
+
+			typesWithAttribute = applicationAssembly.GetExportedTypes()
+				.Where(x => x.GetCustomAttribute(typeof(BotEventReceiverAttribute)) != null);
+
+			foreach (var type in typesWithAttribute)
+			{
+				if (!services.Any(x => x.ImplementationType == type))
+					services.AddTransient(type);
+
+				ActionExecutor.AddEventReceiver(type);
+			}
+
 		}
 	}
 }

@@ -44,7 +44,7 @@ namespace BotX.Api.BotUI
 
 			if (!pair.Equals(default(KeyValuePair<string, MethodInfo>)))
 				InternalCommand = $"/{pair.Key}";
-
+			
 			Title = title;
 			Event = @event;
 			Arguments = args;

@@ -10,16 +10,19 @@ namespace BotX.Api.Controllers
 {
 	[Route("/command")]
 	[ApiController]
+	[ApiExplorerSettings(IgnoreApi = true)]
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public class CommandControllerBase : ControllerBase
 	{
 		private readonly ActionExecutor actionExecutor;
 		private readonly ILogger<CommandControllerBase> logger;
+		private readonly BotMessageSender sender;
 
-		public CommandControllerBase(ActionExecutor actionExecutor, ILogger<CommandControllerBase> logger)
+		public CommandControllerBase(ActionExecutor actionExecutor, ILogger<CommandControllerBase> logger, BotMessageSender sender)
 		{
 			this.actionExecutor = actionExecutor;
 			this.logger = logger;
+			this.sender = sender;
 		}
 
 		[HttpPost]
@@ -28,7 +31,15 @@ namespace BotX.Api.Controllers
 			logger.LogInformation("message has been received");
 			Task.Run(async () => 
 			{
-				await actionExecutor.ExecuteAsync(message);
+				try
+				{
+					await actionExecutor.ExecuteAsync(message);
+				}
+				catch(Exception ex)
+				{
+					await sender.SendTextMessageAsync(message, ex.ToString());
+					throw;
+				}
 			});
 
 			return Ok();

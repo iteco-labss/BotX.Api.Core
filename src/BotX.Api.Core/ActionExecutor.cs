@@ -52,6 +52,12 @@ namespace BotX.Api
 			ProcessEvents(botActionClass.Name, botActionClass);
 		}
 
+		internal static void AddEventReceiver(Type botEventReceiverClass)
+		{
+			actions.Add(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
+			ProcessEvents(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
+		}
+
 		internal static string MakeEventKey(string actionName, string eventName)
 		{
 			return $"{actionName} {eventName}";
@@ -76,19 +82,19 @@ namespace BotX.Api
 			var words = messageIsAction ? msg.Split(' ') : new string[0];
 			var actionName = words.Length == 0 ? string.Empty : words.First();
 
+			string command = null;
+			string[] args = null;
+
+			if (words.Length > 1)
+			{
+				command = words[1];
+				args = words.Skip(1).ToArray();
+			}
+
+			var commandKey = MakeEventKey(actionName, command);
+
 			if (!string.IsNullOrEmpty(actionName) && actions.ContainsKey(actionName))
 			{
-				string command = null;
-				string[] args = null;
-
-				if (words.Length > 1)
-				{
-					command = words[1];
-					args = words.Skip(1).ToArray();
-				}
-
-				var commandKey = MakeEventKey(actionName, command);
-
 				if (string.IsNullOrEmpty(command) || !actionEvents.ContainsKey(commandKey))
 					await InvokeNamedAction(request, actionName, args);
 				else
@@ -98,10 +104,8 @@ namespace BotX.Api
 						@event: actionEvents[commandKey], 
 						args: args.Skip(1).ToArray());
 			}
-			else
-			{
+			if (!actionEvents.ContainsKey(commandKey))
 				await InvokeUnnamedAction(request);
-			}
 		}
 
 		private async Task InvokeNamedAction(UserMessage request, string actionName, string[] args)
@@ -123,7 +127,7 @@ namespace BotX.Api
 		private async Task InvokeEvent(UserMessage request, string actionName, MethodInfo @event, string[] args)
 		{
 			logger.LogInformation("Enter InvokeEvent");
-			var action = (IBotAction)scope.ServiceProvider.GetService(actions[actionName]);
+			var action = scope.ServiceProvider.GetService(actions[actionName]);
 			var eventInstance = Delegate.CreateDelegate(typeof(BotEventHandler), action, @event) as BotEventHandler;
 			await eventInstance(request, args);
 		}

@@ -9,6 +9,7 @@ namespace BotX.Api.Controllers
 {
 	[Route("/status")]
 	[ApiController]
+	[ApiExplorerSettings(IgnoreApi = true)]
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public class StatusController : ControllerBase
 	{

@@ -12,6 +12,12 @@ namespace BotX.Api
 	public class ExpressBotService
 	{
 		internal static readonly List<Command> commands = new List<Command>();
+		internal static bool ThrowExceptions { get; private set; }
+
+		internal ExpressBotService(bool throwExceptions)
+		{
+			ThrowExceptions = throwExceptions;
+		}
 
 		/// <summary>
 		/// Добавляет команду для бота
