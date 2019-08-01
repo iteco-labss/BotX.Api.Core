@@ -105,8 +105,19 @@ namespace BotX.Api
 		private async Task InvokeNamedAction(UserMessage request, string actionName, string[] args)
 		{
 			logger.LogInformation("Enter InvokeNamedAction");
-			var action = (IBotAction)serviceProvider.GetService(actions[actionName]);
-			await action.ExecuteAsync(request, args);
+			try
+			{
+				using (var scope = serviceProvider.CreateScope())
+				{					
+					var action = (IBotAction)scope.ServiceProvider.GetService(actions[actionName]);
+					await action.ExecuteAsync(request, args);
+				}
+			}
+			catch(Exception ex)
+			{
+				logger.LogCritical(ex.ToString());
+				throw;
+			}
 		}
 
 		private async Task InvokeEvent(UserMessage request, string actionName, MethodInfo @event, string[] args)

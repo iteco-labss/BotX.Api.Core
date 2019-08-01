@@ -9,25 +9,25 @@ using System.Reflection;
 
 namespace BotX.Api
 {
-	internal static class InternalContainer
-	{
-		static InternalContainer()
-		{
-			ServiceCollection = new ServiceCollection();
-		}
+	//internal static class InternalContainer
+	//{
+	//	static InternalContainer()
+	//	{
+	//		ServiceCollection = new ServiceCollection();
+	//	}
 
-		internal static IServiceCollection ServiceCollection { get; }
+	//	internal static IServiceCollection ServiceCollection { get; }
 
-		private static IServiceProvider serviceProvider;
+	//	private static IServiceProvider serviceProvider;
 
-		internal static IServiceProvider ServiceProvider
-		{
-			get
-			{
-				return serviceProvider ?? ServiceCollection.BuildServiceProvider();
-			}
-		}
+	//	internal static IServiceProvider ServiceProvider
+	//	{
+	//		get
+	//		{
+	//			return serviceProvider ?? ServiceCollection.BuildServiceProvider();
+	//		}
+	//	}
 
 		
-	}
+	//}
 }

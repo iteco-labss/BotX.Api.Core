@@ -27,8 +27,8 @@ namespace BotX.Api.Extensions
 		{
 			mvcBuilder.AddApplicationPart(Assembly.Load(new AssemblyName("BotX.Api")));
 			externalServices.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), server));
-			InternalContainer.ServiceCollection.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), server));
-			InternalContainer.ServiceCollection.AddSingleton<ActionExecutor>();
+			externalServices.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), server));
+			externalServices.AddSingleton<ActionExecutor>();
 			ConfigureBotActions(Assembly.GetEntryAssembly(), externalServices);
 
 			return new ExpressBotService();
