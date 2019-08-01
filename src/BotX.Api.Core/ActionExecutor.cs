@@ -103,13 +103,15 @@ namespace BotX.Api
 		}
 
 		private async Task InvokeNamedAction(UserMessage request, string actionName, string[] args)
-		{			
+		{
+			logger.LogInformation("Enter InvokeNamedAction");
 			var action = (IBotAction)serviceProvider.GetService(actions[actionName]);
 			await action.ExecuteAsync(request, args);
 		}
 
 		private async Task InvokeEvent(UserMessage request, string actionName, MethodInfo @event, string[] args)
 		{
+			logger.LogInformation("Enter InvokeEvent");
 			var action = (IBotAction)serviceProvider.GetService(actions[actionName]);
 			var eventInstance = Delegate.CreateDelegate(typeof(BotEventHandler), action, @event) as BotEventHandler;
 			await eventInstance(request, args);
@@ -117,6 +119,7 @@ namespace BotX.Api
 
 		private async Task InvokeUnnamedAction(UserMessage request)
 		{
+			logger.LogInformation("Enter InvokeUnnamedAction");
 			foreach (var actionType in unnamedActions)
 			{
 				var action = (IBotAction)serviceProvider.GetService(actionType);
