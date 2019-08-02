@@ -104,7 +104,7 @@ namespace BotX.Api
 						@event: actionEvents[commandKey], 
 						args: args.Skip(1).ToArray());
 			}
-			if (!actionEvents.ContainsKey(commandKey))
+			else if (!actionEvents.ContainsKey(commandKey))
 				await InvokeUnnamedAction(request);
 		}
 
