@@ -18,10 +18,7 @@ namespace BotX.Api.Extensions
 		/// <param name="externalServices"></param>
 		/// <param name="mvcBuilder"></param>
 		/// <param name="ctsServiceUrl">Адрес сервиса cts. Например https://cts.example.com</param>
-		/// <param name="botId">Идентификатор бота. Если он неизвестен, то можно указать Guid.Empty, 
-		/// но в таком случае бот не сможет инициировать отправку нового сообщений пользователю 
-		/// (сможет только отвечать на сообщения)
-		/// </param>
+		/// <param name="botId">Идентификатор бота</param>
 		/// <param name="inChatExceptions">Нужно ли выводить сообщения об ошибках в чат</param>
 		/// <returns></returns>
 		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices, 
@@ -34,6 +31,19 @@ namespace BotX.Api.Extensions
 			ConfigureBotActions(Assembly.GetEntryAssembly(), externalServices);
 
 			return new ExpressBotService(botId, inChatExceptions, externalServices.BuildServiceProvider());
+		}
+
+		/// <summary>
+		/// Добавляет поддержку BotX Api, позволяя создавать ботов для мессенджера Express. Без поддержки исходящих сообщений
+		/// </summary>
+		/// <param name="externalServices"></param>
+		/// <param name="mvcBuilder"></param>
+		/// <param name="ctsServiceUrl">Адрес сервиса cts. Например https://cts.example.com</param>
+		/// <param name="inChatExceptions">Нужно ли выводить сообщения об ошибках в чат</param>
+		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices,
+			IMvcBuilder mvcBuilder, string ctsServiceUrl, bool inChatExceptions = false)
+		{
+			return AddExpressBot(externalServices, mvcBuilder, ctsServiceUrl, Guid.Empty, inChatExceptions);
 		}
 
 		private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)

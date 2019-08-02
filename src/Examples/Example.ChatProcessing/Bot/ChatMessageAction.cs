@@ -1,5 +1,6 @@
 ﻿using BotX.Api.Abstract;
 using BotX.Api.Attributes;
+using BotX.Api.BotUI;
 using BotX.Api.JsonModel.Request;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,15 @@ namespace Example.ChatProcessing.Bot
 	{
 		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
 		{
-			await MessageSender.SendTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}");
+			var buttons = new MessageButtonsGrid();
+			buttons.AddRow().AddButton("test", testClick);
+			await MessageSender.SendTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
+		}
+
+		[BotButtonEvent("testClick")]
+		private async Task testClick(UserMessage userMessage, string[] args)
+		{
+			await MessageSender.SendTextMessageAsync(userMessage, "кнопка нажата");
 		}
 	}
 }

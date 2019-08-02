@@ -9,7 +9,7 @@
   </PropertyGroup>
 
 	<PropertyGroup>
-	  <Version>0.0.33-alpha</Version>
+	  <Version>0.0.36-alpha</Version>
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 	  <Company>I-Teco</Company>

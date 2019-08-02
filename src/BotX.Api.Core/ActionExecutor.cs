@@ -49,7 +49,8 @@ namespace BotX.Api
 		internal static void AddUnnamedAction(Type botActionClass)
 		{
 			unnamedActions.Add(botActionClass);
-			ProcessEvents(botActionClass.Name, botActionClass);
+			actions.Add(botActionClass.Name.ToLower(), botActionClass);
+			ProcessEvents(botActionClass.Name.ToLower(), botActionClass);
 		}
 
 		internal static void AddEventReceiver(Type botEventReceiverClass)
