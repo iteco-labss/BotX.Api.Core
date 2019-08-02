@@ -5,6 +5,8 @@ using System.Text;
 
 namespace BotX.Api.JsonModel.Menu
 {
+	#pragma warning disable CS1591
+
 	public class Element
 	{
 		[JsonProperty("type")]

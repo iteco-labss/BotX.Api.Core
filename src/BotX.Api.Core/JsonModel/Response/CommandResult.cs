@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace BotX.Api.JsonModel.Response
 {
+#pragma warning disable CS1591
 	public class CommandResult
 	{
 		[JsonProperty("status")]

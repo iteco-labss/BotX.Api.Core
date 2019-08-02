@@ -7,16 +7,27 @@ using System.Text;
 namespace BotX.Api
 {
 	/// <summary>
-	/// Конфигурация бота
+	/// Класс, позволяющий задать конфигурацию бота
 	/// </summary>
 	public class ExpressBotService
 	{
-		internal static readonly List<Command> commands = new List<Command>();
-		internal static bool ThrowExceptions { get; private set; }
+		/// <summary>
+		/// Конфигурация бота
+		/// </summary>
+		public static ExpressBotService Configuration { get; private set; }
 
-		internal ExpressBotService(bool throwExceptions)
+		internal List<Command> Commands { get; private set; }
+		internal bool ThrowExceptions { get; private set; }
+		internal IServiceProvider ServiceProvider { get; }
+		internal Guid BotId { get; private set; }
+
+		internal ExpressBotService(Guid botId, bool throwExceptions, IServiceProvider serviceProvider)
 		{
+			BotId = botId;
 			ThrowExceptions = throwExceptions;
+			ServiceProvider = serviceProvider;
+			Commands = new List<Command>();
+			Configuration = this;
 		}
 
 		/// <summary>
@@ -26,7 +37,7 @@ namespace BotX.Api
 		/// <param name="description">Описание команды</param>
 		public ExpressBotService AddBaseCommand(string command, string description)
 		{
-			commands.Add(new Command { Name = command, Body = command, Description = description, Options = new Option { Clickable = true } });
+			Commands.Add(new Command { Name = command, Body = command, Description = description, Options = new Option { Clickable = true } });
 			return this;
 		}
 	}

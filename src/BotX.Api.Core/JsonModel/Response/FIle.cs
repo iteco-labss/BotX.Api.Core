@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace BotX.Api.JsonModel.Response
 {
+#pragma warning disable CS1591
 	public class File
 	{
 		[JsonProperty("data")]

@@ -20,7 +20,7 @@ namespace BotX.Api
 	public class ActionExecutor : IDisposable
 	{
 		private static Dictionary<string, Type> actions = new Dictionary<string, Type>();
-		internal static HashSet<Type> unnamedActions = new HashSet<Type>();
+		private static HashSet<Type> unnamedActions = new HashSet<Type>();
 		internal static Dictionary<string, MethodInfo> actionEvents = new Dictionary<string, MethodInfo>();
 
 		private readonly IServiceProvider serviceProvider;
@@ -66,8 +66,8 @@ namespace BotX.Api
 		private static void ProcessEvents(string actionName, Type botActionClass)
 		{
 			var methods = botActionClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-				.Where(x => x.GetCustomAttribute<BotActionEventAttribute>() != null)
-				.ToDictionary(x => MakeEventKey(actionName, x.GetCustomAttribute<BotActionEventAttribute>().EventName));
+				.Where(x => x.GetCustomAttribute<BotButtonEventAttribute>() != null)
+				.ToDictionary(x => MakeEventKey(actionName, x.GetCustomAttribute<BotButtonEventAttribute>().EventName));
 
 			foreach (var method in methods)
 				actionEvents.Add(method.Key, method.Value);
@@ -104,7 +104,7 @@ namespace BotX.Api
 						@event: actionEvents[commandKey], 
 						args: args.Skip(1).ToArray());
 			}
-			if (!actionEvents.ContainsKey(commandKey))
+			else if (!actionEvents.ContainsKey(commandKey))
 				await InvokeUnnamedAction(request);
 		}
 

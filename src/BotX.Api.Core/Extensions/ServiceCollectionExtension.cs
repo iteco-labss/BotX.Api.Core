@@ -1,13 +1,9 @@
-﻿using BotX.Api.Abstract;
-using BotX.Api.Attributes;
-using Microsoft.Extensions.Configuration;
+﻿using BotX.Api.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace BotX.Api.Extensions
 {
@@ -21,18 +17,23 @@ namespace BotX.Api.Extensions
 		/// </summary>
 		/// <param name="externalServices"></param>
 		/// <param name="mvcBuilder"></param>
-		/// <param name="server">Адрес сервера cts</param>
+		/// <param name="ctsServiceUrl">Адрес сервиса cts. Например https://cts.example.com</param>
+		/// <param name="botId">Идентификатор бота. Если он неизвестен, то можно указать Guid.Empty, 
+		/// но в таком случае бот не сможет инициировать отправку нового сообщений пользователю 
+		/// (сможет только отвечать на сообщения)
+		/// </param>
 		/// <param name="inChatExceptions">Нужно ли выводить сообщения об ошибках в чат</param>
 		/// <returns></returns>
-		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices, IMvcBuilder mvcBuilder, string server, bool inChatExceptions = false)
+		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices, 
+			IMvcBuilder mvcBuilder, string ctsServiceUrl, Guid botId, bool inChatExceptions = false)
 		{
 			mvcBuilder.AddApplicationPart(Assembly.Load(new AssemblyName("BotX.Api")));
-			externalServices.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), server));
-			externalServices.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), server));
+			externalServices.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
+			externalServices.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
 			externalServices.AddSingleton<ActionExecutor>();
 			ConfigureBotActions(Assembly.GetEntryAssembly(), externalServices);
 
-			return new ExpressBotService(inChatExceptions);
+			return new ExpressBotService(botId, inChatExceptions, externalServices.BuildServiceProvider());
 		}
 
 		private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)
