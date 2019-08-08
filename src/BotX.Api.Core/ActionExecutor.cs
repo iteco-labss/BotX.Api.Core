@@ -78,6 +78,12 @@ namespace BotX.Api
 		{
 			logger.LogInformation("Enter the 'Execute' method");
 
+			if (request.Command.Body.Length == 0)
+			{
+				logger.LogInformation("The message is empty");
+				return;
+			}
+
 			bool messageIsAction = request.Command.Body.StartsWith('/');
 			var msg = request.Command.Body.ToLower().Substring(1);
 			var words = messageIsAction ? msg.Split(' ') : new string[0];

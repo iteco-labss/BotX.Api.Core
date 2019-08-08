@@ -35,5 +35,13 @@ namespace BotX.Api.BotUI
 			Buttons.Add(btn);
 			return btn;
 		}
+
+		/// <summary>
+		/// Создаёт пустую ячейку вместо кнопки
+		/// </summary>
+		public void AddEmpty()
+		{
+			Buttons.Add(null);
+		}
 	}
 }

@@ -1,5 +1,7 @@
-﻿using System;
+﻿using BotX.Api.JsonModel.Response;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BotX.Api.BotUI
@@ -23,6 +25,18 @@ namespace BotX.Api.BotUI
 			var row = new MessageButtonsRow();
 			Rows.Add(row);
 			return row;
+		}
+
+		internal IEnumerable<IEnumerable<Bubble>> GetBubbles()
+		{
+			return Rows.Select(
+				x => x.Buttons.Select(
+					btn => btn != null ?
+					new Bubble
+					{
+						Command = btn.InternalCommand,
+						Label = btn.Title
+					} : new Bubble { Label = " ✖️ ", Command = string.Empty }));
 		}
 	}
 }

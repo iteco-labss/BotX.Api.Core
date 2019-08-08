@@ -15,7 +15,9 @@ namespace Example.ChatProcessing.Bot
 		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
 		{
 			var buttons = new MessageButtonsGrid();
-			buttons.AddRow().AddButton("test", testClick);
+			var row = buttons.AddRow();
+			row.AddButton("click me!", testClick);
+			row.AddButton("push me!", testClick);
 			await MessageSender.SendTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
 		}
 

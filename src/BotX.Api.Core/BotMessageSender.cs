@@ -72,15 +72,6 @@ namespace BotX.Api
 
 		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons)
 		{
-			var bubbles = buttons?.Rows.Select(
-				x => x.Buttons.Select(
-					btn =>
-					new Bubble
-					{
-						Command = btn.InternalCommand,
-						Label = btn.Title
-					}));
-
 			var notification = new NotificationMessage
 			{
 				BotId = ExpressBotService.Configuration.BotId,
@@ -90,7 +81,7 @@ namespace BotX.Api
 				{
 					Status = "ok",
 					Body = messageText,
-					Bubble = bubbles ?? new List<List<Bubble>>()
+					Bubble = buttons.GetBubbles() ?? new List<List<Bubble>>()
 				}
 			};
 
@@ -156,15 +147,6 @@ namespace BotX.Api
 			if (botId == Guid.Empty)
 				return;
 
-			var bubbles = buttons.Rows.Select(
-				x => x.Buttons.Select(
-					btn =>
-					new Bubble
-					{
-						Command = btn.InternalCommand,
-						Label = btn.Title
-					}));
-
 			await SendTextMessageAsync(new ResponseMessage
 			{
 				BotId = botId,
@@ -174,7 +156,7 @@ namespace BotX.Api
 				{
 					Status = "ok",
 					Body = messageText,
-					Bubble = bubbles
+					Bubble = buttons.GetBubbles() ?? new List<List<Bubble>>()
 				}
 			});
 		}
