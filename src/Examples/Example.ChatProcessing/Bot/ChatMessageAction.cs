@@ -16,15 +16,15 @@ namespace Example.ChatProcessing.Bot
 		{
 			var buttons = new MessageButtonsGrid();
 			var row = buttons.AddRow();
-			row.AddButton("click me!", testClick);
-			row.AddButton("push me!", testClick);
+			row.AddButton("click me!", testClick, "first");
+			row.AddButton("push me!", testClick, "second");
 			await MessageSender.SendTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
 		}
 
 		[BotButtonEvent("testClick")]
 		private async Task testClick(UserMessage userMessage, string[] args)
 		{
-			await MessageSender.SendTextMessageAsync(userMessage, "кнопка нажата");
+			await MessageSender.SendTextMessageAsync(userMessage, $"кнопка нажата {args[0]}");
 		}
 	}
 }
