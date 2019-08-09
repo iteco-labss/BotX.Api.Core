@@ -5,6 +5,7 @@ using System.Text;
 
 namespace BotX.Api.JsonModel.Response
 {
+#pragma warning disable CS1591
 	public class Bubble
 	{
 		[JsonProperty("label")]

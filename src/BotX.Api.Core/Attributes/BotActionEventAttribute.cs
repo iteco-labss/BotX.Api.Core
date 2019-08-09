@@ -10,13 +10,13 @@ namespace BotX.Api.Attributes
 	/// который будет вызываться при выполнении действий внутри данного класса (например нажатие на кнопки)
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-	public class BotActionEventAttribute : Attribute
+	public class BotButtonEventAttribute : Attribute
 	{
 		/// <summary>
 		/// Указывает, что данный метод является обработчиком события действия бота
 		/// </summary>
 		/// <param name="eventName">Имя события, на которое будет реагировать данное событие</param>
-		public BotActionEventAttribute(string eventName)
+		public BotButtonEventAttribute(string eventName)
 		{
 			if (Regex.IsMatch(eventName, @"[^a-zA-Z0-9\-\\_]"))
 				throw new ArgumentException("The BotActioveEvent name should contains only letters, numbers, _ or -");

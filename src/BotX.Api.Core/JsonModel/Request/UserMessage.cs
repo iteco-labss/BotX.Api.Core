@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace BotX.Api.JsonModel.Request
 {
+#pragma warning disable CS1591
 	public class UserMessage
 	{
 		[JsonProperty("sync_id")]

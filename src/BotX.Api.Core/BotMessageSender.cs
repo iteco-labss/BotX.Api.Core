@@ -46,7 +46,7 @@ namespace BotX.Api
 		/// <returns></returns>
 		public async Task SendTextMessageAsync(UserMessage requestMessage, string messageText)
 		{
-			await SendTextMessageAsync(
+			await SendTextMessageInternalAsync(
 				botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
 				to: requestMessage.From.Huid,
@@ -54,33 +54,62 @@ namespace BotX.Api
 				);
 		}
 
-		public async Task SendTextMessageAsync(Guid botId, Guid[] chatIds, Guid[] recipients, string messageText)
+		/// <summary>
+		/// Отправляет текстовое сообщение (нотификацию) пользователю
+		/// </summary>
+		/// <param name="chatIds">Идентификаторы чатов, куда будет отправлено сообщение</param>
+		/// <param name="recipients">Идентификаторы получателей (пользователей) сообщения</param>
+		/// <param name="messageText">Текст сообщения</param>
+		/// <returns></returns>
+		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText)
+		{
+			await SendTextMessageAsync(
+				chatIds: chatIds,
+				recipients: recipients,
+				messageText: messageText,
+				buttons: null);
+		}
+
+		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons)
 		{
 			var notification = new NotificationMessage
 			{
-				BotId = botId,
+				BotId = ExpressBotService.Configuration.BotId,
 				GroupChatIds = chatIds,
 				Recipients = recipients,
 				Notification = new CommandResult
 				{
 					Status = "ok",
-					Body = messageText
+					Body = messageText,
+					Bubble = buttons.GetBubbles() ?? new List<List<Bubble>>()
 				}
 			};
+
 
 			await SendTextMessageAsync(notification);
 		}
 
 		/// <summary>
-		/// Отправляет текстовое сообщение
+		/// Отправляет ответ в виде текстового сообщения
 		/// </summary>
-		/// <param name="botId">Идентификатор бота</param>
 		/// <param name="syncId">Идентификатор чата</param>
 		/// <param name="to">Адресат сообщения</param>
 		/// <param name="messageText">Текст сообщения</param>
 		/// <returns></returns>
-		public async Task SendTextMessageAsync(Guid botId, Guid syncId, Guid to, string messageText)
+		public async Task SendTextMessageAsync(Guid syncId, Guid to, string messageText)
 		{
+			await SendTextMessageInternalAsync(
+				botId: ExpressBotService.Configuration.BotId, 
+				syncId: syncId, 
+				to: to, 
+				messageText: messageText);
+		}
+
+		private async Task SendTextMessageInternalAsync(Guid botId, Guid syncId, Guid to, string messageText)
+		{
+			if (botId == Guid.Empty)
+				return;
+
 			await SendTextMessageAsync(new ResponseMessage
 			{
 				BotId = botId,
@@ -95,24 +124,28 @@ namespace BotX.Api
 		}
 
 		/// <summary>
-		/// Отправляет текствое сообщение с кнопками
+		/// Отправляет текствое сообщение с кнопками в ответ пользователю
 		/// </summary>
-		/// <param name="botId">Идентификатор бота</param>
 		/// <param name="syncId">Идентификатор чата</param>
 		/// <param name="to">Адресат сообщения</param>
 		/// <param name="messageText">Текст сообщения</param>
 		/// <param name="buttons">Кнопки с действиями в сообщении</param>
 		/// <returns></returns>
-		public async Task SendTextMessageAsync(Guid botId, Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
+		public async Task SendTextMessageAsync(Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
 		{
-			var bubbles = buttons.Rows.Select(
-				x => x.Buttons.Select(
-					btn =>
-					new Bubble
-					{
-						Command = btn.InternalCommand,
-						Label = btn.Title
-					}));
+			await SendTextMessageWithButtonsAsync(
+				botId: ExpressBotService.Configuration.BotId,
+				syncId: syncId,
+				to: to,
+				messageText: messageText,
+				buttons: buttons
+				);
+		}
+
+		private async Task SendTextMessageWithButtonsAsync(Guid botId, Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
+		{
+			if (botId == Guid.Empty)
+				return;
 
 			await SendTextMessageAsync(new ResponseMessage
 			{
@@ -123,7 +156,7 @@ namespace BotX.Api
 				{
 					Status = "ok",
 					Body = messageText,
-					Bubble = bubbles
+					Bubble = buttons.GetBubbles() ?? new List<List<Bubble>>()
 				}
 			});
 		}
@@ -137,8 +170,8 @@ namespace BotX.Api
 		/// <returns></returns>
 		public async Task SendTextMessageAsync(UserMessage requestMessage, string messageText, MessageButtonsGrid buttons)
 		{
-			await SendTextMessageAsync(
-				   botId: requestMessage.BotId,
+			await SendTextMessageWithButtonsAsync(
+					botId: requestMessage.BotId,
 				   syncId: requestMessage.SyncId,
 				   to: requestMessage.From.Huid,
 				   messageText: messageText,
@@ -149,17 +182,15 @@ namespace BotX.Api
 		/// <summary>
 		/// Отправка файла в чат
 		/// </summary>
-		/// <param name="botId">Идентификатор бота</param>
 		/// <param name="syncId">Идентификатор чата</param>
 		/// <param name="fileName">Имя фалйа</param>
 		/// <param name="data">Данные файла</param>
 		/// <returns></returns>
-		public async Task SendFileAsync(Guid botId, Guid syncId, string fileName, byte[] data)
+		public async Task SendFileAsync(Guid syncId, string fileName, byte[] data)
 		{
-			string base64 = Convert.ToBase64String(data);
 			await SendFileMessageAsync(
 				syncId: syncId,
-				botId: botId,
+				botId: ExpressBotService.Configuration.BotId,
 				fileName: fileName,
 				data: data
 				);
@@ -176,7 +207,6 @@ namespace BotX.Api
 		public async Task SendFileAsync(UserMessage requestMessage, string fileName, byte[] data)
 		{
 			await SendFileAsync(
-				botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
 				fileName: fileName,
 				data: data
@@ -185,6 +215,7 @@ namespace BotX.Api
 
 		internal async Task SendTextMessageAsync(ResponseMessage message)
         {
+			ValidateMessage(message);
             logger.LogInformation("sending... " + JsonConvert.SerializeObject (message));
             using (HttpClient client = new HttpClient())
             {
@@ -198,6 +229,7 @@ namespace BotX.Api
 
 		internal async Task SendTextMessageAsync(NotificationMessage message)
 		{
+			ValidateMessage(message);
 			logger.LogInformation("sending... " + JsonConvert.SerializeObject(message));
 			using (HttpClient client = new HttpClient())
 			{
@@ -211,6 +243,9 @@ namespace BotX.Api
 
         internal async Task SendFileMessageAsync(Guid syncId, Guid botId, string fileName, byte[] data)
         {
+			if (botId == Guid.Empty)
+				throw new InvalidOperationException("Для отправки файлов требуется задать идентификатор бота в AddExpressBot");
+
             using (HttpClient client = new HttpClient())
             {
                 var requestUri = new Uri(new Uri(server), API_SEND_FILE);
@@ -224,5 +259,17 @@ namespace BotX.Api
 					throw new HttpRequestException(await result.Content.ReadAsStringAsync());
             }
         }
-    }
+
+		private void ValidateMessage(ResponseMessage message)
+		{
+			if (message.BotId == Guid.Empty)
+				throw new InvalidOperationException("Для отправки сообщений пользователю, необходимо задать идентификатор бота (метод AddExpressBot). Без идентификатора возможно только получение и ответ на полученные сообщения");
+		}
+
+		private void ValidateMessage(NotificationMessage message)
+		{
+			if (message.BotId == Guid.Empty)
+				throw new InvalidOperationException("Для отправки сообщений пользователю, необходимо задать идентификатор бота (метод AddExpressBot). Без идентификатора возможно только получение и ответ на полученные сообщения");
+		}
+	}
 }

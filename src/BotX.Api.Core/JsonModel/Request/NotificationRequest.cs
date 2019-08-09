@@ -6,6 +6,7 @@ using System.Text;
 
 namespace BotX.Api.JsonModel.Request
 {
+#pragma warning disable CS1591
 	public class NotificationMessage
 	{
 		[JsonProperty("bot_id")]

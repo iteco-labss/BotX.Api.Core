@@ -20,7 +20,7 @@ namespace BotX.Api
 	public class ActionExecutor : IDisposable
 	{
 		private static Dictionary<string, Type> actions = new Dictionary<string, Type>();
-		internal static HashSet<Type> unnamedActions = new HashSet<Type>();
+		private static HashSet<Type> unnamedActions = new HashSet<Type>();
 		internal static Dictionary<string, MethodInfo> actionEvents = new Dictionary<string, MethodInfo>();
 
 		private readonly IServiceProvider serviceProvider;
@@ -49,7 +49,8 @@ namespace BotX.Api
 		internal static void AddUnnamedAction(Type botActionClass)
 		{
 			unnamedActions.Add(botActionClass);
-			ProcessEvents(botActionClass.Name, botActionClass);
+			actions.Add(botActionClass.Name.ToLower(), botActionClass);
+			ProcessEvents(botActionClass.Name.ToLower(), botActionClass);
 		}
 
 		internal static void AddEventReceiver(Type botEventReceiverClass)
@@ -66,8 +67,8 @@ namespace BotX.Api
 		private static void ProcessEvents(string actionName, Type botActionClass)
 		{
 			var methods = botActionClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-				.Where(x => x.GetCustomAttribute<BotActionEventAttribute>() != null)
-				.ToDictionary(x => MakeEventKey(actionName, x.GetCustomAttribute<BotActionEventAttribute>().EventName));
+				.Where(x => x.GetCustomAttribute<BotButtonEventAttribute>() != null)
+				.ToDictionary(x => MakeEventKey(actionName, x.GetCustomAttribute<BotButtonEventAttribute>().EventName));
 
 			foreach (var method in methods)
 				actionEvents.Add(method.Key, method.Value);
@@ -76,6 +77,12 @@ namespace BotX.Api
 		internal async Task ExecuteAsync(UserMessage request)
 		{
 			logger.LogInformation("Enter the 'Execute' method");
+
+			if (request.Command.Body.Length == 0)
+			{
+				logger.LogInformation("The message is empty");
+				return;
+			}
 
 			bool messageIsAction = request.Command.Body.StartsWith('/');
 			var msg = request.Command.Body.ToLower().Substring(1);

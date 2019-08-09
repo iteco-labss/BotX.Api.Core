@@ -30,7 +30,7 @@ namespace BotX.Api.Controllers
 				{
 					Enabled = true,
 					Status_message = "hi",
-					Commands = ExpressBotService.commands.ToArray()
+					Commands = ExpressBotService.Configuration.Commands.ToArray()
 				}
 			};
 
