@@ -12,16 +12,9 @@ namespace Example.ChatProcessing.Bot
 	[BotAction("sayhello")]
 	public class SayHelloAction : BotAction
 	{
-		private readonly BotMessageSender sender;
-
-		public SayHelloAction(BotMessageSender sender)
-		{
-			this.sender = sender;
-		}
-
 		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
 		{
-			await sender.SendTextMessageAsync(userMessage, "Hello. How are you?");
+			await MessageSender.SendTextMessageAsync(userMessage, "Hello. How are you?");
 		}
 	}
 }
