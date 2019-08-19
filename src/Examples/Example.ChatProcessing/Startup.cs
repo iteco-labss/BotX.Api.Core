@@ -24,7 +24,7 @@ namespace Example.ChatProcessing
 		{
 			var mvc = services.AddMvc();
 			var cts = Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
-			services.AddExpressBot(mvc, cts, Guid.Parse("49de73fe-e3a4-5231-9972-f6690ad28a25"), true)
+			services.AddExpressBot(mvc, cts, true)
 				.AddBaseCommand("sayhello", "скажи привет")
 				.AddBaseCommand("saydate", "скажи дату");
 		}
