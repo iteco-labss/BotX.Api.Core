@@ -17,7 +17,7 @@ namespace BotX.Api.Attributes
 		/// <param name="action">Команда, например start. Недопускается ввод специальных символов и пробелов</param>
 		public BotActionAttribute(string action)
 		{
-			if (Regex.IsMatch(action, @"[^a-zA-Z0-9\-\\_]"))
+			if (Regex.IsMatch(action, @"[^a-zA-Zа-яА-Я0-9\-\\_]"))
 				throw new ArgumentException("The action name should contains only letters, numbers, _ or -");
 
 			Action = action.ToLower();

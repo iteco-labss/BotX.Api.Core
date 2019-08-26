@@ -18,7 +18,7 @@ namespace BotX.Api.Attributes
 		/// <param name="eventName">Имя события, на которое будет реагировать данное событие</param>
 		public BotButtonEventAttribute(string eventName)
 		{
-			if (Regex.IsMatch(eventName, @"[^a-zA-Z0-9\-\\_]"))
+			if (Regex.IsMatch(eventName, @"[^a-zA-Zа-яА-Я0-9\-\\_]"))
 				throw new ArgumentException("The BotActioveEvent name should contains only letters, numbers, _ or -");
 
 			EventName = eventName.ToLower();
