@@ -67,7 +67,7 @@ namespace BotX.Api
 				chatIds: chatIds,
 				recipients: recipients,
 				messageText: messageText,
-				buttons: null);
+				buttons : new MessageButtonsGrid());
 		}
 
 		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons)
