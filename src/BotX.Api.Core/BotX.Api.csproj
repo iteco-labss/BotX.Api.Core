@@ -20,7 +20,7 @@
 	  <Description />
 	  <PackageReleaseNotes>добавлена поддержка действий, срабатывающих на все сообщения, которые не являются другими действиями</PackageReleaseNotes>
 	  <SignAssembly>true</SignAssembly>
-	  <AssemblyOriginatorKeyFile>key.pfx</AssemblyOriginatorKeyFile>
+	  <AssemblyOriginatorKeyFile>key.pfx.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
 	<ItemGroup>
