@@ -16,15 +16,14 @@ namespace BotX.Api.Extensions
 		/// Добавляет поддержку BotX Api, позволяя создавать ботов для мессенджера Express
 		/// </summary>
 		/// <param name="externalServices"></param>
-		/// <param name="mvcBuilder"></param>
 		/// <param name="ctsServiceUrl">Адрес сервиса cts. Например https://cts.example.com</param>
 		/// <param name="botId">Идентификатор бота</param>
 		/// <param name="inChatExceptions">Нужно ли выводить сообщения об ошибках в чат</param>
 		/// <returns></returns>
 		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices, 
-			IMvcBuilder mvcBuilder, string ctsServiceUrl, Guid botId, bool inChatExceptions = false)
+			string ctsServiceUrl, Guid botId, bool inChatExceptions = false)
 		{
-			mvcBuilder.AddApplicationPart(Assembly.Load(new AssemblyName("BotX.Api")));
+			externalServices.AddRouting();
 			externalServices.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
 			externalServices.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
 			externalServices.AddSingleton<ActionExecutor>();
@@ -37,13 +36,12 @@ namespace BotX.Api.Extensions
 		/// Добавляет поддержку BotX Api, позволяя создавать ботов для мессенджера Express. Без поддержки исходящих сообщений
 		/// </summary>
 		/// <param name="externalServices"></param>
-		/// <param name="mvcBuilder"></param>
 		/// <param name="ctsServiceUrl">Адрес сервиса cts. Например https://cts.example.com</param>
 		/// <param name="inChatExceptions">Нужно ли выводить сообщения об ошибках в чат</param>
 		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices,
-			IMvcBuilder mvcBuilder, string ctsServiceUrl, bool inChatExceptions = false)
+			string ctsServiceUrl, bool inChatExceptions = false)
 		{
-			return AddExpressBot(externalServices, mvcBuilder, ctsServiceUrl, Guid.Empty, inChatExceptions);
+			return AddExpressBot(externalServices, ctsServiceUrl, Guid.Empty, inChatExceptions);
 		}
 
 		private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)

@@ -22,9 +22,8 @@ namespace Example.ChatProcessing
 
 		public void ConfigureServices(IServiceCollection services)
 		{
-			var mvc = services.AddMvc();
 			var cts = Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
-			services.AddExpressBot(mvc, cts, true)
+			services.AddExpressBot(cts, true)
 				.AddBaseCommand("sayhello", "скажи привет")
 				.AddBaseCommand("saydate", "скажи дату");
 		}
@@ -35,8 +34,7 @@ namespace Example.ChatProcessing
 			{
 				app.UseDeveloperExceptionPage();
 			}
-
-			app.UseMvc();
+			app.UseExpress();
 		}
 	}
 }
