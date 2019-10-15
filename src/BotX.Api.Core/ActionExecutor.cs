@@ -74,13 +74,18 @@ namespace BotX.Api
 				actionEvents.Add(method.Key, method.Value);
 		}
 
+		internal async Task ExecuteSystemAsync(UserMessage request)
+		{
+			throw new NotImplementedException();
+		}
+
 		internal async Task ExecuteAsync(UserMessage request)
 		{
 			logger.LogInformation("Enter the 'Execute' method");
 
 			if (request.Command.Body.Length == 0)
 			{
-				logger.LogInformation("The message is empty");
+				logger.LogInformation("Message is empty");
 				return;
 			}
 
@@ -119,8 +124,7 @@ namespace BotX.Api
 		{
 			logger.LogInformation("Enter InvokeNamedAction");
 			try
-			{
-				
+			{				
 				var action = (IBotAction)scope.ServiceProvider.GetService(actions[actionName]);
 				await action.ExecuteAsync(request, args);
 			}

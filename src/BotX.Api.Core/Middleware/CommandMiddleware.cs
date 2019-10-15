@@ -12,6 +12,7 @@ namespace BotX.Api.Middleware
 {
 	internal class CommandMiddleware
 	{
+		private const string SystemChatCreated = "system:chat_created";
 		private readonly RequestDelegate next;
 
 		public CommandMiddleware(RequestDelegate next)
@@ -33,7 +34,10 @@ namespace BotX.Api.Middleware
 			  {
 				  try
 				  {
-					  await actionExecutor.ExecuteAsync(message);
+					  if (message.Command.Body == SystemChatCreated)
+						  await actionExecutor.ExecuteSystemAsync(message);
+					  else
+						  await actionExecutor.ExecuteAsync(message);
 				  }
 				  catch (Exception ex)
 				  {

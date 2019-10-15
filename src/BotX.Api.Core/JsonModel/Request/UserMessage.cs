@@ -11,7 +11,7 @@ namespace BotX.Api.JsonModel.Request
 	public class UserMessage
 	{
 		[JsonProperty("sync_id")]
-		public Guid SyncId { get; set; }
+		public Guid SyncId { get; set; } = Guid.Empty;
 
 		[JsonProperty("command")]
 		public Command Command { get; set; }
@@ -23,6 +23,6 @@ namespace BotX.Api.JsonModel.Request
 		public From From { get; set; }
 
 		[JsonProperty("bot_id")]
-		public Guid BotId { get; set; }
+		public Guid BotId { get; set; } = Guid.Empty;
 	}
 }

@@ -32,5 +32,10 @@ namespace BotX.Api.Abstract
 		/// <param name="args">Дополнительные аргументы сообщения</param>
 		/// <returns></returns>
 		public abstract Task ExecuteAsync(UserMessage userMessage, string[] args);
+
+		public virtual Task OnChatCreated()
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

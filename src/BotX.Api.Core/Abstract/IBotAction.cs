@@ -11,6 +11,7 @@ namespace BotX.Api.Abstract
 	internal interface IBotAction
 	{		
 		Task ExecuteAsync(UserMessage userMessage, string[] args);
+		Task OnChatCreated();
 	}
 
 }
