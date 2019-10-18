@@ -10,10 +10,10 @@ namespace BotX.Api.JsonModel.Response
 	public class From
 	{
 		[JsonProperty("user_huid")]
-		public Guid Huid { get; set; }
+		public Guid? Huid { get; set; }
 
 		[JsonProperty("group_chat_id")]
-		public Guid ChatId { get; set; }
+		public Guid? ChatId { get; set; }
 
 		[JsonProperty("chat_type")]
 		public string ChatType { get; set; }

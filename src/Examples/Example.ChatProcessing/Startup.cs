@@ -23,6 +23,9 @@ namespace Example.ChatProcessing
 		public void ConfigureServices(IServiceCollection services)
 		{
 			var cts = Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
+			if (string.IsNullOrEmpty(cts))
+				throw new Exception("Необходимо задать адрес cts-сервера");
+
 			services.AddExpressBot(cts, true)
 				.AddBaseCommand("sayhello", "скажи привет")
 				.AddBaseCommand("saydate", "скажи дату");

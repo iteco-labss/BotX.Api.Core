@@ -49,7 +49,7 @@ namespace BotX.Api
 			await SendTextMessageInternalAsync(
 				botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
-				to: requestMessage.From.Huid,
+				to: requestMessage.From.Huid.Value,
 				messageText: messageText
 				);
 		}
@@ -70,6 +70,19 @@ namespace BotX.Api
 				buttons : new MessageButtonsGrid());
 		}
 
+		//public async Task SendTextMessageAsync(Guid chatId, Guid recipient, string messageText, MessageButtonsGrid buttons)
+		//{
+		//	await SendTextMessageAsync(new Guid[] { chatId }, new Guid[] { recipient }, messageText, buttons);
+		//}
+
+		/// <summary>
+		/// Отправляет текстовое сообщение пользователям, в указанные чаты
+		/// </summary>
+		/// <param name="chatIds">Идентификаторы чатов</param>
+		/// <param name="recipients">Идентификаторы получателей</param>
+		/// <param name="messageText">Текст сообщения</param>
+		/// <param name="buttons">Кнопки</param>
+		/// <returns></returns>
 		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons)
 		{
 			var notification = new NotificationMessage
@@ -173,7 +186,7 @@ namespace BotX.Api
 			await SendTextMessageWithButtonsAsync(
 					botId: requestMessage.BotId,
 				   syncId: requestMessage.SyncId,
-				   to: requestMessage.From.Huid,
+				   to: requestMessage.From.Huid.Value,
 				   messageText: messageText,
 				   buttons: buttons
 				   );

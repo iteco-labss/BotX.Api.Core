@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using BotX.Api.JsonModel.Request;
+using BotX.Api.JsonModel.Response;
 using Microsoft.Extensions.Logging;
 
 namespace BotX.Api.Abstract
@@ -33,9 +34,14 @@ namespace BotX.Api.Abstract
 		/// <returns></returns>
 		public abstract Task ExecuteAsync(UserMessage userMessage, string[] args);
 
-		public virtual Task OnChatCreated()
+		/// <summary>
+		/// Событие, срабатываемое в момент создания канала/группы с ботом
+		/// </summary>
+		/// <param name="data">Информация по создаваемому чату</param>
+		/// <returns></returns>
+		public virtual Task OnChatCreated(UserMessage userMessage)
 		{
-			throw new NotImplementedException();
+			return Task.CompletedTask;
 		}
 	}
 }

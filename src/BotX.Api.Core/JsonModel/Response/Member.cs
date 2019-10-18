@@ -9,7 +9,7 @@ namespace BotX.Api.JsonModel.Response
 	public class Member
 	{
 		[JsonProperty("huid")]
-		public Guid Huid { get; set; }
+		public Guid? Huid { get; set; }
 
 		[JsonProperty("name")]
 		public string Name { get; set; }
@@ -18,6 +18,6 @@ namespace BotX.Api.JsonModel.Response
 		public string UserKind { get; set; }
 
 		[JsonProperty("admin")]
-		public bool IsAdmin { get; set; }
+		public bool? IsAdmin { get; set; }
 	}
 }

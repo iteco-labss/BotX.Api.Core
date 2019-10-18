@@ -76,7 +76,12 @@ namespace BotX.Api
 
 		internal async Task ExecuteSystemAsync(UserMessage request)
 		{
-			throw new NotImplementedException();
+			foreach (var actionType in unnamedActions)
+			{
+				IBotAction action = scope.ServiceProvider.GetService(actionType) as IBotAction;
+				if (action != null)
+					await action.OnChatCreated(request);
+			}
 		}
 
 		internal async Task ExecuteAsync(UserMessage request)
