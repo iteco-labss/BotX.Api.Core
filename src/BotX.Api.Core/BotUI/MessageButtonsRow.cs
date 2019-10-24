@@ -28,8 +28,9 @@ namespace BotX.Api.BotUI
 		/// <returns></returns>
 		public MessageButton AddButton(string title, BotEventHandler handler, params string[] args)
 		{
-			if (args.Any(x => x.Contains(' ')))
+			if (args != null && args.Any(x => x.Contains(' ')))
 				throw new ArgumentException($"The button's argument '{nameof(args)}' should not contains whitespace");
+
 			var btn = new MessageButton(
 				title: title,
 				@event: handler,
