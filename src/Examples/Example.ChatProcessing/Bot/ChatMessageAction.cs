@@ -24,7 +24,8 @@ namespace Example.ChatProcessing.Bot
 		[BotButtonEvent("testClick")]
 		private async Task testClick(UserMessage userMessage, string[] args)
 		{
-			await MessageSender.SendTextMessageAsync(userMessage, $"кнопка нажата {args[0]}");
+			var btn = args.Length > 0 ? args[0] : string.Empty;
+			await MessageSender.SendTextMessageAsync(userMessage, $"кнопка нажата {btn}");
 		}
 	}
 }
