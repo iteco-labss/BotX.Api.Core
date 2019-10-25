@@ -20,11 +20,11 @@ namespace BotX.Api
 	/// Клиент, реализующий отправку сообщений, используя BotX Api
 	/// </summary>
 	public class BotMessageSender
-    {
-        private const string API_SEND_MESSAGE_ASNWER = "api/v2/botx/command/callback";
+	{
+		private const string API_SEND_MESSAGE_ASNWER = "api/v2/botx/command/callback";
 		private const string API_SEND_MESSAGE_NOTIFICATION = "/api/v2/botx/notification/callback";
-        private const string API_SEND_FILE = "api/v1/botx/file/callback";
-        private readonly ILogger<BotMessageSender> logger;
+		private const string API_SEND_FILE = "api/v1/botx/file/callback";
+		private readonly ILogger<BotMessageSender> logger;
 		private readonly string server;
 
 		/// <summary>
@@ -33,27 +33,12 @@ namespace BotX.Api
 		/// <param name="logger"></param>
 		/// <param name="server"></param>
 		public BotMessageSender(ILogger<BotMessageSender> logger, string server)
-        {
-            this.logger = logger;
+		{
+			this.logger = logger;
 			this.server = server;
 		}
 
-		/// <summary>
-		/// Отправляет текстовое сообщение в ответ пользователю
-		/// </summary>
-		/// <param name="requestMessage">Сообщение от пользователя</param>
-		/// <param name="messageText">Текст ответа</param>
-		/// <returns></returns>
-		public async Task SendTextMessageAsync(UserMessage requestMessage, string messageText)
-		{
-			await SendTextMessageInternalAsync(
-				botId: requestMessage.BotId,
-				syncId: requestMessage.SyncId,
-				to: requestMessage.From.Huid,
-				messageText: messageText
-				);
-		}
-
+		#region Отправка текстового сообщения
 		/// <summary>
 		/// Отправляет текстовое сообщение (нотификацию) пользователю
 		/// </summary>
@@ -67,9 +52,17 @@ namespace BotX.Api
 				chatIds: chatIds,
 				recipients: recipients,
 				messageText: messageText,
-				buttons : new MessageButtonsGrid());
+				buttons: new MessageButtonsGrid());
 		}
 
+		/// <summary>
+		/// Отправляет текстовое сообщение (нотификацию) с кнопками пользователю
+		/// </summary>
+		/// <param name="chatIds">Идентификаторы чатов, куда будет отправлено сообщение</param>
+		/// <param name="recipients">Идентификаторы получателей (пользователей) сообщения</param>
+		/// <param name="messageText">Текст сообщения</param>
+		/// <param name="buttons">Кнопки с действиями в сообщении</param>
+		/// <returns></returns>
 		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons)
 		{
 			var notification = new NotificationMessage
@@ -90,37 +83,79 @@ namespace BotX.Api
 		}
 
 		/// <summary>
+		/// Отправляет текстовое сообщение (нотификацию) пользователю
+		/// </summary>
+		/// <param name="chatId">Идентификатор чата, куда будет отправлено сообщение</param>
+		/// <param name="recipient">Идентификатор получателя (пользователя) сообщения</param>
+		/// <param name="messageText">Текст сообщения</param>
+		/// <returns></returns>
+		public async Task SendTextMessageAsync(Guid chatId, Guid recipient, string messageText)
+		{
+			await SendTextMessageAsync(
+				chatId: chatId,
+				recipient: recipient,
+				messageText: messageText,
+				buttons: new MessageButtonsGrid());
+		}
+
+		/// <summary>
+		/// Отправляет текстовое сообщение (нотификацию) с кнопками пользователю
+		/// </summary>
+		/// <param name="chatId">Идентификатор чата, куда будет отправлено сообщение</param>
+		/// <param name="recipient">Идентификатор получателя (пользователя) сообщения</param>
+		/// <param name="messageText">Текст сообщения</param>
+		/// <param name="buttons">Кнопки с действиями в сообщении</param>
+		/// <returns></returns>
+		public async Task SendTextMessageAsync(Guid chatId, Guid recipient, string messageText, MessageButtonsGrid buttons)
+		{
+			var notification = new NotificationMessage
+			{
+				BotId = ExpressBotService.Configuration.BotId,
+				GroupChatIds = new Guid[] { chatId },
+				Recipients = new Guid[] { recipient },
+				Notification = new CommandResult
+				{
+					Status = "ok",
+					Body = messageText,
+					Bubble = buttons.GetBubbles() ?? new List<List<Bubble>>()
+				}
+			};
+
+
+			await SendTextMessageAsync(notification);
+		}
+
+		internal async Task SendTextMessageAsync(NotificationMessage message)
+		{
+			ValidateMessage(message);
+			logger.LogInformation("sending... " + JsonConvert.SerializeObject(message));
+			using (HttpClient client = new HttpClient())
+			{
+				var requestUri = new Uri(new Uri(server), API_SEND_MESSAGE_NOTIFICATION);
+				logger.LogInformation(requestUri.ToString());
+				var result = await client.PostAsJsonAsync(requestUri, message);
+				if (!result.IsSuccessStatusCode)
+					throw new HttpRequestException(await result.Content.ReadAsStringAsync());
+			}
+		}
+
+		#endregion
+
+		#region Отправка ответа на сообщение от пользователя
+		/// <summary>
 		/// Отправляет ответ в виде текстового сообщения
 		/// </summary>
 		/// <param name="syncId">Идентификатор чата</param>
 		/// <param name="to">Адресат сообщения</param>
 		/// <param name="messageText">Текст сообщения</param>
 		/// <returns></returns>
-		public async Task SendTextMessageAsync(Guid syncId, Guid to, string messageText)
+		public async Task ResponseTextMessageAsync(Guid syncId, Guid to, string messageText)
 		{
-			await SendTextMessageInternalAsync(
-				botId: ExpressBotService.Configuration.BotId, 
-				syncId: syncId, 
-				to: to, 
+			await ResponseTextMessageInternalAsync(
+				botId: ExpressBotService.Configuration.BotId,
+				syncId: syncId,
+				to: to,
 				messageText: messageText);
-		}
-
-		private async Task SendTextMessageInternalAsync(Guid botId, Guid syncId, Guid to, string messageText)
-		{
-			if (botId == Guid.Empty)
-				return;
-
-			await SendTextMessageAsync(new ResponseMessage
-			{
-				BotId = botId,
-				SyncId = syncId,
-				Recipient = to,
-				CommandResult = new CommandResult
-				{
-					Status = "ok",
-					Body = messageText
-				}
-			});
 		}
 
 		/// <summary>
@@ -131,9 +166,9 @@ namespace BotX.Api
 		/// <param name="messageText">Текст сообщения</param>
 		/// <param name="buttons">Кнопки с действиями в сообщении</param>
 		/// <returns></returns>
-		public async Task SendTextMessageAsync(Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
+		public async Task ResponseTextMessageAsync(Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
 		{
-			await SendTextMessageWithButtonsAsync(
+			await ResponseTextMessageWithButtonsAsync(
 				botId: ExpressBotService.Configuration.BotId,
 				syncId: syncId,
 				to: to,
@@ -141,8 +176,41 @@ namespace BotX.Api
 				buttons: buttons
 				);
 		}
+		
+		/// <summary>
+		/// Отправляет текстовое сообщение в ответ пользователю
+		/// </summary>
+		/// <param name="requestMessage">Сообщение от пользователя</param>
+		/// <param name="messageText">Текст ответа</param>
+		/// <returns></returns>
+		public async Task ResponseTextMessageAsync(UserMessage requestMessage, string messageText)
+		{
+			await ResponseTextMessageInternalAsync(
+				botId: requestMessage.BotId,
+				syncId: requestMessage.SyncId,
+				to: requestMessage.From.Huid,
+				messageText: messageText
+				);
+		}
 
-		private async Task SendTextMessageWithButtonsAsync(Guid botId, Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
+		/// <summary>
+		/// Отправка текстового сообщения с кнопками (действиями) в ответ пользователю
+		/// </summary>
+		/// <param name="requestMessage">Сообщение пользователя</param>
+		/// <param name="messageText">Текст сообщения</param>
+		/// <param name="buttons">Кнопки с действиями в сообщении</param>
+		/// <returns></returns>
+		public async Task ResponseTextMessageAsync(UserMessage requestMessage, string messageText, MessageButtonsGrid buttons)
+		{
+			await ResponseTextMessageWithButtonsAsync(
+					botId: requestMessage.BotId,
+				   syncId: requestMessage.SyncId,
+				   to: requestMessage.From.Huid,
+				   messageText: messageText,
+				   buttons: buttons
+				   );
+		}
+		private async Task ResponseTextMessageWithButtonsAsync(Guid botId, Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
 		{
 			if (botId == Guid.Empty)
 				return;
@@ -161,24 +229,30 @@ namespace BotX.Api
 			});
 		}
 
-		/// <summary>
-		/// Отправка текстового сообщения с кнопками (действиями) в ответ пользователю
-		/// </summary>
-		/// <param name="requestMessage">Сообщение пользователя</param>
-		/// <param name="messageText">Текст сообщения</param>
-		/// <param name="buttons">Кнопки с действиями в сообщении</param>
-		/// <returns></returns>
-		public async Task SendTextMessageAsync(UserMessage requestMessage, string messageText, MessageButtonsGrid buttons)
+		// TODO Понять насколько нужен этот метод, возможно стоит вызывать просто 
+		// private async Task ResponseTextMessageWithButtonsAsync(Guid botId, Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
+		private async Task ResponseTextMessageInternalAsync(Guid botId, Guid syncId, Guid to, string messageText)
 		{
-			await SendTextMessageWithButtonsAsync(
-					botId: requestMessage.BotId,
-				   syncId: requestMessage.SyncId,
-				   to: requestMessage.From.Huid,
-				   messageText: messageText,
-				   buttons: buttons
-				   );
+			if (botId == Guid.Empty)
+				return;
+
+			await SendTextMessageAsync(new ResponseMessage
+			{
+				BotId = botId,
+				SyncId = syncId,
+				Recipient = to,
+				CommandResult = new CommandResult
+				{
+					Status = "ok",
+					Body = messageText
+				}
+			});
 		}
 
+
+		#endregion
+
+		#region Отправка файла
 		/// <summary>
 		/// Отправка файла в чат
 		/// </summary>
@@ -196,7 +270,6 @@ namespace BotX.Api
 				);
 		}
 
-
 		/// <summary>
 		/// Отправляет файл в ответ на пользовательское сообщение
 		/// </summary>
@@ -212,28 +285,33 @@ namespace BotX.Api
 				data: data
 				);
 		}
+		internal async Task SendFileMessageAsync(Guid syncId, Guid botId, string fileName, byte[] data)
+		{
+			if (botId == Guid.Empty)
+				throw new InvalidOperationException("Для отправки файлов требуется задать идентификатор бота в AddExpressBot");
+
+			using (HttpClient client = new HttpClient())
+			{
+				var requestUri = new Uri(new Uri(server), API_SEND_FILE);
+				var content = new MultipartFormDataContent();
+				content.Add(new StringContent(syncId.ToString()), "sync_id");
+				content.Add(new StringContent(botId.ToString()), "bot_id");
+				content.Add(new StreamContent(new MemoryStream(data)), "file", fileName);
+
+				var result = await client.PostAsync(requestUri, content);
+				if (!result.IsSuccessStatusCode)
+					throw new HttpRequestException(await result.Content.ReadAsStringAsync());
+			}
+		}
+		#endregion
 
 		internal async Task SendTextMessageAsync(ResponseMessage message)
-        {
-			ValidateMessage(message);
-            logger.LogInformation("sending... " + JsonConvert.SerializeObject (message));
-            using (HttpClient client = new HttpClient())
-            {
-                var requestUri = new Uri(new Uri(server), API_SEND_MESSAGE_ASNWER);
-                logger.LogInformation(requestUri.ToString());
-                var result = await client.PostAsJsonAsync(requestUri, message);
-                if (!result.IsSuccessStatusCode)
-                    throw new HttpRequestException(await result.Content.ReadAsStringAsync());
-            }
-        }
-
-		internal async Task SendTextMessageAsync(NotificationMessage message)
 		{
 			ValidateMessage(message);
 			logger.LogInformation("sending... " + JsonConvert.SerializeObject(message));
 			using (HttpClient client = new HttpClient())
 			{
-				var requestUri = new Uri(new Uri(server), API_SEND_MESSAGE_NOTIFICATION);
+				var requestUri = new Uri(new Uri(server), API_SEND_MESSAGE_ASNWER);
 				logger.LogInformation(requestUri.ToString());
 				var result = await client.PostAsJsonAsync(requestUri, message);
 				if (!result.IsSuccessStatusCode)
@@ -241,24 +319,8 @@ namespace BotX.Api
 			}
 		}
 
-        internal async Task SendFileMessageAsync(Guid syncId, Guid botId, string fileName, byte[] data)
-        {
-			if (botId == Guid.Empty)
-				throw new InvalidOperationException("Для отправки файлов требуется задать идентификатор бота в AddExpressBot");
 
-            using (HttpClient client = new HttpClient())
-            {
-                var requestUri = new Uri(new Uri(server), API_SEND_FILE);
-                var content = new MultipartFormDataContent();
-                content.Add(new StringContent(syncId.ToString()), "sync_id");
-                content.Add(new StringContent(botId.ToString()), "bot_id");
-				content.Add(new StreamContent(new MemoryStream(data)), "file", fileName);
 
-				var result = await client.PostAsync(requestUri, content);
-				if (!result.IsSuccessStatusCode)
-					throw new HttpRequestException(await result.Content.ReadAsStringAsync());
-            }
-        }
 
 		private void ValidateMessage(ResponseMessage message)
 		{

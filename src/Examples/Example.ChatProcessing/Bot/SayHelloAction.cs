@@ -14,7 +14,7 @@ namespace Example.ChatProcessing.Bot
 	{
 		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
 		{
-			await MessageSender.SendTextMessageAsync(userMessage, "Hello. How are you?");
+			await MessageSender.ResponseTextMessageAsync(userMessage, "Hello. How are you?");
 		}
 	}
 }

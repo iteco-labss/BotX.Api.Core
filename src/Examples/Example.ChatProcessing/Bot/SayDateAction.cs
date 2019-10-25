@@ -13,7 +13,7 @@ namespace Example.ChatProcessing.Bot
 	{
 		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
 		{
-			await MessageSender.SendTextMessageAsync(userMessage, DateTime.Now.ToShortDateString());
+			await MessageSender.ResponseTextMessageAsync(userMessage, DateTime.Now.ToShortDateString());
 		}
 	}
 }
