@@ -37,7 +37,7 @@ namespace BotX.Api.Middleware
 				  }
 				  catch (Exception ex)
 				  {
-					  await sender.SendTextMessageAsync(message, ex.ToString());
+					  await sender.ResponseTextMessageAsync(message, ex.ToString());
 					  throw;
 				  }
 			  });
