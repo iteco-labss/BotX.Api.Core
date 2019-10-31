@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 namespace BotX.Api.JsonModel.Request
 {
 #pragma warning disable CS1591
-	public class UserMessage
-	{
+	public class UserMessage : IMessage
+    {
 		[JsonProperty("sync_id")]
 		public Guid SyncId { get; set; }
 

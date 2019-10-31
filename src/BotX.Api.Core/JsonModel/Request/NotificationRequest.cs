@@ -7,7 +7,7 @@ using System.Text;
 namespace BotX.Api.JsonModel.Request
 {
 #pragma warning disable CS1591
-	public class NotificationMessage
+	public class NotificationMessage : IMessage
 	{
 		[JsonProperty("bot_id")]
 		public Guid BotId { get; set; }

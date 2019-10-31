@@ -18,14 +18,14 @@ namespace Example.ChatProcessing.Bot
 			var row = buttons.AddRow();
 			row.AddButton("click me!", testClick, "first");
 			row.AddButton("push me!", testClick, "second");
-			await MessageSender.ResponseTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
+			await MessageSender.ReplyTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
 		}
 
 		[BotButtonEvent("testClick")]
 		private async Task testClick(UserMessage userMessage, string[] args)
 		{
 			var btn = args.Length > 0 ? args[0] : string.Empty;
-			await MessageSender.ResponseTextMessageAsync(userMessage, $"кнопка нажата {btn}");
+			await MessageSender.ReplyTextMessageAsync(userMessage, $"кнопка нажата {btn}");
 		}
 	}
 }

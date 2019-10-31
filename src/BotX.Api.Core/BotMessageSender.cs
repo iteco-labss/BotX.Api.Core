@@ -13,6 +13,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using BotX.Api.JsonModel;
 
 namespace BotX.Api
 {
@@ -79,21 +80,21 @@ namespace BotX.Api
 			};
 
 
-			await SendTextMessageAsync(notification);
+			await PostNotificationAsync(notification);
 		}
 
 		/// <summary>
 		/// Отправляет текстовое сообщение (нотификацию) пользователю
 		/// </summary>
 		/// <param name="chatId">Идентификатор чата, куда будет отправлено сообщение</param>
-		/// <param name="recipient">Идентификатор получателя (пользователя) сообщения</param>
+		/// <param name="huid">Идентификатор получателя (пользователя) сообщения</param>
 		/// <param name="messageText">Текст сообщения</param>
 		/// <returns></returns>
-		public async Task SendTextMessageAsync(Guid chatId, Guid recipient, string messageText)
+		public async Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText)
 		{
 			await SendTextMessageAsync(
 				chatId: chatId,
-				recipient: recipient,
+				huid: huid,
 				messageText: messageText,
 				buttons: new MessageButtonsGrid());
 		}
@@ -102,17 +103,17 @@ namespace BotX.Api
 		/// Отправляет текстовое сообщение (нотификацию) с кнопками пользователю
 		/// </summary>
 		/// <param name="chatId">Идентификатор чата, куда будет отправлено сообщение</param>
-		/// <param name="recipient">Идентификатор получателя (пользователя) сообщения</param>
+		/// <param name="huid">Идентификатор получателя (пользователя) сообщения</param>
 		/// <param name="messageText">Текст сообщения</param>
 		/// <param name="buttons">Кнопки с действиями в сообщении</param>
 		/// <returns></returns>
-		public async Task SendTextMessageAsync(Guid chatId, Guid recipient, string messageText, MessageButtonsGrid buttons)
+		public async Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, MessageButtonsGrid buttons)
 		{
 			var notification = new NotificationMessage
 			{
 				BotId = ExpressBotService.Configuration.BotId,
 				GroupChatIds = new Guid[] { chatId },
-				Recipients = new Guid[] { recipient },
+				Recipients = new Guid[] { huid },
 				Notification = new CommandResult
 				{
 					Status = "ok",
@@ -122,10 +123,10 @@ namespace BotX.Api
 			};
 
 
-			await SendTextMessageAsync(notification);
+			await PostNotificationAsync(notification);
 		}
 
-		internal async Task SendTextMessageAsync(NotificationMessage message)
+		internal async Task PostNotificationAsync(NotificationMessage message)
 		{
 			ValidateMessage(message);
 			logger.LogInformation("sending... " + JsonConvert.SerializeObject(message));
@@ -149,9 +150,9 @@ namespace BotX.Api
 		/// <param name="to">Адресат сообщения</param>
 		/// <param name="messageText">Текст сообщения</param>
 		/// <returns></returns>
-		public async Task ResponseTextMessageAsync(Guid syncId, Guid to, string messageText)
+		public async Task ReplyTextMessageAsync(Guid syncId, Guid to, string messageText)
 		{
-			await ResponseTextMessageInternalAsync(
+			await ReplyTextMessageInternalAsync(
 				botId: ExpressBotService.Configuration.BotId,
 				syncId: syncId,
 				to: to,
@@ -166,9 +167,9 @@ namespace BotX.Api
 		/// <param name="messageText">Текст сообщения</param>
 		/// <param name="buttons">Кнопки с действиями в сообщении</param>
 		/// <returns></returns>
-		public async Task ResponseTextMessageAsync(Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
+		public async Task ReplyTextMessageAsync(Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
 		{
-			await ResponseTextMessageWithButtonsAsync(
+			await ReplyTextMessageAsync(
 				botId: ExpressBotService.Configuration.BotId,
 				syncId: syncId,
 				to: to,
@@ -183,9 +184,9 @@ namespace BotX.Api
 		/// <param name="requestMessage">Сообщение от пользователя</param>
 		/// <param name="messageText">Текст ответа</param>
 		/// <returns></returns>
-		public async Task ResponseTextMessageAsync(UserMessage requestMessage, string messageText)
+		public async Task ReplyTextMessageAsync(UserMessage requestMessage, string messageText)
 		{
-			await ResponseTextMessageInternalAsync(
+			await ReplyTextMessageInternalAsync(
 				botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
 				to: requestMessage.From.Huid,
@@ -200,9 +201,9 @@ namespace BotX.Api
 		/// <param name="messageText">Текст сообщения</param>
 		/// <param name="buttons">Кнопки с действиями в сообщении</param>
 		/// <returns></returns>
-		public async Task ResponseTextMessageAsync(UserMessage requestMessage, string messageText, MessageButtonsGrid buttons)
+		public async Task ReplyTextMessageAsync(UserMessage requestMessage, string messageText, MessageButtonsGrid buttons)
 		{
-			await ResponseTextMessageWithButtonsAsync(
+			await ReplyTextMessageAsync(
 					botId: requestMessage.BotId,
 				   syncId: requestMessage.SyncId,
 				   to: requestMessage.From.Huid,
@@ -210,12 +211,12 @@ namespace BotX.Api
 				   buttons: buttons
 				   );
 		}
-		private async Task ResponseTextMessageWithButtonsAsync(Guid botId, Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
+		private async Task ReplyTextMessageAsync(Guid botId, Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
 		{
 			if (botId == Guid.Empty)
 				return;
 
-			await SendTextMessageAsync(new ResponseMessage
+			await PostReplyAsync(new ResponseMessage
 			{
 				BotId = botId,
 				SyncId = syncId,
@@ -229,14 +230,12 @@ namespace BotX.Api
 			});
 		}
 
-		// TODO Понять насколько нужен этот метод, возможно стоит вызывать просто 
-		// private async Task ResponseTextMessageWithButtonsAsync(Guid botId, Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
-		private async Task ResponseTextMessageInternalAsync(Guid botId, Guid syncId, Guid to, string messageText)
+		private async Task ReplyTextMessageInternalAsync(Guid botId, Guid syncId, Guid to, string messageText)
 		{
 			if (botId == Guid.Empty)
 				return;
 
-			await SendTextMessageAsync(new ResponseMessage
+			await PostReplyAsync(new ResponseMessage
 			{
 				BotId = botId,
 				SyncId = syncId,
@@ -262,7 +261,7 @@ namespace BotX.Api
 		/// <returns></returns>
 		public async Task SendFileAsync(Guid syncId, string fileName, byte[] data)
 		{
-			await SendFileMessageAsync(
+			await PostFileAsync(
 				syncId: syncId,
 				botId: ExpressBotService.Configuration.BotId,
 				fileName: fileName,
@@ -285,7 +284,7 @@ namespace BotX.Api
 				data: data
 				);
 		}
-		internal async Task SendFileMessageAsync(Guid syncId, Guid botId, string fileName, byte[] data)
+		internal async Task PostFileAsync(Guid syncId, Guid botId, string fileName, byte[] data)
 		{
 			if (botId == Guid.Empty)
 				throw new InvalidOperationException("Для отправки файлов требуется задать идентификатор бота в AddExpressBot");
@@ -305,7 +304,7 @@ namespace BotX.Api
 		}
 		#endregion
 
-		internal async Task SendTextMessageAsync(ResponseMessage message)
+		internal async Task PostReplyAsync(ResponseMessage message)
 		{
 			ValidateMessage(message);
 			logger.LogInformation("sending... " + JsonConvert.SerializeObject(message));
@@ -319,19 +318,13 @@ namespace BotX.Api
 			}
 		}
 
-
-
-
-		private void ValidateMessage(ResponseMessage message)
+		private void ValidateMessage(IMessage message)
 		{
 			if (message.BotId == Guid.Empty)
-				throw new InvalidOperationException("Для отправки сообщений пользователю, необходимо задать идентификатор бота (метод AddExpressBot). Без идентификатора возможно только получение и ответ на полученные сообщения");
-		}
-
-		private void ValidateMessage(NotificationMessage message)
-		{
-			if (message.BotId == Guid.Empty)
-				throw new InvalidOperationException("Для отправки сообщений пользователю, необходимо задать идентификатор бота (метод AddExpressBot). Без идентификатора возможно только получение и ответ на полученные сообщения");
+				throw new InvalidOperationException(
+                    $"Для отправки сообщений пользователю, необходимо задать идентификатор бота " +
+                    $"(метод {nameof(ServiceCollectionExtension.AddExpressBot)}). " +
+                    $"Без идентификатора возможно только получение и ответ на полученные сообщения");
 		}
 	}
 }

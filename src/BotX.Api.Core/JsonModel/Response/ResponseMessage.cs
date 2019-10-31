@@ -6,8 +6,8 @@ using System.Text;
 namespace BotX.Api.JsonModel.Response
 {
 #pragma warning disable CS1591
-	public class ResponseMessage
-	{
+	public class ResponseMessage : IMessage
+    {
 		[JsonProperty(PropertyName = "sync_id")]
 		public Guid SyncId { get; set; }
 
