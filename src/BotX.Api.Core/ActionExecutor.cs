@@ -49,7 +49,8 @@ namespace BotX.Api
 		internal static void AddUnnamedAction(Type botActionClass)
 		{
 			unnamedActions.Add(botActionClass);
-			actions.Add(botActionClass.Name.ToLower(), botActionClass);
+            if (!actions.ContainsKey(botActionClass.Name.ToLower()))
+                actions.Add(botActionClass.Name.ToLower(), botActionClass);
 			ProcessEvents(botActionClass.Name.ToLower(), botActionClass);
 		}
 
