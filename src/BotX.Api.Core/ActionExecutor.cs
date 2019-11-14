@@ -17,7 +17,7 @@ namespace BotX.Api
 	/// <summary>
 	/// Класс, производящий маршрутизацию команд бота между контроллерами
 	/// </summary>
-	public class ActionExecutor : IDisposable
+	public sealed class ActionExecutor : IDisposable
 	{
 		private static Dictionary<string, Type> actions = new Dictionary<string, Type>();
 		private static HashSet<Type> unnamedActions = new HashSet<Type>();
@@ -55,8 +55,11 @@ namespace BotX.Api
 
 		internal static void AddEventReceiver(Type botEventReceiverClass)
 		{
-			actions.Add(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
-			ProcessEvents(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
+            if (!actions.ContainsKey(botEventReceiverClass.Name.ToLower()))
+            {
+                actions.Add(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
+                ProcessEvents(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
+            }
 		}
 
 		internal static string MakeEventKey(string actionName, string eventName)
