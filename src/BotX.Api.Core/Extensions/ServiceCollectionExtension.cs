@@ -1,4 +1,5 @@
 ﻿using BotX.Api.Attributes;
+using BotX.Api.StateMachine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -44,7 +45,19 @@ namespace BotX.Api.Extensions
 			return AddExpressBot(externalServices, ctsServiceUrl, Guid.Empty, inChatExceptions);
 		}
 
-		private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)
+        public static void AddStateMachine<T>(this IServiceCollection externalServices) where T : BaseStateMachine
+        {
+            if (ExpressBotService.Configuration == null)
+                throw new Exception($"Перед использованием {nameof(AddStateMachine)} необходимо сначала вызвать {nameof(AddExpressBot)}");
+
+            if (!ExpressBotService.Configuration.StateMachines.Any(x => x == typeof(T)))
+            {
+                externalServices.AddTransient<T>();
+                ExpressBotService.Configuration.StateMachines.Add(typeof(T));
+            }
+        }
+
+        private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)
 		{
 			services.AddSingleton<ActionExecutor>();
 			var typesWithAttribute = applicationAssembly.GetExportedTypes()
@@ -71,7 +84,6 @@ namespace BotX.Api.Extensions
 
 				ActionExecutor.AddEventReceiver(type);
 			}
-
 		}
 	}
 }

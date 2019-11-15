@@ -15,12 +15,12 @@ namespace Example.ChatProcessing.Bot.StateMachine
             if (!int.TryParse(userMessage.Command.Body, out int age))
             {
                 await Stage.MessageSender.ReplyTextMessageAsync(userMessage, "Please enter the number");
-                await Stage.TransitionToAsync(new EnterAgeState(), userMessage);
+                await Stage.TransitionToAsync(new EnterAgeState());
             }
             else
             {
                 model.Age = age;
-                await Stage.TransitionToAsync(new ResultState(), userMessage);
+                await Stage.TransitionToAsync(new ResultState());
             }
         }
 

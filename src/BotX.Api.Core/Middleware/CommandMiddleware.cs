@@ -33,6 +33,7 @@ namespace BotX.Api.Middleware
 			  {
 				  try
 				  {
+                      //TODO: добавить вызов активных StateMachines
 					  await actionExecutor.ExecuteAsync(message);
 				  }
 				  catch (Exception ex)

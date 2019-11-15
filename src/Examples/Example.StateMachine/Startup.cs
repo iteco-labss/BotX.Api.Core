@@ -24,6 +24,9 @@ namespace Example.StateMachine
         public void ConfigureServices(IServiceCollection services)
         {
             var cts = Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
+            if (string.IsNullOrEmpty(cts))
+                throw new Exception("cts server address is not found");
+
             services.AddExpressBot(cts, true)
                 .AddBaseCommand("start", "State machine");
         }

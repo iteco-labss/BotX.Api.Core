@@ -13,7 +13,7 @@ namespace Example.ChatProcessing.Bot.StateMachine
         {
             model.Name = userMessage.Command.Body;
             await Stage.MessageSender.ReplyTextMessageAsync(userMessage, $"Nice to meet you, {model.Name}!");
-            await Stage.TransitionToAsync(new EnterAgeState(), userMessage);
+            await Stage.TransitionToAsync(new EnterAgeState());
         }
 
         public override async Task WelcomeAsync(UserMessage userMessage, dynamic model)

@@ -1,5 +1,6 @@
 ﻿using BotX.Api;
 using BotX.Api.StateMachine;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,12 @@ namespace Example.ChatProcessing.Bot.StateMachine
             if (userStates.ContainsKey(huid))
                 return FromJson(userStates[huid], messageSender) as DemoStateMachine;
             return null;
+        }
+
+        public override async Task OnFinished(dynamic model)
+        {
+            await MessageSender.ReplyTextMessageAsync(UserMessage, $"State machine model is {JsonConvert.SerializeObject(model)}");
+            await MessageSender.ReplyTextMessageAsync(UserMessage, "finished!");
         }
     }
 }

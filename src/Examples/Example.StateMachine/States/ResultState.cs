@@ -18,7 +18,7 @@ namespace Example.ChatProcessing.Bot.StateMachine
         public override async Task WelcomeAsync(UserMessage userMessage, dynamic model)
         {
             await Stage.MessageSender.ReplyTextMessageAsync(userMessage, $"Thanks!");
-            Stage.Finish(userMessage);
+            Stage.Finish();
         }
     }
 }

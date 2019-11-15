@@ -10,7 +10,7 @@ namespace BotX.Api.StateMachine
     /// <summary>
     /// Реализует конечный автомат для ведения диалога с пользователем
     /// </summary>
-    public class BaseStateMachine
+    public abstract class BaseStateMachine
     {
         private BaseState state;
 
@@ -40,11 +40,6 @@ namespace BotX.Api.StateMachine
         internal dynamic model = new object();
 
         /// <summary>
-        /// Срабатывает при переходе в завершающее состояние конечного автомата
-        /// </summary>
-        public event EventHandler<FinishedEventArgs> OnFinished;
-
-        /// <summary>
         /// Загружает конечный автомат из ранее сериализованного в json состояния
         /// </summary>
         /// <param name="value">JSON-строка</param>
@@ -57,8 +52,17 @@ namespace BotX.Api.StateMachine
             return restoredStage;
         }
 
+        /// <summary>
+        /// Отправщик сообщений в чат
+        /// </summary>
         [JsonIgnore]
         public BotMessageSender MessageSender { get; set; }
+
+        /// <summary>
+        /// Входящее сообщение от пользователя
+        /// </summary>
+        [JsonIgnore]
+        public UserMessage UserMessage { get; set; }
 
         [JsonConstructor]
         private BaseStateMachine()
@@ -78,39 +82,39 @@ namespace BotX.Api.StateMachine
         }
 
         /// <summary>
+        /// Реализует логику обработки события завершения конечного автомата
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public abstract Task OnFinished(dynamic model);
+
+        /// <summary>
         /// Переводит конечный автомат в новое состояние
         /// </summary>
         /// <param name="newState"></param>
-        /// <param name="userMessage"></param>
         /// <returns></returns>
-        public async Task TransitionToAsync(BaseState newState, UserMessage userMessage)
+        public async Task TransitionToAsync(BaseState newState)
         {
             State = newState;
-            await State.StartAsync(userMessage, model);
+            await State.StartAsync(UserMessage, model);
         }
 
         /// <summary>
         /// Возвращает конечный автомат в исходное состояние
         /// </summary>
-        /// <param name="userMessage"></param>
         /// <returns></returns>
-        public async Task ResetAsync(UserMessage userMessage)
+        public async Task ResetAsync()
         {
-            await TransitionToAsync(firstStep, userMessage);
+            await TransitionToAsync(firstStep);
         }
 
         /// <summary>
         /// Завершает конечный автомат
         /// </summary>
-        public void Finish(UserMessage userMessage)
+        public void Finish()
         {
             isFinished = true;
-            OnFinished?.Invoke(this,
-                new FinishedEventArgs 
-                { 
-                    Model = model,
-                    Message = userMessage
-                });
+            OnFinished(model);
         }
 
         /// <summary>
@@ -120,6 +124,7 @@ namespace BotX.Api.StateMachine
         /// <returns></returns>
         public async Task EnterAsync(UserMessage userMessage)
         {
+            UserMessage = userMessage;
             if (!isFinished)
                 await State.StartAsync(userMessage, model);
         }

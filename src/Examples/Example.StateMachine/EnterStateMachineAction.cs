@@ -18,20 +18,13 @@ namespace Example.ChatProcessing.Bot.StateMachine
             var machine = DemoStateMachine.Get(userMessage.From.Huid, MessageSender);
             if (machine != null)
             {
-                machine.OnFinished += Machine_OnFinished;
                 await machine.EnterAsync(userMessage);
                 machine.Save(userMessage.From.Huid);
             }
             else
             {
-                await MessageSender.ReplyTextMessageAsync(userMessage, "Use /start comand for start");
+                await MessageSender.ReplyTextMessageAsync(userMessage, "Use /start command for start");
             }
-        }
-
-        private async void Machine_OnFinished(object sender, FinishedEventArgs e)
-        {
-            await MessageSender.ReplyTextMessageAsync(e.Message, $"State machine model is {JsonConvert.SerializeObject(e.Model)}");
-            await MessageSender.ReplyTextMessageAsync(e.Message, "finished!");
         }
     }
 }
