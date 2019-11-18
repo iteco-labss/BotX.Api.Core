@@ -1,4 +1,5 @@
 ﻿using BotX.Api.JsonModel.Request;
+using BotX.Api.StateMachine;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -33,8 +34,27 @@ namespace BotX.Api.Middleware
 			  {
 				  try
 				  {
-                      //TODO: добавить вызов активных StateMachines
-					  await actionExecutor.ExecuteAsync(message);
+					  bool stateMachineRunned = false;
+
+					  foreach (var smType in ExpressBotService.Configuration.StateMachines)
+					  {
+						  var machine = ExpressBotService.Configuration.ServiceProvider.GetService(smType) as BaseStateMachine;
+						  machine.UserMessage = message;
+
+						  if (machine != null)
+						  {
+							  var restored = machine.RestoreState();
+							  if (restored != null)
+							  {
+								  stateMachineRunned = true;
+								  await restored.EnterAsync(message);
+								  break;
+							  }
+						  }
+					  }
+
+					  if (!stateMachineRunned)
+						  await actionExecutor.ExecuteAsync(message);
 				  }
 				  catch (Exception ex)
 				  {

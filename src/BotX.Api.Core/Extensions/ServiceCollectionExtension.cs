@@ -30,7 +30,7 @@ namespace BotX.Api.Extensions
 			externalServices.AddSingleton<ActionExecutor>();
 			ConfigureBotActions(Assembly.GetEntryAssembly(), externalServices);
 
-			return new ExpressBotService(botId, inChatExceptions, externalServices.BuildServiceProvider());
+			return new ExpressBotService(botId, inChatExceptions, externalServices);
 		}
 
 		/// <summary>
@@ -55,6 +55,10 @@ namespace BotX.Api.Extensions
                 externalServices.AddTransient<T>();
                 ExpressBotService.Configuration.StateMachines.Add(typeof(T));
             }
+
+			var allStateTypes = Assembly.GetEntryAssembly().DefinedTypes
+				.Where(x => x.ImplementedInterfaces.Contains(typeof(BaseState)));
+			allStateTypes.Select(x => externalServices.AddTransient(x));
         }
 
         private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)

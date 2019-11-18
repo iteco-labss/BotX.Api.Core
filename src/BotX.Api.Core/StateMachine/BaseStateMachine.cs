@@ -62,10 +62,10 @@ namespace BotX.Api.StateMachine
         /// Входящее сообщение от пользователя
         /// </summary>
         [JsonIgnore]
-        public UserMessage UserMessage { get; set; }
+        public UserMessage UserMessage { get; internal set; }
 
         [JsonConstructor]
-        private BaseStateMachine()
+        internal BaseStateMachine()
         {
         }
 
@@ -125,8 +125,11 @@ namespace BotX.Api.StateMachine
         public async Task EnterAsync(UserMessage userMessage)
         {
             UserMessage = userMessage;
-            if (!isFinished)
-                await State.StartAsync(userMessage, model);
+			if (!isFinished)
+			{
+				await State.StartAsync(userMessage, model);
+				this.SaveState();
+			}
         }
 
         /// <summary>
@@ -143,5 +146,19 @@ namespace BotX.Api.StateMachine
             TypeNameHandling = TypeNameHandling.All,
             MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
         };
+
+		/// <summary>
+		/// Вызывается при инициализации конечного автомата и ожидает восстановление состояния из ранее сохранённого
+		/// <code>В данном методе необходимо восстановить состояние конечного автомата используя метод
+		/// <see cref="BaseStateMachine.FromJson(string, BotMessageSender)"/></code>
+		/// </summary>
+		/// <returns></returns>
+		public abstract BaseStateMachine RestoreState();
+
+		/// <summary>
+		/// Вызывется при завершении обработки текущего состояния конечного автомта и ожидает сохранение его состояния
+		/// <code>В данном методе необходимо сохранить состояние конечнго автомата, используя <see cref="BaseStateMachine.SaveState(BaseStateMachine)"/></code>
+		/// </summary>
+		public abstract void SaveState();
     }
 }

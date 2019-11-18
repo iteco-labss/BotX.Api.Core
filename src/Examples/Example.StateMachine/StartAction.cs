@@ -16,9 +16,8 @@ namespace Example.StateMachine
         public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
         {
             await MessageSender.ReplyTextMessageAsync(userMessage, "Hello!");
-            var machine = new DemoStateMachine(new EnterNameState(), MessageSender);
-            await machine.EnterAsync(userMessage);
-            machine.Save(userMessage.From.Huid);
+            var machine = new DemoStateMachine(MessageSender);
+			await machine.EnterAsync(userMessage);
         }
     }
 }

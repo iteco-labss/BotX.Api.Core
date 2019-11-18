@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BotX.Api.Extensions;
+using Example.ChatProcessing.Bot.StateMachine;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -24,11 +25,12 @@ namespace Example.StateMachine
         public void ConfigureServices(IServiceCollection services)
         {
             var cts = Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
-            if (string.IsNullOrEmpty(cts))
-                throw new Exception("cts server address is not found");
+            //if (string.IsNullOrEmpty(cts))
+            //    throw new Exception("cts server address is not found");
 
             services.AddExpressBot(cts, true)
                 .AddBaseCommand("start", "State machine");
+			services.AddStateMachine<DemoStateMachine>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

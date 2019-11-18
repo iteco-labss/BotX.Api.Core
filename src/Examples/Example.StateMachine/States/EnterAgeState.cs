@@ -10,7 +10,7 @@ namespace Example.ChatProcessing.Bot.StateMachine
 {
     public class EnterAgeState : BaseState
     {
-        public override async Task ExecuteAsync(UserMessage userMessage, dynamic model)
+		public override async Task ExecuteAsync(UserMessage userMessage, dynamic model)
         {
             if (!int.TryParse(userMessage.Command.Body, out int age))
             {

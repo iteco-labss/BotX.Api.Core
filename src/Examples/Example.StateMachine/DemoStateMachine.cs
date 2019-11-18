@@ -8,35 +8,31 @@ using System.Threading.Tasks;
 
 namespace Example.ChatProcessing.Bot.StateMachine
 {
-    public class DemoStateMachine : BaseStateMachine
+	public class DemoStateMachine : BaseStateMachine
     {
         private static Dictionary<Guid, string> userStates = new Dictionary<Guid, string>();
 
-        public DemoStateMachine(BaseState initialState, BotMessageSender messageSender) : base(initialState, messageSender)
-        {
-        }
-
-        internal static bool IsMachineStarted(Guid huid)
-        {
-            return userStates.ContainsKey(huid);
-        }
-
-        internal void Save(Guid huid)
-        {
-            userStates[huid] = ToJson();
-        }
-
-        internal static DemoStateMachine Get(Guid huid, BotMessageSender messageSender)
-        {
-            if (userStates.ContainsKey(huid))
-                return FromJson(userStates[huid], messageSender) as DemoStateMachine;
-            return null;
-        }
+		public DemoStateMachine(BotMessageSender messageSender) : base(new EnterNameState(), messageSender)
+		{
+		}
 
         public override async Task OnFinished(dynamic model)
         {
             await MessageSender.ReplyTextMessageAsync(UserMessage, $"State machine model is {JsonConvert.SerializeObject(model)}");
-            await MessageSender.ReplyTextMessageAsync(UserMessage, "finished!");
+			await MessageSender.ReplyTextMessageAsync(UserMessage, "finished!");
+			userStates.Remove(UserMessage.From.Huid);
         }
-    }
+
+		public override BaseStateMachine RestoreState()
+		{
+			if (userStates.ContainsKey(UserMessage.From.Huid))
+				return FromJson(userStates[UserMessage.From.Huid], MessageSender);
+			return null;
+		}
+
+		public override void SaveState()
+		{
+			userStates[UserMessage.From.Huid] = this.ToJson();
+		}
+	}
 }
