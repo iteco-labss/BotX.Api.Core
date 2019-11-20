@@ -24,6 +24,7 @@ namespace BotX.Api.Extensions
 		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices, 
 			string ctsServiceUrl, Guid botId, bool inChatExceptions = false)
 		{
+			
 			externalServices.AddRouting();
 			externalServices.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
 			externalServices.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
@@ -56,10 +57,12 @@ namespace BotX.Api.Extensions
                 ExpressBotService.Configuration.StateMachines.Add(typeof(T));
             }
 
-			var allStateTypes = Assembly.GetEntryAssembly().DefinedTypes
-				.Where(x => x.ImplementedInterfaces.Contains(typeof(BaseState)));
-			allStateTypes.Select(x => externalServices.AddTransient(x));
-        }
+			var allStateTypes = Assembly.GetEntryAssembly().ExportedTypes
+				.Where(x => x.IsSubclassOf(typeof(BaseQuestionState)));
+
+			foreach (var t in allStateTypes)
+				externalServices.AddTransient(t);
+		}
 
         private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)
 		{

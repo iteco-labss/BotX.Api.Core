@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace Example.ChatProcessing.Bot.StateMachine
 {
-    public class EnterNameState : BaseState
+    public class EnterNameState : BaseQuestionState
     {
         public override async Task ExecuteAsync(UserMessage userMessage, dynamic model)
         {
             model.Name = userMessage.Command.Body;
-            await Stage.MessageSender.ReplyTextMessageAsync(userMessage, $"Nice to meet you, {model.Name}!");
-            await Stage.TransitionToAsync(new EnterAgeState());
+            await StateMachine.MessageSender.ReplyTextMessageAsync(userMessage, $"Nice to meet you, {model.Name}!");
+            await StateMachine.TransitionToAsync<EnterAgeState>();
         }
 
         public override async Task WelcomeAsync(UserMessage userMessage, dynamic model)
         {
-            await Stage.MessageSender.ReplyTextMessageAsync(userMessage, "What is your name?");           
+            await StateMachine.MessageSender.ReplyTextMessageAsync(userMessage, "What is your name?");           
         }
     }
 }

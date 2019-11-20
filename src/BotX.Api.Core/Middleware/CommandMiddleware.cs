@@ -34,7 +34,7 @@ namespace BotX.Api.Middleware
 			  {
 				  try
 				  {
-					  bool stateMachineRunned = false;
+					  bool stateMachineLaunched = false;
 
 					  foreach (var smType in ExpressBotService.Configuration.StateMachines)
 					  {
@@ -46,14 +46,14 @@ namespace BotX.Api.Middleware
 							  var restored = machine.RestoreState();
 							  if (restored != null)
 							  {
-								  stateMachineRunned = true;
+								  stateMachineLaunched = true;
 								  await restored.EnterAsync(message);
 								  break;
 							  }
 						  }
 					  }
 
-					  if (!stateMachineRunned)
+					  if (!stateMachineLaunched)
 						  await actionExecutor.ExecuteAsync(message);
 				  }
 				  catch (Exception ex)

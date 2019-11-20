@@ -8,25 +8,25 @@ using System.Threading.Tasks;
 
 namespace Example.ChatProcessing.Bot.StateMachine
 {
-    public class EnterAgeState : BaseState
+    public class EnterAgeState : BaseQuestionState
     {
 		public override async Task ExecuteAsync(UserMessage userMessage, dynamic model)
         {
             if (!int.TryParse(userMessage.Command.Body, out int age))
             {
-                await Stage.MessageSender.ReplyTextMessageAsync(userMessage, "Please enter the number");
-                await Stage.TransitionToAsync(new EnterAgeState());
+                await StateMachine.MessageSender.ReplyTextMessageAsync(userMessage, "Please enter the number");
+                await StateMachine.TransitionToAsync<EnterAgeState>();
             }
             else
             {
                 model.Age = age;
-                await Stage.TransitionToAsync(new ResultState());
+                await StateMachine.TransitionToAsync<ResultState>();
             }
         }
 
         public override async Task WelcomeAsync(UserMessage userMessage, dynamic model)
         {
-            await Stage.MessageSender.ReplyTextMessageAsync(userMessage, "How old are you?");
+            await StateMachine.MessageSender.ReplyTextMessageAsync(userMessage, "How old are you?");
         }
     }
 }

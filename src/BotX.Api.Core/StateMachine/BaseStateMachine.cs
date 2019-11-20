@@ -47,6 +47,7 @@ namespace BotX.Api.StateMachine
         /// <returns></returns>
         public static BaseStateMachine FromJson(string value, BotMessageSender messageSender)
         {
+			
             var restoredStage = JsonConvert.DeserializeObject<BaseStateMachine>(value, serializerSettings);
             restoredStage.MessageSender = messageSender;
             return restoredStage;
@@ -72,29 +73,30 @@ namespace BotX.Api.StateMachine
         /// <summary>
         /// Создаёт конечный автомат с начальным состоянием, указанным в качестве аргументоа
         /// </summary>
-        /// <param name="initialState">Начальное состояние автомата</param>
         /// <param name="messageSender">Отправщик сообщений Express</param>
-        public BaseStateMachine(BaseState initialState, BotMessageSender messageSender)
+        public BaseStateMachine(BotMessageSender messageSender)
         {
-            firstStep = initialState;
+            //firstStep = initialState;
             MessageSender = messageSender;
-            State = initialState;
+            //State = initialState;
         }
+
+		public abstract Task OnStartedAsync();
 
         /// <summary>
         /// Реализует логику обработки события завершения конечного автомата
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public abstract Task OnFinished(dynamic model);
+        public abstract Task OnFinishedAsync(dynamic model);
 
         /// <summary>
         /// Переводит конечный автомат в новое состояние
         /// </summary>
-        /// <param name="newState"></param>
         /// <returns></returns>
-        public async Task TransitionToAsync(BaseState newState)
+        public async Task TransitionToAsync<TState>() where TState : BaseState
         {
+			var newState = ExpressBotService.Configuration.ServiceProvider.GetService(typeof(TState)) as BaseState;
             State = newState;
             await State.StartAsync(UserMessage, model);
         }
@@ -105,7 +107,8 @@ namespace BotX.Api.StateMachine
         /// <returns></returns>
         public async Task ResetAsync()
         {
-            await TransitionToAsync(firstStep);
+			State = firstStep;
+			await State.StartAsync(UserMessage, model);
         }
 
         /// <summary>
@@ -114,7 +117,7 @@ namespace BotX.Api.StateMachine
         public void Finish()
         {
             isFinished = true;
-            OnFinished(model);
+            OnFinishedAsync(model);
         }
 
         /// <summary>
@@ -127,7 +130,11 @@ namespace BotX.Api.StateMachine
             UserMessage = userMessage;
 			if (!isFinished)
 			{
-				await State.StartAsync(userMessage, model);
+				if (State == null)
+					await OnStartedAsync();
+				else
+					await State.StartAsync(userMessage, model);
+
 				this.SaveState();
 			}
         }

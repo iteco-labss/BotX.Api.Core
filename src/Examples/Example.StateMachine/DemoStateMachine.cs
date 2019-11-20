@@ -12,16 +12,21 @@ namespace Example.ChatProcessing.Bot.StateMachine
     {
         private static Dictionary<Guid, string> userStates = new Dictionary<Guid, string>();
 
-		public DemoStateMachine(BotMessageSender messageSender) : base(new EnterNameState(), messageSender)
+		public DemoStateMachine(BotMessageSender messageSender) : base(messageSender)
 		{
 		}
 
-        public override async Task OnFinished(dynamic model)
+        public override async Task OnFinishedAsync(dynamic model)
         {
             await MessageSender.ReplyTextMessageAsync(UserMessage, $"State machine model is {JsonConvert.SerializeObject(model)}");
 			await MessageSender.ReplyTextMessageAsync(UserMessage, "finished!");
 			userStates.Remove(UserMessage.From.Huid);
         }
+
+		public override async Task OnStartedAsync()
+		{
+			await TransitionToAsync<EnterNameState>();
+		}
 
 		public override BaseStateMachine RestoreState()
 		{
