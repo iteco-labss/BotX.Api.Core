@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Example.ChatProcessing.Bot.StateMachine
 {
+	[BotEventReceiver]
     public class ResultState : BaseState
     {
         public override async Task ExecuteAsync(UserMessage userMessage, dynamic model)

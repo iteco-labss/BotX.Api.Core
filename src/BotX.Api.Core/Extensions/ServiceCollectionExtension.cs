@@ -58,7 +58,7 @@ namespace BotX.Api.Extensions
             }
 
 			var allStateTypes = Assembly.GetEntryAssembly().ExportedTypes
-				.Where(x => x.IsSubclassOf(typeof(BaseQuestionState)));
+				.Where(x => x.IsSubclassOf(typeof(BaseState)));
 
 			foreach (var t in allStateTypes)
 				externalServices.AddTransient(t);
