@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ namespace BotX.Api.StateMachine
         private BaseState state;
 
         [JsonProperty]
-        private BaseState State
+        internal BaseState State
         {
             get
             {
@@ -31,13 +32,13 @@ namespace BotX.Api.StateMachine
         }
 
         [JsonProperty]
-        private BaseState firstStep;
+        internal BaseState firstStep;
 
         [JsonProperty]
         internal bool isFinished;
 
         [JsonProperty]
-        internal dynamic model = new object();
+        internal dynamic model = new ExpandoObject();
 
         /// <summary>
         /// Загружает конечный автомат из ранее сериализованного в json состояния
@@ -45,10 +46,9 @@ namespace BotX.Api.StateMachine
         /// <param name="value">JSON-строка</param>
         /// <param name="messageSender">Отправщик сообщений Express</param>
         /// <returns></returns>
-        public static BaseStateMachine FromJson(string value, BotMessageSender messageSender)
-        {
-			
-            var restoredStage = JsonConvert.DeserializeObject<BaseStateMachine>(value, serializerSettings);
+        public static T FromJson<T>(string value, BotMessageSender messageSender) where T:BaseStateMachine
+        {			
+            var restoredStage = JsonConvert.DeserializeObject<T>(value, serializerSettings);
             restoredStage.MessageSender = messageSender;
             return restoredStage;
         }
@@ -118,6 +118,7 @@ namespace BotX.Api.StateMachine
         {
             isFinished = true;
             OnFinishedAsync(model);
+			SaveState();
         }
 
         /// <summary>
@@ -145,7 +146,7 @@ namespace BotX.Api.StateMachine
         /// <returns></returns>
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this, serializerSettings);
+            return JsonConvert.SerializeObject((BaseStateMachine)this, serializerSettings);
         }
 
         private static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
@@ -153,6 +154,7 @@ namespace BotX.Api.StateMachine
             TypeNameHandling = TypeNameHandling.All,
             MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
         };
+
 
 		/// <summary>
 		/// Вызывается при инициализации конечного автомата и ожидает восстановление состояния из ранее сохранённого

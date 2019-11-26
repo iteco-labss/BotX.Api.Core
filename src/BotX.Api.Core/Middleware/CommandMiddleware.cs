@@ -39,15 +39,22 @@ namespace BotX.Api.Middleware
 					  foreach (var smType in ExpressBotService.Configuration.StateMachines)
 					  {
 						  var machine = ExpressBotService.Configuration.ServiceProvider.GetService(smType) as BaseStateMachine;
-						  machine.UserMessage = message;
 
 						  if (machine != null)
 						  {
+							  machine.UserMessage = message;
+							  machine.MessageSender = sender;
+
 							  var restored = machine.RestoreState();
+							  
 							  if (restored != null)
 							  {
-								  stateMachineLaunched = true;
-								  await restored.EnterAsync(message);
+								  machine.firstStep = restored.firstStep;
+								  machine.isFinished = restored.isFinished;
+								  machine.State = restored.State;
+								  stateMachineLaunched = !machine.isFinished;
+								  if (stateMachineLaunched)
+									await machine.EnterAsync(message);
 								  break;
 							  }
 						  }

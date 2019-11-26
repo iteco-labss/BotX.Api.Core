@@ -31,7 +31,7 @@ namespace Example.ChatProcessing.Bot.StateMachine
 		public override BaseStateMachine RestoreState()
 		{
 			if (userStates.ContainsKey(UserMessage.From.Huid))
-				return FromJson(userStates[UserMessage.From.Huid], MessageSender);
+				return FromJson<DemoStateMachine>(userStates[UserMessage.From.Huid], MessageSender);
 			return null;
 		}
 

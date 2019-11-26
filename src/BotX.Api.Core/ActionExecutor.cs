@@ -70,7 +70,7 @@ namespace BotX.Api
 
 		private static void ProcessEvents(string actionName, Type botActionClass)
 		{
-			var methods = botActionClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+			var methods = botActionClass.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
 				.Where(x => x.GetCustomAttribute<BotButtonEventAttribute>() != null)
 				.ToDictionary(x => MakeEventKey(actionName, x.GetCustomAttribute<BotButtonEventAttribute>().EventName));
 
