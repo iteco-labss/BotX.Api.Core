@@ -49,9 +49,14 @@ namespace BotX.Api.Middleware
 							  
 							  if (restored != null)
 							  {
+								  var state = ExpressBotService.Configuration.ServiceProvider.GetService(restored.State.GetType()) as BaseState;
+								  state.StateMachine = machine;
+								  if (state is BaseQuestionState && restored.State is BaseQuestionState)
+									  (state as BaseQuestionState).isOpen = (restored.State as BaseQuestionState).isOpen;
+		  
 								  machine.firstStep = restored.firstStep;
 								  machine.isFinished = restored.isFinished;
-								  machine.State = restored.State;
+								  machine.State = state;
 								  stateMachineLaunched = !machine.isFinished;
 								  if (stateMachineLaunched)
 									await machine.EnterAsync(message);
