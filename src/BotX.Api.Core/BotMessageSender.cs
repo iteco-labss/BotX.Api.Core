@@ -200,12 +200,11 @@ namespace BotX.Api
         /// </summary>
         /// <param name="requestMessage">Сообщение от пользователя</param>
         /// <param name="messageText">Текст ответа</param>
-        /// <param name="userHuid">Хуид пользователя, которого нужно упомянуть</param>
-        /// <param name="displayMentionName">Отображаемое имя упомянутого пользователя</param>
+        /// <param name="userHuid">Идентификатор пользователя, которого нужно упомянуть</param>
         /// <returns></returns>
-        public async Task ReplyTextMessageAsync(UserMessage requestMessage, string messageText, Guid userHuid)
+        public async Task ReplyTextMessageAsync(UserMessage requestMessage, string messageText, Guid mentionHuid)
         {
-            var mentions = new Mention[] { new Mention() { MentionData = new MentionData() { Huid = userHuid} } };
+            var mentions = new Mention[] { new Mention() { MentionData = new MentionData() { Huid = mentionHuid } } };
             await ReplyTextMessageInternalAsync(
                 botId: requestMessage.BotId,
                 syncId: requestMessage.SyncId,
