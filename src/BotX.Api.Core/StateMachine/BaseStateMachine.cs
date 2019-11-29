@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BotX.Api.StateMachine
 {
@@ -46,11 +47,25 @@ namespace BotX.Api.StateMachine
         /// <param name="value">JSON-строка</param>
         /// <param name="messageSender">Отправщик сообщений Express</param>
         /// <returns></returns>
-        public static T FromJson<T>(string value, BotMessageSender messageSender) where T:BaseStateMachine
+        public static T FromJson<T>(string value, BotMessageSender messageSender, UserMessage userMessage) where T:BaseStateMachine
         {			
-            var restoredStage = JsonConvert.DeserializeObject<T>(value, serializerSettings);
-            restoredStage.MessageSender = messageSender;
-            return restoredStage;
+            var restoredSm = JsonConvert.DeserializeObject<T>(value, serializerSettings);
+			var diSm = ExpressBotService.Configuration.ServiceProvider.GetService<T>();
+			if (diSm != null)
+			{
+				diSm.firstStep = restoredSm.firstStep;
+				diSm.isFinished = restoredSm.isFinished;
+				diSm.MessageSender = messageSender;
+				diSm.model = restoredSm.model;
+				diSm.state = restoredSm.state;
+				diSm.state.StateMachine = diSm;
+				diSm.UserMessage = userMessage;
+				return diSm;
+			}
+
+			restoredSm.MessageSender = messageSender;
+			restoredSm.UserMessage = userMessage;
+			return restoredSm;
         }
 
         /// <summary>
@@ -120,6 +135,12 @@ namespace BotX.Api.StateMachine
             OnFinishedAsync(model);
 			SaveState();
         }
+
+		public void Cancel()
+		{
+			isFinished = true;
+			SaveState();
+		}
 
         /// <summary>
         /// Выполняет логику актуального состояния для конечного автомата
