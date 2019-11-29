@@ -13,5 +13,8 @@ namespace BotX.Api.JsonModel.Response
         [JsonProperty("mention_data")]
         public MentionData MentionData { get; set; }
 
+        [JsonProperty("mention_type")]
+        public string MentionType = "contact";
+
     }
 }
