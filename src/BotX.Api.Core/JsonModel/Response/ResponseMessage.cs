@@ -19,5 +19,6 @@ namespace BotX.Api.JsonModel.Response
 
 		[JsonProperty(PropertyName = "command_result")]
 		public CommandResult CommandResult { get; set; }
+
 	}
 }

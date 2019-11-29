@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using BotX.Api.JsonModel;
+using BotX.Api.JsonModel.Response.Mentions;
 
 namespace BotX.Api
 {
@@ -194,14 +195,34 @@ namespace BotX.Api
 				);
 		}
 
-		/// <summary>
-		/// Отправка текстового сообщения с кнопками (действиями) в ответ пользователю
-		/// </summary>
-		/// <param name="requestMessage">Сообщение пользователя</param>
-		/// <param name="messageText">Текст сообщения</param>
-		/// <param name="buttons">Кнопки с действиями в сообщении</param>
-		/// <returns></returns>
-		public async Task ReplyTextMessageAsync(UserMessage requestMessage, string messageText, MessageButtonsGrid buttons)
+        /// <summary>
+        /// Отправляет текстовое сообщение в ответ пользователю
+        /// </summary>
+        /// <param name="requestMessage">Сообщение от пользователя</param>
+        /// <param name="messageText">Текст ответа</param>
+        /// <param name="userHuid">Хуид пользователя, которого нужно упомянуть</param>
+        /// <param name="displayMentionName">Отображаемое имя упомянутого пользователя</param>
+        /// <returns></returns>
+        public async Task ReplyTextMessageAsync(UserMessage requestMessage, string messageText, Guid userHuid)
+        {
+            var mentions = new Mention[] { new Mention() { MentionData = new MentionData() { Huid = userHuid} } };
+            await ReplyTextMessageInternalAsync(
+                botId: requestMessage.BotId,
+                syncId: requestMessage.SyncId,
+                to: requestMessage.From.Huid,
+                messageText: messageText,
+                mentions: mentions
+                );
+        }
+
+        /// <summary>
+        /// Отправка текстового сообщения с кнопками (действиями) в ответ пользователю
+        /// </summary>
+        /// <param name="requestMessage">Сообщение пользователя</param>
+        /// <param name="messageText">Текст сообщения</param>
+        /// <param name="buttons">Кнопки с действиями в сообщении</param>
+        /// <returns></returns>
+        public async Task ReplyTextMessageAsync(UserMessage requestMessage, string messageText, MessageButtonsGrid buttons)
 		{
 			await ReplyTextMessageAsync(
 					botId: requestMessage.BotId,
@@ -249,17 +270,37 @@ namespace BotX.Api
 		}
 
 
-		#endregion
+        private async Task ReplyTextMessageInternalAsync(Guid botId, Guid syncId, Guid to, string messageText, Mention[] mentions)
+        {
+            if (botId == Guid.Empty)
+                return;
 
-		#region Отправка файла
-		/// <summary>
-		/// Отправка файла в чат
-		/// </summary>
-		/// <param name="syncId">Идентификатор чата</param>
-		/// <param name="fileName">Имя фалйа</param>
-		/// <param name="data">Данные файла</param>
-		/// <returns></returns>
-		public async Task SendFileAsync(Guid syncId, string fileName, byte[] data)
+            await PostReplyAsync(new ResponseMessage
+            {
+                BotId = botId,
+                SyncId = syncId,
+                Recipient = to,
+                CommandResult = new CommandResult
+                {
+                    Status = "ok",
+                    Body = messageText,
+                    Mentions = mentions
+                }
+            });
+        }
+
+
+        #endregion
+
+        #region Отправка файла
+        /// <summary>
+        /// Отправка файла в чат
+        /// </summary>
+        /// <param name="syncId">Идентификатор чата</param>
+        /// <param name="fileName">Имя фалйа</param>
+        /// <param name="data">Данные файла</param>
+        /// <returns></returns>
+        public async Task SendFileAsync(Guid syncId, string fileName, byte[] data)
 		{
 			await PostFileAsync(
 				syncId: syncId,
