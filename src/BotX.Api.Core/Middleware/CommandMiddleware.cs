@@ -53,7 +53,8 @@ namespace BotX.Api.Middleware
 								  state.StateMachine = machine;
 								  if (state is BaseQuestionState && restored.State is BaseQuestionState)
 									  (state as BaseQuestionState).isOpen = (restored.State as BaseQuestionState).isOpen;
-		  
+
+								  machine.model = restored.model;
 								  machine.firstStep = restored.firstStep;
 								  machine.isFinished = restored.isFinished;
 								  machine.State = state;
