@@ -296,7 +296,7 @@ namespace BotX.Api
         /// Отправка файла в чат
         /// </summary>
         /// <param name="syncId">Идентификатор чата</param>
-        /// <param name="fileName">Имя фалйа</param>
+        /// <param name="fileName">Имя файла</param>
         /// <param name="data">Данные файла</param>
         /// <returns></returns>
         public async Task SendFileAsync(Guid syncId, string fileName, byte[] data)

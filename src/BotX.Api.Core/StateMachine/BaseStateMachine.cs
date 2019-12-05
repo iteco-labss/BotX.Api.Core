@@ -41,6 +41,13 @@ namespace BotX.Api.StateMachine
         [JsonProperty]
         internal dynamic model = new ExpandoObject();
 
+		//TODO: сделать init
+		//public static T Create<T>() where T : BaseStateMachine
+		//{
+		//	var messageSender = ExpressBotService.Configuration.ServiceProvider.GetService<BotMessageSender>();
+		//	var 
+		//}
+
         /// <summary>
         /// Загружает конечный автомат из ранее сериализованного в json состояния
         /// </summary>
@@ -91,11 +98,13 @@ namespace BotX.Api.StateMachine
         /// <param name="messageSender">Отправщик сообщений Express</param>
         public BaseStateMachine(BotMessageSender messageSender)
         {
-            //firstStep = initialState;
             MessageSender = messageSender;
-            //State = initialState;
         }
 
+		/// <summary>
+		/// Вызывается при старте с возможностью задать через <see cref="TransitionToAsync{TState}"/> начальное состояние
+		/// </summary>
+		/// <returns></returns>
 		public abstract Task OnStartedAsync();
 
         /// <summary>
