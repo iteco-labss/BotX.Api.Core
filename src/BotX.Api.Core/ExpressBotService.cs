@@ -56,9 +56,5 @@ namespace BotX.Api
 			Commands.Add(new Command { Name = command, Body = command, Description = description, Options = new Option { Clickable = true } });
 			return this;
 		}
-
-        public void AddStateMachine<T>() where T : BaseStateMachine
-        {
-        }
     }
 }
