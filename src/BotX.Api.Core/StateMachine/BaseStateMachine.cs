@@ -54,7 +54,7 @@ namespace BotX.Api.StateMachine
         /// <param name="value">JSON-строка</param>
         /// <param name="messageSender">Отправщик сообщений Express</param>
         /// <returns></returns>
-        public static T FromJson<T>(string value, BotMessageSender messageSender, UserMessage userMessage) where T:BaseStateMachine
+        public static T FromJson<T>(string value, IBotMessageSender messageSender, UserMessage userMessage) where T:BaseStateMachine
         {			
             var restoredSm = JsonConvert.DeserializeObject<T>(value, serializerSettings);
 			var diSm = ExpressBotService.Configuration.ServiceProvider.GetService<T>();
@@ -79,7 +79,7 @@ namespace BotX.Api.StateMachine
         /// Отправщик сообщений в чат
         /// </summary>
         [JsonIgnore]
-        public BotMessageSender MessageSender { get; set; }
+        public IBotMessageSender MessageSender { get; set; }
 
         /// <summary>
         /// Входящее сообщение от пользователя
@@ -96,7 +96,7 @@ namespace BotX.Api.StateMachine
         /// Создаёт конечный автомат с начальным состоянием, указанным в качестве аргументоа
         /// </summary>
         /// <param name="messageSender">Отправщик сообщений Express</param>
-        public BaseStateMachine(BotMessageSender messageSender)
+        public BaseStateMachine(IBotMessageSender messageSender)
         {
             MessageSender = messageSender;
         }

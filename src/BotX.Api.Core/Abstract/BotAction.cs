@@ -16,13 +16,14 @@ namespace BotX.Api.Abstract
 		/// <summary>
 		/// Объект, используемый для отправки исходящих сообщений пользователю от бота
 		/// </summary>
-		public BotMessageSender MessageSender { get; private set; }
+		public IBotMessageSender MessageSender { get; private set; }
 
 #pragma warning disable CS1591 
-		public BotAction()
+		public BotAction(IBotMessageSender messageSender)
 #pragma warning restore CS1591
 		{
-			MessageSender = ExpressBotService.Configuration.ServiceProvider.GetService(typeof(BotMessageSender)) as BotMessageSender;
+			MessageSender = messageSender;
+			//MessageSender = ExpressBotService.Configuration.ServiceProvider.GetService(typeof(BotMessageSender)) as BotMessageSender;
 		}
 
 		/// <summary>

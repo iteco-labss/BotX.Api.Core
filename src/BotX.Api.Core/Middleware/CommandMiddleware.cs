@@ -20,7 +20,7 @@ namespace BotX.Api.Middleware
 			this.next = next;
 		}
 
-		public async Task InvokeAsync(HttpContext context, ILogger<CommandMiddleware> logger, ActionExecutor actionExecutor, BotMessageSender sender)
+		public async Task InvokeAsync(HttpContext context, ILogger<CommandMiddleware> logger, ActionExecutor actionExecutor, IBotMessageSender sender)
 		{
 			logger.LogInformation("message has been received");
 			context.Request.Body.Position = 0;

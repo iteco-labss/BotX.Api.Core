@@ -1,4 +1,5 @@
-﻿using BotX.Api.Abstract;
+﻿using BotX.Api;
+using BotX.Api.Abstract;
 using BotX.Api.Attributes;
 using BotX.Api.BotUI;
 using BotX.Api.JsonModel.Request;
@@ -12,9 +13,9 @@ namespace Example.ChatProcessing.Bot
 	[BotAction]
 	public class ChatMessageAction : BotAction
 	{
-        public ChatMessageAction()
-        {
-        }
+		public ChatMessageAction(IBotMessageSender messageSender) : base(messageSender)
+		{
+		}
 
 		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
 		{
