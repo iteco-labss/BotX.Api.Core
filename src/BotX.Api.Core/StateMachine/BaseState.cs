@@ -23,15 +23,14 @@ namespace BotX.Api.StateMachine
 		internal virtual async Task StartAsync(UserMessage userMessage, dynamic model)
 		{
 			if (!StateMachine.isFinished)
-				await ExecuteAsync(userMessage, model);
+				await ExecuteAsync(model);
 		}
 
 		/// <summary>
 		/// Реализует логику данного состояния. Тут можно обработать ответ пользователя
 		/// </summary>
-		/// <param name="userMessage">Входящее сообщение от пользователя</param>
 		/// <param name="model">Модель данных, формируемая конечным автоматом (передаётся между всеми состояниями)</param>
 		/// <returns></returns>
-		public abstract Task ExecuteAsync(UserMessage userMessage, dynamic model);
+		public abstract Task ExecuteAsync(dynamic model);
 	}
 }

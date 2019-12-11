@@ -1,4 +1,5 @@
-﻿using BotX.Api.Abstract;
+﻿using BotX.Api;
+using BotX.Api.Abstract;
 using BotX.Api.Attributes;
 using BotX.Api.JsonModel.Request;
 using BotX.Api.StateMachine;
@@ -12,7 +13,11 @@ namespace Example.ChatProcessing.Bot.StateMachine
     [BotAction]
     public class HelpAction : BotAction
     {
-        public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
+		public HelpAction(IBotMessageSender messageSender) : base(messageSender)
+		{
+		}
+
+		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
         {
             await MessageSender.ReplyTextMessageAsync(userMessage, "Use /start command for start");
         }

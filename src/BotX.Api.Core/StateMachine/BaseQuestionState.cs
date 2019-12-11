@@ -18,9 +18,9 @@ namespace BotX.Api.StateMachine
 		internal override async Task StartAsync(UserMessage userMessage, dynamic model)
 		{
 			if (!isOpen && !StateMachine.isFinished)
-				await WelcomeAsync(userMessage, model);
+				await WelcomeAsync(model);
 			else
-				await ExecuteAsync(userMessage, model);
+				await ExecuteAsync(model);
 
 			isOpen = !isOpen;
 		}
@@ -28,9 +28,8 @@ namespace BotX.Api.StateMachine
 		/// <summary>
 		/// Реализует логику события перехода в состояние. Тут можно спросить пользователя о чём-то
 		/// </summary>
-		/// <param name="userMessage">Входящее сообщение от пользователя</param>
 		/// <param name="model">Модель данных, формируемая конечным автоматом (передаётся между всеми состояниями)</param>
 		/// <returns></returns>
-		public abstract Task WelcomeAsync(UserMessage userMessage, dynamic model);        
+		public abstract Task WelcomeAsync(dynamic model);        
 	}
 }
