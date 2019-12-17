@@ -126,7 +126,7 @@ namespace BotX.Api
 			{
 				
 				var action = (IBotAction)scope.ServiceProvider.GetService(actions[actionName]);
-				await action.ExecuteAsync(request, args);
+				await action.InternalExecuteAsync(request, args);
 			}
 			catch(Exception ex)
 			{
@@ -149,7 +149,7 @@ namespace BotX.Api
 			foreach (var actionType in unnamedActions)
 			{
 				var action = (IBotAction)scope.ServiceProvider.GetService(actionType);
-				await action.ExecuteAsync(request, null);
+				await action.InternalExecuteAsync(request, null);
 			}
 		}
 

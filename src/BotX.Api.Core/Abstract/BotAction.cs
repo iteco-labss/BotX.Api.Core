@@ -15,11 +15,19 @@ namespace BotX.Api.Abstract
 	{
 		protected IBotMessageSender MessageSender { get; private set; }
 
+		protected UserMessage RequestMessage { get; private set; }
+
 #pragma warning disable CS1591 
 		public BotAction(IBotMessageSender messageSender)
 #pragma warning restore CS1591
 		{
 			MessageSender = messageSender;
+		}
+
+		async Task IBotAction.InternalExecuteAsync(UserMessage userMessage, string[] args)
+		{
+			RequestMessage = userMessage;
+			await ExecuteAsync(userMessage, args);
 		}
 
 		/// <summary>
