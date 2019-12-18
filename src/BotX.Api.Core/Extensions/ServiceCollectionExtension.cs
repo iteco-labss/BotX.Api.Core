@@ -66,7 +66,7 @@ namespace BotX.Api.Extensions
 
         private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)
 		{
-			services.AddSingleton<ActionExecutor>();
+			services.AddScoped<ActionExecutor>();
 			var typesWithAttribute = applicationAssembly.GetExportedTypes()
 				.Where(x => x.GetCustomAttribute(typeof(BotActionAttribute)) != null);
 
