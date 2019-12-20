@@ -63,10 +63,27 @@ namespace BotX.Api
 				}
 			};
 
-
-			await PostNotificationAsync(notification);
+			await PostNotificationAsync(notification, null);
 		}
-		
+
+		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons, string cts)
+		{
+			var notification = new NotificationMessage
+			{
+				BotId = ExpressBotService.Configuration.BotId,
+				GroupChatIds = chatIds,
+				Recipients = recipients,
+				Notification = new CommandResult
+				{
+					Status = "ok",
+					Body = messageText,
+					Bubble = buttons.GetBubbles() ?? new List<List<Bubble>>()
+				}
+			};
+
+			await PostNotificationAsync(notification, cts);
+		}
+
 		public async Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText)
 		{
 			await SendTextMessageAsync(
@@ -91,16 +108,18 @@ namespace BotX.Api
 				}
 			};
 
-			await PostNotificationAsync(notification);
+			await PostNotificationAsync(notification, null);
 		}
 
-		internal async Task PostNotificationAsync(NotificationMessage message)
+		internal async Task PostNotificationAsync(NotificationMessage message, string cts)
 		{
 			ValidateMessage(message);
+			if (string.IsNullOrEmpty(cts))
+				cts = server;
 			logger.LogInformation("sending... " + JsonConvert.SerializeObject(message));
 			using (HttpClient client = new HttpClient())
 			{
-				var requestUri = new Uri(new Uri(server), API_SEND_MESSAGE_NOTIFICATION);
+				var requestUri = new Uri(new Uri(cts), API_SEND_MESSAGE_NOTIFICATION);
 				logger.LogInformation(requestUri.ToString());
 				var result = await client.PostAsJsonAsync(requestUri, message);
 				if (!result.IsSuccessStatusCode)
@@ -285,6 +304,21 @@ namespace BotX.Api
 					$"Для отправки сообщений пользователю, необходимо задать идентификатор бота " +
 					$"(метод {nameof(ServiceCollectionExtension.AddExpressBot)}). " +
 					$"Без идентификатора возможно только получение и ответ на полученные сообщения");
+		}
+
+		public Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, string cts)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, MessageButtonsGrid buttons, string cts)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, string cts)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }
