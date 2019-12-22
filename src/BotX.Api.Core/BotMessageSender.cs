@@ -41,11 +41,7 @@ namespace BotX.Api
 		
 		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText)
 		{
-			await SendTextMessageAsync(
-				chatIds: chatIds,
-				recipients: recipients,
-				messageText: messageText,
-				buttons: new MessageButtonsGrid());
+			await SendTextMessageAsync(chatIds, recipients, messageText, string.Empty);
 		}
 		
 		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons)
@@ -90,25 +86,12 @@ namespace BotX.Api
 				chatId: chatId,
 				huid: huid,
 				messageText: messageText,
-				buttons: new MessageButtonsGrid());
+				buttons: new MessageButtonsGrid(), string.Empty);
 		}
 		
 		public async Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, MessageButtonsGrid buttons)
 		{
-			var notification = new NotificationMessage
-			{
-				BotId = ExpressBotService.Configuration.BotId,
-				GroupChatIds = new Guid[] { chatId },
-				Recipients = new Guid[] { huid },
-				Notification = new CommandResult
-				{
-					Status = "ok",
-					Body = messageText,
-					Bubble = buttons.GetBubbles() ?? new List<List<Bubble>>()
-				}
-			};
-
-			await PostNotificationAsync(notification, null);
+			await SendTextMessageAsync(chatId, huid, messageText, buttons);
 		}
 
 		internal async Task PostNotificationAsync(NotificationMessage message, string cts)
@@ -306,19 +289,40 @@ namespace BotX.Api
 					$"Без идентификатора возможно только получение и ответ на полученные сообщения");
 		}
 
-		public Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, string cts)
+		public async Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, string cts)
 		{
-			throw new NotImplementedException();
+			await SendTextMessageAsync(
+				chatId: chatId,
+				huid: huid,
+				messageText: messageText,
+				buttons: new MessageButtonsGrid(), cts);
 		}
 
-		public Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, MessageButtonsGrid buttons, string cts)
+		public async Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, MessageButtonsGrid buttons, string cts)
 		{
-			throw new NotImplementedException();
+			var notification = new NotificationMessage
+			{
+				BotId = ExpressBotService.Configuration.BotId,
+				GroupChatIds = new Guid[] { chatId },
+				Recipients = new Guid[] { huid },
+				Notification = new CommandResult
+				{
+					Status = "ok",
+					Body = messageText,
+					Bubble = buttons.GetBubbles() ?? new List<List<Bubble>>()
+				}
+			};
+
+			await PostNotificationAsync(notification, null);
 		}
 
-		public Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, string cts)
+		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, string cts)
 		{
-			throw new NotImplementedException();
+			await SendTextMessageAsync(
+				chatIds: chatIds,
+				recipients: recipients,
+				messageText: messageText,
+				buttons: new MessageButtonsGrid(), cts);
 		}
 	}
 }
