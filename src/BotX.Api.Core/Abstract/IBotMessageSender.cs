@@ -82,7 +82,7 @@ namespace BotX.Api
 		/// <returns></returns>
 		Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText);
 
-		Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, string cts);
+		Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, Guid botId, string cts);
 
 		/// <summary>
 		/// Отправляет текстовое сообщение (нотификацию) с кнопками пользователю
@@ -94,7 +94,7 @@ namespace BotX.Api
 		/// <returns></returns>
 		Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, MessageButtonsGrid buttons);
 
-		Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, MessageButtonsGrid buttons, string cts);
+		Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, MessageButtonsGrid buttons, Guid botId, string cts);
 
 		/// <summary>
 		/// Отправляет текстовое сообщение (нотификацию) пользователю
@@ -105,7 +105,7 @@ namespace BotX.Api
 		/// <returns></returns>	
 		Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText);
 
-		Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, string cts);
+		Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, Guid botId, string cts);
 
 		/// <summary>
 		/// Отправляет текстовое сообщение (нотификацию) с кнопками пользователю
@@ -117,6 +117,6 @@ namespace BotX.Api
 		/// <returns></returns>
 		Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons);
 
-		Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons, string cts);
+		Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons, Guid botId, string cts);
 	}
 }

@@ -66,7 +66,7 @@ namespace BotX.Api
 			await PostNotificationAsync(notification, null);
 		}
 
-		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons, string cts)
+		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons, Guid botId, string cts)
 		{
 			var notification = new NotificationMessage
 			{
@@ -111,7 +111,7 @@ namespace BotX.Api
 			await PostNotificationAsync(notification, null);
 		}
 
-		internal async Task PostNotificationAsync(NotificationMessage message, string cts)
+		internal async Task PostNotificationAsync(NotificationMessage message, Guid botId, string cts)
 		{
 			ValidateMessage(message);
 			if (string.IsNullOrEmpty(cts))
@@ -137,6 +137,7 @@ namespace BotX.Api
 				botId: ExpressBotService.Configuration.BotId,
 				syncId: syncId,
 				to: to,
+				server: server,
 				messageText: messageText);
 		}
 		
@@ -147,6 +148,7 @@ namespace BotX.Api
 				syncId: syncId,
 				to: to,
 				messageText: messageText,
+				server: string.Empty,
 				buttons: buttons
 				);
 		}
@@ -157,6 +159,7 @@ namespace BotX.Api
 				botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
 				to: requestMessage.From.Huid,
+				server: requestMessage.From.Host,
 				messageText: messageText
 				);
 		}
@@ -169,6 +172,7 @@ namespace BotX.Api
 				syncId: requestMessage.SyncId,
 				to: requestMessage.From.Huid,
 				messageText: messageText,
+				server: requestMessage.From.Host,
 				mentions: mentions
 				);
 		}
@@ -179,12 +183,13 @@ namespace BotX.Api
 					botId: requestMessage.BotId,
 				   syncId: requestMessage.SyncId,
 				   to: requestMessage.From.Huid,
+				   server: requestMessage.From.Host,
 				   messageText: messageText,
 				   buttons: buttons
 				   );
 		}
 
-		private async Task ReplyTextMessageAsync(Guid botId, Guid syncId, Guid to, string messageText, MessageButtonsGrid buttons)
+		private async Task ReplyTextMessageAsync(Guid botId, Guid syncId, Guid to, string server, string messageText, MessageButtonsGrid buttons)
 		{
 			if (botId == Guid.Empty)
 				return;
@@ -200,10 +205,10 @@ namespace BotX.Api
 					Body = messageText,
 					Bubble = buttons.GetBubbles() ?? new List<List<Bubble>>()
 				}
-			});
+			}, server);
 		}
 
-		private async Task ReplyTextMessageInternalAsync(Guid botId, Guid syncId, Guid to, string messageText)
+		private async Task ReplyTextMessageInternalAsync(Guid botId, Guid syncId, Guid to, string messageText, string server)
 		{
 			if (botId == Guid.Empty)
 				return;
@@ -218,10 +223,10 @@ namespace BotX.Api
 					Status = "ok",
 					Body = messageText
 				}
-			});
+			}, server);
 		}
 
-		private async Task ReplyTextMessageInternalAsync(Guid botId, Guid syncId, Guid to, string messageText, Mention[] mentions)
+		private async Task ReplyTextMessageInternalAsync(Guid botId, Guid syncId, Guid to, string messageText, Mention[] mentions, string server)
 		{
 			if (botId == Guid.Empty)
 				return;
@@ -237,7 +242,7 @@ namespace BotX.Api
 					Body = messageText,
 					Mentions = mentions
 				}
-			});
+			}, server);
 		}
 
 		#endregion
@@ -283,13 +288,15 @@ namespace BotX.Api
 		}
 		#endregion
 
-		internal async Task PostReplyAsync(ResponseMessage message)
+		internal async Task PostReplyAsync(ResponseMessage message, string server)
 		{
 			ValidateMessage(message);
 			logger.LogInformation("sending... " + JsonConvert.SerializeObject(message));
 			using (HttpClient client = new HttpClient())
 			{
-				var requestUri = new Uri(new Uri(server), API_SEND_MESSAGE_ASNWER);
+				//TODO: отрефакторить работу с переданным сервером. Они приходят в разных форматах (один с протоколом, другой нет)
+				string apiServer = string.IsNullOrEmpty(server) ? this.server : $"https://{server}";
+				var requestUri = new Uri(new Uri(apiServer), API_SEND_MESSAGE_ASNWER);
 				logger.LogInformation(requestUri.ToString());
 				var result = await client.PostAsJsonAsync(requestUri, message);
 				if (!result.IsSuccessStatusCode)
@@ -304,21 +311,6 @@ namespace BotX.Api
 					$"Для отправки сообщений пользователю, необходимо задать идентификатор бота " +
 					$"(метод {nameof(ServiceCollectionExtension.AddExpressBot)}). " +
 					$"Без идентификатора возможно только получение и ответ на полученные сообщения");
-		}
-
-		public Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, string cts)
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, MessageButtonsGrid buttons, string cts)
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, string cts)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }
