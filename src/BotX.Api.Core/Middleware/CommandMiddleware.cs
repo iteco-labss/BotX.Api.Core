@@ -40,32 +40,35 @@ namespace BotX.Api.Middleware
 					  {
 						  bool stateMachineLaunched = false;
 
-						  foreach (var smType in ExpressBotService.Configuration.StateMachines)
+						  using (var stateMachineScope = ExpressBotService.Configuration.ServiceProvider.CreateScope())
 						  {
-							  var machine = ExpressBotService.Configuration.ServiceProvider.GetService(smType) as BaseStateMachine;
-
-							  if (machine != null)
+							  foreach (var smType in ExpressBotService.Configuration.StateMachines)
 							  {
-								  machine.UserMessage = message;
-								  machine.MessageSender = sender;
+								  var machine = stateMachineScope.ServiceProvider.GetService(smType) as BaseStateMachine;
 
-								  var restored = machine.RestoreState();
-
-								  if (restored != null)
+								  if (machine != null)
 								  {
-									  var state = ExpressBotService.Configuration.ServiceProvider.GetService(restored.State.GetType()) as BaseState;
-									  state.StateMachine = machine;
-									  if (state is BaseQuestionState && restored.State is BaseQuestionState)
-										  (state as BaseQuestionState).isOpen = (restored.State as BaseQuestionState).isOpen;
+									  machine.UserMessage = message;
+									  machine.MessageSender = sender;
 
-									  machine.model = restored.model;
-									  machine.firstStep = restored.firstStep;
-									  machine.isFinished = restored.isFinished;
-									  machine.State = state;
-									  stateMachineLaunched = !machine.isFinished;
-									  if (stateMachineLaunched)
-										  await machine.EnterAsync(message);
-									  break;
+									  var restored = machine.RestoreState();
+
+									  if (restored != null)
+									  {
+										  var state = stateMachineScope.ServiceProvider.GetService(restored.State.GetType()) as BaseState;
+										  state.StateMachine = machine;
+										  if (state is BaseQuestionState && restored.State is BaseQuestionState)
+											  (state as BaseQuestionState).isOpen = (restored.State as BaseQuestionState).isOpen;
+
+										  machine.model = restored.model;
+										  machine.firstStep = restored.firstStep;
+										  machine.isFinished = restored.isFinished;
+										  machine.State = state;
+										  stateMachineLaunched = !machine.isFinished;
+										  if (stateMachineLaunched)
+											  await machine.EnterAsync(message);
+										  break;
+									  }
 								  }
 							  }
 						  }
