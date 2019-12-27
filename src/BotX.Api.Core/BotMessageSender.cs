@@ -59,7 +59,7 @@ namespace BotX.Api
 				}
 			};
 
-			await PostNotificationAsync(notification, ExpressBotService.Configuration.BotId, null);
+			await PostNotificationAsync(notification, null);
 		}
 
 		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons, Guid botId, string cts)
@@ -77,7 +77,7 @@ namespace BotX.Api
 				}
 			};
 
-			await PostNotificationAsync(notification, botId, cts);
+			await PostNotificationAsync(notification, cts);
 		}
 
 		public async Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText)
@@ -93,10 +93,16 @@ namespace BotX.Api
 		
 		public async Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, MessageButtonsGrid buttons)
 		{
-			await SendTextMessageAsync(chatId, huid, messageText, buttons);
+			await SendTextMessageAsync(
+				chatId: chatId,
+				huid: huid,
+				messageText: messageText,
+				buttons: buttons,
+				botId: ExpressBotService.Configuration.BotId,
+				cts: string.Empty);
 		}
 
-		internal async Task PostNotificationAsync(NotificationMessage message, Guid botId, string cts)
+		internal async Task PostNotificationAsync(NotificationMessage message, string cts)
 		{
 			ValidateMessage(message);
 			if (string.IsNullOrEmpty(cts))
@@ -311,7 +317,7 @@ namespace BotX.Api
 		{
 			var notification = new NotificationMessage
 			{
-				BotId = ExpressBotService.Configuration.BotId,
+				BotId = botId,
 				GroupChatIds = new Guid[] { chatId },
 				Recipients = new Guid[] { huid },
 				Notification = new CommandResult
@@ -322,7 +328,7 @@ namespace BotX.Api
 				}
 			};
 
-			await PostNotificationAsync(notification, botId, null);
+			await PostNotificationAsync(notification, null);
 		}
 
 		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, Guid botId, string cts)
