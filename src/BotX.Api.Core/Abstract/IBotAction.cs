@@ -6,11 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace BotX.Api.Abstract
-{
-	
+{	
 	internal interface IBotAction
-	{		
-		Task ExecuteAsync(UserMessage userMessage, string[] args);
+	{
+		Task InternalExecuteAsync(UserMessage userMessage, string[] args);
 	}
 
 }

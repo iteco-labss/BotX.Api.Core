@@ -1,4 +1,5 @@
 ﻿using BotX.Api.Middleware;
+using BotX.Api.StateMachine;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
@@ -12,6 +13,10 @@ namespace BotX.Api.Extensions
 {
 	public static class ApplicationBuilderExtension
 	{
+       /// <summary>
+       /// Подключает роутинг для обработки вызовов со стороны Express
+       /// </summary>
+       /// <param name="app"></param>
 		public static void UseExpress(this IApplicationBuilder app)
 		{
 			app.UseMiddleware<RequestLoggingMiddleware>();

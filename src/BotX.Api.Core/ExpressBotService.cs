@@ -1,5 +1,7 @@
 ﻿using BotX.Api.JsonModel.Menu;
 using BotX.Api.JsonModel.Response;
+using BotX.Api.StateMachine;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,17 +18,31 @@ namespace BotX.Api
 		/// </summary>
 		public static ExpressBotService Configuration { get; private set; }
 
+		private IServiceProvider serviceProvider;
+
 		internal List<Command> Commands { get; private set; }
+        internal List<Type> StateMachines { get; private set; }
 		internal bool ThrowExceptions { get; private set; }
-		internal IServiceProvider ServiceProvider { get; }
+		private IServiceCollection ServiceCollection { get; }
+		internal IServiceProvider ServiceProvider
+		{
+			get
+			{
+				if (serviceProvider == null)
+					serviceProvider = ServiceCollection.BuildServiceProvider();
+				return serviceProvider;
+			}
+		}
+
 		internal Guid BotId { get; private set; }
 
-		internal ExpressBotService(Guid botId, bool throwExceptions, IServiceProvider serviceProvider)
+		internal ExpressBotService(Guid botId, bool throwExceptions, IServiceCollection serviceDescriptors)
 		{
 			BotId = botId;
 			ThrowExceptions = throwExceptions;
-			ServiceProvider = serviceProvider;
+			ServiceCollection = serviceDescriptors;
 			Commands = new List<Command>();
+            StateMachines = new List<Type>();
 			Configuration = this;
 		}
 
@@ -40,5 +56,5 @@ namespace BotX.Api
 			Commands.Add(new Command { Name = command, Body = command, Description = description, Options = new Option { Clickable = true } });
 			return this;
 		}
-	}
+    }
 }

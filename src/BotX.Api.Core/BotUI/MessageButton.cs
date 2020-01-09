@@ -45,15 +45,19 @@ namespace BotX.Api.BotUI
 			Arguments = args;
 
 			if (@event == null)
-				return;
+			{
+				InternalCommand = title;
+			}
+			else
+			{
+				var pair = ActionExecutor.actionEvents.SingleOrDefault(x => x.Value == @event.GetMethodInfo());
 
-			var pair = ActionExecutor.actionEvents.SingleOrDefault(x => x.Value == @event.GetMethodInfo());
+				if (!pair.Equals(default(KeyValuePair<string, MethodInfo>)))
+					InternalCommand = $"/{pair.Key}";
 
-			if (!pair.Equals(default(KeyValuePair<string, MethodInfo>)))
-				InternalCommand = $"/{pair.Key}";
-
-			if (args != null && args.Length > 0)
-				InternalCommand += $" {string.Join(" ", args)}";
+				if (args != null && args.Length > 0)
+					InternalCommand += $" {string.Join(" ", args)}";
+			}
 		}
 	}
 }

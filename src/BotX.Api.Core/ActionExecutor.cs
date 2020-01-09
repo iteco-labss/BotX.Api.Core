@@ -17,23 +17,19 @@ namespace BotX.Api
 	/// <summary>
 	/// Класс, производящий маршрутизацию команд бота между контроллерами
 	/// </summary>
-	public class ActionExecutor : IDisposable
+	internal sealed class ActionExecutor
 	{
 		private static Dictionary<string, Type> actions = new Dictionary<string, Type>();
 		private static HashSet<Type> unnamedActions = new HashSet<Type>();
 		internal static Dictionary<string, MethodInfo> actionEvents = new Dictionary<string, MethodInfo>();
 
-		private readonly IServiceProvider serviceProvider;
-		private readonly ILogger<ActionExecutor> logger;
 		private readonly IServiceScope scope;
+		private readonly ILogger<ActionExecutor> logger;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-		public ActionExecutor(IServiceProvider serviceProvider, ILogger<ActionExecutor> logger)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+		public ActionExecutor(IServiceScopeFactory serviceScopeFactory, ILogger<ActionExecutor> logger)
 		{
-			this.serviceProvider = serviceProvider;
+			scope = serviceScopeFactory.CreateScope();
 			this.logger = logger;
-			this.scope = serviceProvider.CreateScope();
 		}
 
 		internal static void AddAction(string name, Type botActionClass) // where T : class, IBotAction
@@ -49,14 +45,18 @@ namespace BotX.Api
 		internal static void AddUnnamedAction(Type botActionClass)
 		{
 			unnamedActions.Add(botActionClass);
-			actions.Add(botActionClass.Name.ToLower(), botActionClass);
+            if (!actions.ContainsKey(botActionClass.Name.ToLower()))
+                actions.Add(botActionClass.Name.ToLower(), botActionClass);
 			ProcessEvents(botActionClass.Name.ToLower(), botActionClass);
 		}
 
 		internal static void AddEventReceiver(Type botEventReceiverClass)
 		{
-			actions.Add(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
-			ProcessEvents(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
+            if (!actions.ContainsKey(botEventReceiverClass.Name.ToLower()))
+            {
+                actions.Add(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
+                ProcessEvents(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
+            }
 		}
 
 		internal static string MakeEventKey(string actionName, string eventName)
@@ -66,7 +66,7 @@ namespace BotX.Api
 
 		private static void ProcessEvents(string actionName, Type botActionClass)
 		{
-			var methods = botActionClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+			var methods = botActionClass.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
 				.Where(x => x.GetCustomAttribute<BotButtonEventAttribute>() != null)
 				.ToDictionary(x => MakeEventKey(actionName, x.GetCustomAttribute<BotButtonEventAttribute>().EventName));
 
@@ -119,10 +119,9 @@ namespace BotX.Api
 		{
 			logger.LogInformation("Enter InvokeNamedAction");
 			try
-			{
-				
+			{				
 				var action = (IBotAction)scope.ServiceProvider.GetService(actions[actionName]);
-				await action.ExecuteAsync(request, args);
+				await action.InternalExecuteAsync(request, args);
 			}
 			catch(Exception ex)
 			{
@@ -145,15 +144,8 @@ namespace BotX.Api
 			foreach (var actionType in unnamedActions)
 			{
 				var action = (IBotAction)scope.ServiceProvider.GetService(actionType);
-				await action.ExecuteAsync(request, null);
+				await action.InternalExecuteAsync(request, null);
 			}
-		}
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-		public void Dispose()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
-		{
-			this.scope.Dispose();
 		}
 	}
 }

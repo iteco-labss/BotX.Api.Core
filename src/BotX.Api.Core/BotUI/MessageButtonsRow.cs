@@ -41,6 +41,16 @@ namespace BotX.Api.BotUI
 		}
 
 		/// <summary>
+		/// Создаёт кнопку <c>без обработчика</c> внутри данной строки. Нажатие на эту кнопку генерирует сообщение с названием кнопки
+		/// </summary>
+		/// <param name="title">Название кнопки</param>
+		/// <returns></returns>
+		public MessageButton AddButton(string title)
+		{
+			return AddButton(title, null);
+		}
+
+		/// <summary>
 		/// Создаёт пустую ячейку вместо кнопки
 		/// </summary>
 		public void AddEmpty()

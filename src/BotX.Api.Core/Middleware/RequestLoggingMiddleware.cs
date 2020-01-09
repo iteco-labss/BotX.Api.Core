@@ -12,6 +12,7 @@ namespace BotX.Api.Middleware
 	public class RequestLoggingMiddleware
 	{
 		private readonly RequestDelegate next;
+		private const int maxLength = 1024 * 64;
 
 		public RequestLoggingMiddleware(RequestDelegate next)
 		{
@@ -24,7 +25,16 @@ namespace BotX.Api.Middleware
 			{
 				context.Request.EnableBuffering();
 				StreamReader reader = new StreamReader(context.Request.Body);
-				string body = await reader.ReadToEndAsync();
+				string body = string.Empty;
+
+				if (context.Request.ContentLength < maxLength)
+					body = await reader.ReadToEndAsync();
+				else
+				{
+					var buffer = new char[maxLength];
+					await reader.ReadAsync(buffer, 0, maxLength);
+					body = new string(buffer) + "... (the message was trimmed)";
+				}
 				logger.LogInformation(body);
 			}
 			finally

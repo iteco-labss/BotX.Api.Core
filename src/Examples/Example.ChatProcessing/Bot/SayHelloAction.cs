@@ -12,9 +12,13 @@ namespace Example.ChatProcessing.Bot
 	[BotAction("sayhello")]
 	public class SayHelloAction : BotAction
 	{
+		public SayHelloAction(IBotMessageSender messageSender) : base(messageSender)
+		{
+		}
+
 		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
 		{
-			await MessageSender.ReplyTextMessageAsync(userMessage, "Hello. How are you?");
+			await MessageSender.ReplyTextMessageAsync(userMessage, "Hello. How are you?", userMessage.From.Huid);
 		}
 	}
 }

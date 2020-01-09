@@ -23,7 +23,10 @@ namespace Example.ChatProcessing
 		public void ConfigureServices(IServiceCollection services)
 		{
 			var cts = Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
-			services.AddExpressBot(cts, true)
+            if (string.IsNullOrEmpty(cts))
+                throw new Exception("cts server address is not found");
+
+            services.AddExpressBot(cts, true)
 				.AddBaseCommand("sayhello", "скажи привет")
 				.AddBaseCommand("saydate", "скажи дату");
 		}

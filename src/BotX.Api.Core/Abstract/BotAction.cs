@@ -13,16 +13,21 @@ namespace BotX.Api.Abstract
 	/// </summary>
 	public abstract class BotAction : IBotAction
 	{
-		/// <summary>
-		/// Объект, используемый для отправки исходящих сообщений пользователю от бота
-		/// </summary>
-		public BotMessageSender MessageSender { get; private set; }
+		protected IBotMessageSender MessageSender { get; private set; }
+
+		protected UserMessage RequestMessage { get; private set; }
 
 #pragma warning disable CS1591 
-		public BotAction()
+		public BotAction(IBotMessageSender messageSender)
 #pragma warning restore CS1591
 		{
-			MessageSender = ExpressBotService.Configuration.ServiceProvider.GetService(typeof(BotMessageSender)) as BotMessageSender;
+			MessageSender = messageSender;
+		}
+
+		async Task IBotAction.InternalExecuteAsync(UserMessage userMessage, string[] args)
+		{
+			RequestMessage = userMessage;
+			await ExecuteAsync(userMessage, args);
 		}
 
 		/// <summary>

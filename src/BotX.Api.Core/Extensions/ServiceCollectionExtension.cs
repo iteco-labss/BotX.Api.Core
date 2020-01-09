@@ -1,4 +1,5 @@
 ﻿using BotX.Api.Attributes;
+using BotX.Api.StateMachine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -23,13 +24,14 @@ namespace BotX.Api.Extensions
 		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices, 
 			string ctsServiceUrl, Guid botId, bool inChatExceptions = false)
 		{
+			
 			externalServices.AddRouting();
-			externalServices.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
-			externalServices.AddSingleton(x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
+			externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
+			externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
 			externalServices.AddSingleton<ActionExecutor>();
 			ConfigureBotActions(Assembly.GetEntryAssembly(), externalServices);
 
-			return new ExpressBotService(botId, inChatExceptions, externalServices.BuildServiceProvider());
+			return new ExpressBotService(botId, inChatExceptions, externalServices);
 		}
 
 		/// <summary>
@@ -44,9 +46,27 @@ namespace BotX.Api.Extensions
 			return AddExpressBot(externalServices, ctsServiceUrl, Guid.Empty, inChatExceptions);
 		}
 
-		private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)
+        public static void AddStateMachine<T>(this IServiceCollection externalServices) where T : BaseStateMachine
+        {
+            if (ExpressBotService.Configuration == null)
+                throw new Exception($"Перед использованием {nameof(AddStateMachine)} необходимо сначала вызвать {nameof(AddExpressBot)}");
+
+            if (!ExpressBotService.Configuration.StateMachines.Any(x => x == typeof(T)))
+            {
+                externalServices.AddTransient<T>();
+                ExpressBotService.Configuration.StateMachines.Add(typeof(T));
+            }
+
+			var allStateTypes = Assembly.GetEntryAssembly().ExportedTypes
+				.Where(x => x.IsSubclassOf(typeof(BaseState)));
+
+			foreach (var t in allStateTypes)
+				externalServices.AddTransient(t);
+		}
+
+        private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)
 		{
-			services.AddSingleton<ActionExecutor>();
+			services.AddScoped<ActionExecutor>();
 			var typesWithAttribute = applicationAssembly.GetExportedTypes()
 				.Where(x => x.GetCustomAttribute(typeof(BotActionAttribute)) != null);
 
@@ -71,7 +91,6 @@ namespace BotX.Api.Extensions
 
 				ActionExecutor.AddEventReceiver(type);
 			}
-
 		}
 	}
 }
