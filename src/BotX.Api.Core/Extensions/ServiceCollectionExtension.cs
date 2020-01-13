@@ -31,11 +31,11 @@ namespace BotX.Api.Extensions
 			config.BotId = botId;
 			config.CtsServiceUrl = ctsServiceUrl;
 			config.SecretKey = secretKey;
-			config.inChatExceptions = inChatExceptions;
+			config.InChatExceptions = inChatExceptions;
 			externalServices.AddSingleton(config);
 
 
-			externalServices.AddHttpClient<IBotXHttpClient, BotXHttpClient>()//.AddHttpMessageHandler<CheckUnauthorizeHandler>();
+			//externalServices.AddHttpClient<IBotXHttpClient, BotXHttpClient>();	//.AddHttpMessageHandler<CheckUnauthorizeHandler>();
 			//externalServices.AddSingleton<IBotMessageSender, BotMessageSender>();
 			externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), x.GetService<IBotXHttpClient>()));
 			//externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
@@ -52,9 +52,17 @@ namespace BotX.Api.Extensions
 		/// <param name="ctsServiceUrl">Адрес сервиса cts. Например https://cts.example.com</param>
 		/// <param name="inChatExceptions">Нужно ли выводить сообщения об ошибках в чат</param>
 		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices,
-			string ctsServiceUrl, Settings settings)
+			string ctsServiceUrl, bool inChatExceptions = false)
 		{
-			return AddExpressBot(externalServices, ctsServiceUrl, Guid.Empty, settings.InChatExceptions);
+			externalServices.AddRouting();
+			var config = new BotXConfig();
+			//config.BotId = botId;
+			config.CtsServiceUrl = ctsServiceUrl;
+			//config.SecretKey = secretKey;
+			config.InChatExceptions = inChatExceptions;
+			externalServices.AddSingleton(config);
+
+			return AddExpressBot(externalServices, ctsServiceUrl, Guid.Empty, inChatExceptions);
 		}
 
 		public static void AddStateMachine<T>(this IServiceCollection externalServices) where T : BaseStateMachine

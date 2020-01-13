@@ -11,6 +11,6 @@ namespace BotX.Api.Configuration
 		public string SecretKey { get; set; }
 		// TODO Мне кажется не лучшая идея хранить здесь токен и менять конфиг
 		public string AuthToken { get; set; }
-		public bool inChatExceptions { get; set; }
+		public bool InChatExceptions { get; set; }
 	}
 }
