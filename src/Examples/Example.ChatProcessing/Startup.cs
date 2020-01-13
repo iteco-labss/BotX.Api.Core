@@ -26,7 +26,7 @@ namespace Example.ChatProcessing
             if (string.IsNullOrEmpty(cts))
                 throw new Exception("cts server address is not found");
 
-            services.AddExpressBot(cts, true)
+            services.AddExpressBot(cts, false)
 				.AddBaseCommand("sayhello", "скажи привет")
 				.AddBaseCommand("saydate", "скажи дату");
 		}

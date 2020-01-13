@@ -28,7 +28,7 @@ namespace Example.StateMachine
             if (string.IsNullOrEmpty(cts))
                 throw new Exception("cts server address is not found");
 
-            services.AddExpressBot(cts, true)
+            services.AddExpressBot(cts)
                 .AddBaseCommand("start", "State machine");
 			services.AddStateMachine<DemoStateMachine>();
         }

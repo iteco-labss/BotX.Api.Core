@@ -1,4 +1,5 @@
 ﻿using BotX.Api.Attributes;
+using BotX.Api.Configuration;
 using BotX.Api.StateMachine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -41,9 +42,9 @@ namespace BotX.Api.Extensions
 		/// <param name="ctsServiceUrl">Адрес сервиса cts. Например https://cts.example.com</param>
 		/// <param name="inChatExceptions">Нужно ли выводить сообщения об ошибках в чат</param>
 		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices,
-			string ctsServiceUrl, bool inChatExceptions = false)
+			string ctsServiceUrl, Settings settings)
 		{
-			return AddExpressBot(externalServices, ctsServiceUrl, Guid.Empty, inChatExceptions);
+			return AddExpressBot(externalServices, ctsServiceUrl, Guid.Empty, settings.InChatExceptions);
 		}
 
         public static void AddStateMachine<T>(this IServiceCollection externalServices) where T : BaseStateMachine
