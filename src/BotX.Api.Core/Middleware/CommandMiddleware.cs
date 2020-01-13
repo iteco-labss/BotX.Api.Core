@@ -40,6 +40,7 @@ namespace BotX.Api.Middleware
 					  try
 					  {
 						  bool stateMachineLaunched = false;
+
 						  foreach (var smType in ExpressBotService.Configuration.StateMachines)
 						  {
 							  var machine = ExpressBotService.Configuration.ServiceProvider.GetService(smType) as BaseStateMachine;
