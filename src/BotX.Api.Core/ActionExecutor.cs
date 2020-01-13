@@ -56,7 +56,7 @@ namespace BotX.Api
             {
                 actions.Add(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
                 ProcessEvents(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
-            }
+			}
 		}
 
 		internal static string MakeEventKey(string actionName, string eventName)

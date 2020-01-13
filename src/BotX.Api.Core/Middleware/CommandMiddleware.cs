@@ -1,4 +1,5 @@
-﻿using BotX.Api.JsonModel.Request;
+﻿using BotX.Api.Configuration;
+using BotX.Api.JsonModel.Request;
 using BotX.Api.StateMachine;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,7 +76,8 @@ namespace BotX.Api.Middleware
 					  }
 					  catch (Exception ex)
 					  {
-						  await sender.ReplyTextMessageAsync(message, ex.ToString());
+						  if(scope.ServiceProvider.GetService<BotXConfig>().inChatExceptions)
+							 await sender.ReplyTextMessageAsync(message, ex.ToString());
 						  throw;
 					  }
 				  });

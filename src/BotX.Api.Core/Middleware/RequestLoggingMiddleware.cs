@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using BotX.Api.Configuration;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Logging;
 using System;
@@ -19,7 +20,7 @@ namespace BotX.Api.Middleware
 			this.next = next;
 		}
 
-		public async Task InvokeAsync(HttpContext context, ILogger<RequestLoggingMiddleware> logger)
+		public async Task InvokeAsync(HttpContext context, ILogger<RequestLoggingMiddleware> logger, BotXConfig config )
 		{
 			try
 			{

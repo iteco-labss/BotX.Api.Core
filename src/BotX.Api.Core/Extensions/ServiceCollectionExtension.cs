@@ -1,4 +1,6 @@
 ﻿using BotX.Api.Attributes;
+using BotX.Api.Configuration;
+using BotX.Api.HttpClients;
 using BotX.Api.StateMachine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -21,13 +23,22 @@ namespace BotX.Api.Extensions
 		/// <param name="botId">Идентификатор бота</param>
 		/// <param name="inChatExceptions">Нужно ли выводить сообщения об ошибках в чат</param>
 		/// <returns></returns>
-		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices, 
-			string ctsServiceUrl, Guid botId, bool inChatExceptions = false)
+		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices,
+			string ctsServiceUrl, Guid botId, bool inChatExceptions = false, string secretKey = null)
 		{
-			
 			externalServices.AddRouting();
-			externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
-			externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
+			var config = new BotXConfig();
+			config.BotId = botId;
+			config.CtsServiceUrl = ctsServiceUrl;
+			config.SecretKey = secretKey;
+			config.inChatExceptions = inChatExceptions;
+			externalServices.AddSingleton(config);
+
+
+			externalServices.AddHttpClient<IBotXHttpClient, BotXHttpClient>()//.AddHttpMessageHandler<CheckUnauthorizeHandler>();
+			//externalServices.AddSingleton<IBotMessageSender, BotMessageSender>();
+			externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), x.GetService<IBotXHttpClient>()));
+			//externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
 			externalServices.AddSingleton<ActionExecutor>();
 			ConfigureBotActions(Assembly.GetEntryAssembly(), externalServices);
 
@@ -46,16 +57,16 @@ namespace BotX.Api.Extensions
 			return AddExpressBot(externalServices, ctsServiceUrl, Guid.Empty, inChatExceptions);
 		}
 
-        public static void AddStateMachine<T>(this IServiceCollection externalServices) where T : BaseStateMachine
-        {
-            if (ExpressBotService.Configuration == null)
-                throw new Exception($"Перед использованием {nameof(AddStateMachine)} необходимо сначала вызвать {nameof(AddExpressBot)}");
+		public static void AddStateMachine<T>(this IServiceCollection externalServices) where T : BaseStateMachine
+		{
+			if (ExpressBotService.Configuration == null)
+				throw new Exception($"Перед использованием {nameof(AddStateMachine)} необходимо сначала вызвать {nameof(AddExpressBot)}");
 
-            if (!ExpressBotService.Configuration.StateMachines.Any(x => x == typeof(T)))
-            {
-                externalServices.AddTransient<T>();
-                ExpressBotService.Configuration.StateMachines.Add(typeof(T));
-            }
+			if (!ExpressBotService.Configuration.StateMachines.Any(x => x == typeof(T)))
+			{
+				externalServices.AddTransient<T>();
+				ExpressBotService.Configuration.StateMachines.Add(typeof(T));
+			}
 
 			var allStateTypes = Assembly.GetEntryAssembly().ExportedTypes
 				.Where(x => x.IsSubclassOf(typeof(BaseState)));
@@ -64,7 +75,7 @@ namespace BotX.Api.Extensions
 				externalServices.AddTransient(t);
 		}
 
-        private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)
+		private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)
 		{
 			services.AddScoped<ActionExecutor>();
 			var typesWithAttribute = applicationAssembly.GetExportedTypes()
