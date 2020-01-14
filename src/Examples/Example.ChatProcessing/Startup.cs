@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BotX.Api;
 using BotX.Api.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,11 +24,23 @@ namespace Example.ChatProcessing
 		public void ConfigureServices(IServiceCollection services)
 		{
 			var cts = Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
-            if (string.IsNullOrEmpty(cts))
-                throw new Exception("cts server address is not found");
+			if (string.IsNullOrEmpty(cts))
+				throw new Exception("cts server address is not found");
 
-            services.AddExpressBot(cts, true)
-				.AddBaseCommand("sayhello", "скажи привет")
+			// example bot configuration with authorization 
+			//services.AddExpressBot(new BotXConfig()
+			//{
+			//	CtsServiceUrl = cts,
+			//	BotId = new Guid("botId"),
+			//	SecretKey = "SecretKey",
+			//	InChatExceptions = true
+			//});
+
+			services.AddExpressBot(new BotXConfig()
+			{
+				CtsServiceUrl = cts,
+				InChatExceptions = true
+			}).AddBaseCommand("sayhello", "скажи привет")
 				.AddBaseCommand("saydate", "скажи дату");
 		}
 

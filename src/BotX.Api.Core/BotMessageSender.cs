@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using BotX.Api.JsonModel;
 using BotX.Api.JsonModel.Response.Mentions;
+using BotX.Api.HttpClients;
 
 namespace BotX.Api
 {
@@ -25,16 +26,17 @@ namespace BotX.Api
 		private const string API_SEND_FILE = "api/v1/botx/file/callback";
 		private readonly ILogger<BotMessageSender> logger;
 		private readonly string server;
+		private readonly IBotXHttpClient httpClient;
 
 		/// <summary>
 		/// Инициализация нового экземпляра клиента
 		/// </summary>
 		/// <param name="logger"></param>
-		/// <param name="server"></param>
-		internal BotMessageSender(ILogger<BotMessageSender> logger, string server)
+		/// <param name="httpClient"></param>
+		internal BotMessageSender(ILogger<BotMessageSender> logger, IBotXHttpClient httpClient)
 		{
 			this.logger = logger;
-			this.server = server;
+			this.httpClient = httpClient;
 		}
 
 		#region Отправка текстового сообщения
@@ -64,7 +66,7 @@ namespace BotX.Api
 			};
 
 
-			await PostNotificationAsync(notification);
+			await httpClient.SendNotificationAsync(notification);
 		}
 		
 		public async Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText)
@@ -91,21 +93,7 @@ namespace BotX.Api
 				}
 			};
 
-			await PostNotificationAsync(notification);
-		}
-
-		internal async Task PostNotificationAsync(NotificationMessage message)
-		{
-			ValidateMessage(message);
-			logger.LogInformation("sending... " + JsonConvert.SerializeObject(message));
-			using (HttpClient client = new HttpClient())
-			{
-				var requestUri = new Uri(new Uri(server), API_SEND_MESSAGE_NOTIFICATION);
-				logger.LogInformation(requestUri.ToString());
-				var result = await client.PostAsJsonAsync(requestUri, message);
-				if (!result.IsSuccessStatusCode)
-					throw new HttpRequestException(await result.Content.ReadAsStringAsync());
-			}
+			await httpClient.SendNotificationAsync(notification);
 		}
 
 		#endregion
@@ -170,7 +158,7 @@ namespace BotX.Api
 			if (botId == Guid.Empty)
 				return;
 
-			await PostReplyAsync(new ResponseMessage
+			await httpClient.SendReplyAsync(new ResponseMessage
 			{
 				BotId = botId,
 				SyncId = syncId,
@@ -189,7 +177,7 @@ namespace BotX.Api
 			if (botId == Guid.Empty)
 				return;
 
-			await PostReplyAsync(new ResponseMessage
+			await httpClient.SendReplyAsync(new ResponseMessage
 			{
 				BotId = botId,
 				SyncId = syncId,
@@ -207,7 +195,7 @@ namespace BotX.Api
 			if (botId == Guid.Empty)
 				return;
 
-			await PostReplyAsync(new ResponseMessage
+			await httpClient.SendReplyAsync(new ResponseMessage
 			{
 				BotId = botId,
 				SyncId = syncId,
@@ -227,7 +215,7 @@ namespace BotX.Api
 		
 		public async Task SendFileAsync(Guid syncId, string fileName, byte[] data)
 		{
-			await PostFileAsync(
+			await httpClient.SendFileAsync(
 				syncId: syncId,
 				botId: ExpressBotService.Configuration.BotId,
 				fileName: fileName,
@@ -263,28 +251,5 @@ namespace BotX.Api
 			}
 		}
 		#endregion
-
-		internal async Task PostReplyAsync(ResponseMessage message)
-		{
-			ValidateMessage(message);
-			logger.LogInformation("sending... " + JsonConvert.SerializeObject(message));
-			using (HttpClient client = new HttpClient())
-			{
-				var requestUri = new Uri(new Uri(server), API_SEND_MESSAGE_ASNWER);
-				logger.LogInformation(requestUri.ToString());
-				var result = await client.PostAsJsonAsync(requestUri, message);
-				if (!result.IsSuccessStatusCode)
-					throw new HttpRequestException(await result.Content.ReadAsStringAsync());
-			}
-		}
-
-		private void ValidateMessage(IMessage message)
-		{
-			if (message.BotId == Guid.Empty)
-				throw new InvalidOperationException(
-					$"Для отправки сообщений пользователю, необходимо задать идентификатор бота " +
-					$"(метод {nameof(ServiceCollectionExtension.AddExpressBot)}). " +
-					$"Без идентификатора возможно только получение и ответ на полученные сообщения");
-		}
 	}
 }
