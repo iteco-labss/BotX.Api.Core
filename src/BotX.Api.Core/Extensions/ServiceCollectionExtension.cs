@@ -35,7 +35,7 @@ namespace BotX.Api.Extensions
 			externalServices.AddSingleton(config);
 
 
-			//externalServices.AddHttpClient<IBotXHttpClient, BotXHttpClient>();	//.AddHttpMessageHandler<CheckUnauthorizeHandler>();
+			externalServices.AddHttpClient<IBotXHttpClient, BotXHttpClient>();//.AddHttpMessageHandler<CheckUnauthorizeHandler>();
 			//externalServices.AddSingleton<IBotMessageSender, BotMessageSender>();
 			externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), x.GetService<IBotXHttpClient>()));
 			//externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
