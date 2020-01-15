@@ -39,8 +39,6 @@ namespace BotX.Api.Middleware
 					  var sender = ExpressBotService.Configuration.ServiceProvider.GetService<IBotMessageSender>();
 					  try
 					  {
-						  throw new Exception("dasd");
-
 						  bool stateMachineLaunched = false;
 
 						  foreach (var smType in ExpressBotService.Configuration.StateMachines)
