@@ -78,10 +78,9 @@ namespace BotX.Api.Middleware
 					  {
 						  var config = ExpressBotService.Configuration.ServiceProvider.GetService<BotXConfig>();
 						  if (config.InChatExceptions == true)
-						  {
 							  await sender.ReplyTextMessageAsync(message, ex.ToString());
+						  else
 							  throw;
-						  }
 					  }
 				  });
 			}
