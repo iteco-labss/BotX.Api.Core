@@ -1,5 +1,4 @@
-﻿using BotX.Api.Configuration;
-using BotX.Api.JsonModel.Request;
+﻿using BotX.Api.JsonModel.Request;
 using BotX.Api.StateMachine;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +21,7 @@ namespace BotX.Api.Middleware
 			this.next = next;
 		}
 
-		public async Task InvokeAsync(HttpContext context, ILogger<CommandMiddleware> logger, IServiceProvider serviceProvider, IBotMessageSender sender, BotXConfig botXConfig)
+		public async Task InvokeAsync(HttpContext context, ILogger<CommandMiddleware> logger, IServiceProvider serviceProvider)
 		{
 			using (var scope = serviceProvider.CreateScope())
 			{
@@ -37,8 +36,11 @@ namespace BotX.Api.Middleware
 
 				_ = Task.Run(async () =>
 				  {
+					  var sender = ExpressBotService.Configuration.ServiceProvider.GetService<IBotMessageSender>();
 					  try
 					  {
+						  throw new Exception("dasd");
+
 						  bool stateMachineLaunched = false;
 
 						  foreach (var smType in ExpressBotService.Configuration.StateMachines)
@@ -76,7 +78,8 @@ namespace BotX.Api.Middleware
 					  }
 					  catch (Exception ex)
 					  {
-						  if (botXConfig.InChatExceptions == true)
+						  var config = ExpressBotService.Configuration.ServiceProvider.GetService<BotXConfig>();
+						  if (config.InChatExceptions == true)
 						  {
 							  await sender.ReplyTextMessageAsync(message, ex.ToString());
 							  throw;
