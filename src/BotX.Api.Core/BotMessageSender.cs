@@ -32,11 +32,10 @@ namespace BotX.Api
 		/// Инициализация нового экземпляра клиента
 		/// </summary>
 		/// <param name="logger"></param>
-		/// <param name="server"></param>
+		/// <param name="httpClient"></param>
 		internal BotMessageSender(ILogger<BotMessageSender> logger, IBotXHttpClient httpClient)
 		{
 			this.logger = logger;
-			//this.server = server;
 			this.httpClient = httpClient;
 		}
 
@@ -95,20 +94,6 @@ namespace BotX.Api
 			};
 
 			await httpClient.SendNotificationAsync(notification);
-		}
-
-		internal async Task PostNotificationAsync(NotificationMessage message)
-		{
-			ValidateMessage(message);
-			logger.LogInformation("sending... " + JsonConvert.SerializeObject(message));
-			using (HttpClient client = new HttpClient())
-			{
-				var requestUri = new Uri(new Uri(server), API_SEND_MESSAGE_NOTIFICATION);
-				logger.LogInformation(requestUri.ToString());
-				var result = await client.PostAsJsonAsync(requestUri, message);
-				if (!result.IsSuccessStatusCode)
-					throw new HttpRequestException(await result.Content.ReadAsStringAsync());
-			}
 		}
 
 		#endregion
@@ -266,29 +251,5 @@ namespace BotX.Api
 			}
 		}
 		#endregion
-
-		internal async Task PostReplyAsync(ResponseMessage message)
-		{
-			// TODO Вроде здесь реплай и у нас уже есть бот ид
-			ValidateMessage(message);
-			logger.LogInformation("sending... " + JsonConvert.SerializeObject(message));
-			using (HttpClient client = new HttpClient())
-			{
-				var requestUri = new Uri(new Uri(server), API_SEND_MESSAGE_ASNWER);
-				logger.LogInformation(requestUri.ToString());
-				var result = await client.PostAsJsonAsync(requestUri, message);
-				if (!result.IsSuccessStatusCode)
-					throw new HttpRequestException(await result.Content.ReadAsStringAsync());
-			}
-		}
-
-		private void ValidateMessage(IMessage message)
-		{
-			if (message.BotId == Guid.Empty)
-				throw new InvalidOperationException(
-					$"Для отправки сообщений пользователю, необходимо задать идентификатор бота " +
-					$"(метод {nameof(ServiceCollectionExtension.AddExpressBot)}). " +
-					$"Без идентификатора возможно только получение и ответ на полученные сообщения");
-		}
 	}
 }

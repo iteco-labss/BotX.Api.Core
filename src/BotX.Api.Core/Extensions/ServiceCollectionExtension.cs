@@ -1,5 +1,5 @@
 ﻿using BotX.Api.Attributes;
-using BotX.Api.Configuration;
+using BotX.Api;
 using BotX.Api.HttpClients;
 using BotX.Api.StateMachine;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,50 +19,22 @@ namespace BotX.Api.Extensions
 		/// Добавляет поддержку BotX Api, позволяя создавать ботов для мессенджера Express
 		/// </summary>
 		/// <param name="externalServices"></param>
-		/// <param name="ctsServiceUrl">Адрес сервиса cts. Например https://cts.example.com</param>
-		/// <param name="botId">Идентификатор бота</param>
-		/// <param name="inChatExceptions">Нужно ли выводить сообщения об ошибках в чат</param>
+		/// <param name="config">Конфиг для BotX Api</param>
 		/// <returns></returns>
-		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices,
-			string ctsServiceUrl, Guid botId, bool inChatExceptions = false, string secretKey = null)
+		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices, BotXConfig config)
 		{
+			if (string.IsNullOrEmpty(config.CtsServiceUrl))
+				throw new NullReferenceException("Отсутствует адрес cts");
+
 			externalServices.AddRouting();
-			var config = new BotXConfig();
-			config.BotId = botId;
-			config.CtsServiceUrl = ctsServiceUrl;
-			config.SecretKey = secretKey;
-			config.InChatExceptions = inChatExceptions;
 			externalServices.AddSingleton(config);
 
-
-			externalServices.AddHttpClient<IBotXHttpClient, BotXHttpClient>();//.AddHttpMessageHandler<CheckUnauthorizeHandler>();
-			//externalServices.AddSingleton<IBotMessageSender, BotMessageSender>();
+			externalServices.AddHttpClient<IBotXHttpClient, BotXHttpClient>();
 			externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), x.GetService<IBotXHttpClient>()));
-			//externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
 			externalServices.AddSingleton<ActionExecutor>();
 			ConfigureBotActions(Assembly.GetEntryAssembly(), externalServices);
 
-			return new ExpressBotService(botId, inChatExceptions, externalServices);
-		}
-
-		/// <summary>
-		/// Добавляет поддержку BotX Api, позволяя создавать ботов для мессенджера Express. Без поддержки исходящих сообщений
-		/// </summary>
-		/// <param name="externalServices"></param>
-		/// <param name="ctsServiceUrl">Адрес сервиса cts. Например https://cts.example.com</param>
-		/// <param name="inChatExceptions">Нужно ли выводить сообщения об ошибках в чат</param>
-		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices,
-			string ctsServiceUrl, bool inChatExceptions = false)
-		{
-			externalServices.AddRouting();
-			var config = new BotXConfig();
-			//config.BotId = botId;
-			config.CtsServiceUrl = ctsServiceUrl;
-			//config.SecretKey = secretKey;
-			config.InChatExceptions = inChatExceptions;
-			externalServices.AddSingleton(config);
-
-			return AddExpressBot(externalServices, ctsServiceUrl, Guid.Empty, inChatExceptions);
+			return new ExpressBotService(config.BotId, config.InChatExceptions, externalServices);
 		}
 
 		public static void AddStateMachine<T>(this IServiceCollection externalServices) where T : BaseStateMachine

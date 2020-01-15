@@ -1,8 +1,9 @@
-﻿using BotX.Api.Configuration;
+﻿using BotX.Api;
 using BotX.Api.Extensions;
 using BotX.Api.JsonModel;
 using BotX.Api.JsonModel.Request;
 using BotX.Api.JsonModel.Response;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -20,17 +21,22 @@ namespace BotX.Api.HttpClients
 {
 	internal class BotXHttpClient : IBotXHttpClient
 	{
-		private const string API_VERSION_2 = "v2";
-		private const string API_VERSION_3 = "v3";
+		private const string API_VERSION_2 = "api/v2";
+		private const string API_VERSION_3 = "api/v3";
 		private const string API_SEND_MESSAGE_ASNWER = "botx/command/callback";
 		private const string API_SEND_MESSAGE_NOTIFICATION = "botx/notification/callback";
-		private const string API_SEND_FILE = "v1/botx/file/callback";
-		private const string API_GET_TOKEN = "v2/botx/bots/$bot_id$/token?signature=$hash$";
+		private const string API_SEND_FILE = "api/v1/botx/file/callback";
+		private const string API_GET_TOKEN = "api/v2/botx/bots/$bot_id$/token?signature=$hash$";
 
 		private readonly string apiVersion;
 		private readonly HttpClient client;
 		private readonly BotXConfig config;
 		private readonly ILogger<BotXHttpClient> logger;
+
+		private static string authToken = null;
+		
+		private static ManualResetEvent manualReset = new ManualResetEvent(true);
+		private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1);
 
 		public BotXHttpClient(HttpClient client, BotXConfig config, ILogger<BotXHttpClient> logger)
 		{
@@ -39,55 +45,47 @@ namespace BotX.Api.HttpClients
 			this.logger = logger;
 			this.apiVersion = !string.IsNullOrEmpty(config.SecretKey) ? API_VERSION_3 : API_VERSION_2;
 
-			client.BaseAddress = new Uri(new Uri(config.CtsServiceUrl), "api/");
+			client.BaseAddress = new Uri(config.CtsServiceUrl);
 
-			if (config.AuthToken != null)
-				client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", config.AuthToken);
-			//else
-			//	AuthorizeAsync().Wait();
-
-
+			if (authToken == null && !string.IsNullOrEmpty(config.SecretKey))
+				AuthorizeAsync().Wait();
 		}
 
 		public async Task SendNotificationAsync(NotificationMessage message)
 		{
 			ValidateMessage(message);
-
 			var requestUrl = $"{apiVersion}/{API_SEND_MESSAGE_NOTIFICATION}";
-			var result = await PostAsJsonAsync(requestUrl, message);
-			if (!result.IsSuccessStatusCode)
-				throw new HttpRequestException(await result.Content.ReadAsStringAsync());
+			await PostAsJsonAsync(requestUrl, message);			
 		}
 
 		public async Task SendReplyAsync(ResponseMessage message)
 		{
-			// TODO Вроде здесь реплай и у нас уже есть бот ид
 			ValidateMessage(message);
 			var requestUrl = $"{apiVersion}/{API_SEND_MESSAGE_ASNWER}";
-			var result = await PostAsJsonAsync(requestUrl, message);
-			if (!result.IsSuccessStatusCode)
-				throw new HttpRequestException(await result.Content.ReadAsStringAsync());
+			await PostAsJsonAsync(requestUrl, message);			
 		}
 
 		public async Task SendFileAsync(Guid syncId, Guid botId, string fileName, byte[] data)
 		{
 			if (botId == Guid.Empty)
 				throw new InvalidOperationException("Для отправки файлов требуется задать идентификатор бота в AddExpressBot");
-
 			
-				var requestUri = new Uri(API_SEND_FILE);
-				var content = new MultipartFormDataContent();
-				content.Add(new StringContent(syncId.ToString()), "sync_id");
-				content.Add(new StringContent(botId.ToString()), "bot_id");
-				content.Add(new StreamContent(new MemoryStream(data)), "file", fileName);
+			var requestUri = new Uri(API_SEND_FILE);
+			var content = new MultipartFormDataContent();
+			content.Add(new StringContent(syncId.ToString()), "sync_id");
+			content.Add(new StringContent(botId.ToString()), "bot_id");
+			content.Add(new StreamContent(new MemoryStream(data)), "file", fileName);
 
-				var result = await client.PostAsync(requestUri, content);
-				if (!result.IsSuccessStatusCode)
-					throw new HttpRequestException(await result.Content.ReadAsStringAsync());
+			var response = await client.PostAsync(requestUri, content);
+			if (!response.IsSuccessStatusCode)
+				throw new HttpRequestException(await response.Content.ReadAsStringAsync());
 		}
 
-		public async Task AuthorizeAsync()
+		private async Task AuthorizeAsync()
 		{
+			// Блокируем отправку новых запросов, пока не закончится авторизация
+			manualReset.Reset();
+			logger.LogInformation("Autirozation");
 			var key = Encoding.ASCII.GetBytes(config.SecretKey);
 			var val = Encoding.ASCII.GetBytes(config.BotId.ToString());
 			using (HMACSHA256 hmac = new HMACSHA256(key))
@@ -98,14 +96,23 @@ namespace BotX.Api.HttpClients
 				if (resp.IsSuccessStatusCode)
 				{
 					var body = await resp.Content.ReadAsStringAsync();
-					var data = JsonConvert.DeserializeObject<AuthResponce>(body);
-					client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.result);
-					config.AuthToken = data.result;
+					var data = JsonConvert.DeserializeObject<AuthResponse>(body);
+					authToken = data.result;
 				}
 			}
+			// Снимаем блокировку отправки запросов
+			manualReset.Set();
 		}
 
-		private Task<HttpResponseMessage> PostAsJsonAsync<T>(string url, T data)
+		/// <summary>
+		/// Отправляет пост запрос к BotX API, при Unauthorized, повторно авторизется
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="url"></param>
+		/// <param name="data"></param>
+		/// <exception cref="HttpRequestException">Возникает при не успешном ответе апи</exception>
+		/// <returns></returns>
+		private async Task<HttpResponseMessage> PostAsJsonAsync<T>(string url, T data)
 		{
 			if (url == null)
 				throw new ArgumentNullException(nameof(url));
@@ -113,12 +120,29 @@ namespace BotX.Api.HttpClients
 			if (data == null)
 				throw new ArgumentNullException(nameof(data));
 
+			manualReset.WaitOne();
 			var dataAsString = JsonConvert.SerializeObject(data);
-			logger.LogInformation(url);
-			logger.LogInformation("sending... " + dataAsString);
-			var content = new StringContent(dataAsString);
-			content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-			return client.PostAsync(url, content);
+			logger.LogInformation($"POST: {url}\r\nDATA: {dataAsString}");
+
+			var response = await client.SendAsync(CreateRequestMessage(url, dataAsString));
+			if (response.StatusCode == HttpStatusCode.Unauthorized)
+			{
+				// Если сразу на нескольких запросах получен Unauthorized, запускаем авторизацию только 1 раз
+				await semaphoreSlim.WaitAsync();
+				try { 
+					if (authToken == response.RequestMessage.Headers.Authorization.Parameter)
+						await AuthorizeAsync();
+				}
+				finally
+				{
+					semaphoreSlim.Release();
+				}
+				response = await client.SendAsync(CreateRequestMessage(url, dataAsString));
+			}
+			if (!response.IsSuccessStatusCode)
+				throw new HttpRequestException(await response.Content.ReadAsStringAsync());
+
+			return response;
 		}
 
 		private void ValidateMessage(IMessage message)
@@ -129,43 +153,14 @@ namespace BotX.Api.HttpClients
 					$"(метод {nameof(ServiceCollectionExtension.AddExpressBot)}). " +
 					$"Без идентификатора возможно только получение и ответ на полученные сообщения");
 		}
-	}
 
-	public interface IBotXHttpClient
-	{
-		public Task AuthorizeAsync();
-		public Task SendFileAsync(Guid syncId, Guid botId, string fileName, byte[] data);
-		public Task SendReplyAsync(ResponseMessage message);
-		public Task SendNotificationAsync(NotificationMessage message);
-	}
-
-	internal class AuthResponce
-	{
-		public string status { get; set; }
-		public string result { get; set; }
-	}
-
-	public class CheckUnauthorizeHandler : DelegatingHandler
-	{
-		//private readonly IBotXHttpClient client;
-
-		//public CheckUnauthorizeHandler(IBotXHttpClient client)
-		//{
-		//	this.client = client;
-		//}
-
-		protected override async Task<HttpResponseMessage> SendAsync(
-			HttpRequestMessage request,
-			CancellationToken cancellationToken)
+		private HttpRequestMessage CreateRequestMessage(string url, string data)
 		{
-			var response = await base.SendAsync(request, cancellationToken);
-
-			if (response.StatusCode == HttpStatusCode.Unauthorized)
-			{
-				//await client.AuthorizeAsync();
-				return await base.SendAsync(request, cancellationToken);
-			}
-			return response;
+			var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+			requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+			requestMessage.Content = new StringContent(data);
+			requestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+			return requestMessage;
 		}
 	}
 }

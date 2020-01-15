@@ -13,33 +13,36 @@ using Microsoft.Extensions.Hosting;
 
 namespace Example.StateMachine
 {
-    public class Startup
-    {
-        private readonly IConfiguration configuration;
+	public class Startup
+	{
+		private readonly IConfiguration configuration;
 
-        public Startup(IConfiguration configuration)
-        {
-            this.configuration = configuration;
-        }
+		public Startup(IConfiguration configuration)
+		{
+			this.configuration = configuration;
+		}
 
-        public void ConfigureServices(IServiceCollection services)
-        {
-            var cts = Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
-            if (string.IsNullOrEmpty(cts))
-                throw new Exception("cts server address is not found");
+		public void ConfigureServices(IServiceCollection services)
+		{
+			var cts = Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
+			if (string.IsNullOrEmpty(cts))
+				throw new Exception("cts server address is not found");
 
-            services.AddExpressBot(cts)
-                .AddBaseCommand("start", "State machine");
+			services.AddExpressBot(new BotX.Api.BotXConfig()
+			{
+				CtsServiceUrl = cts,
+				InChatExceptions = true
+			}).AddBaseCommand("start", "State machine");
 			services.AddStateMachine<DemoStateMachine>();
-        }
+		}
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            app.UseExpress();
-        }
-    }
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+		{
+			if (env.IsDevelopment())
+			{
+				app.UseDeveloperExceptionPage();
+			}
+			app.UseExpress();
+		}
+	}
 }
