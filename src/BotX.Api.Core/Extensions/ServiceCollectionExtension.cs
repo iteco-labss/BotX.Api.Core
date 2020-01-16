@@ -1,4 +1,6 @@
 ﻿using BotX.Api.Attributes;
+using BotX.Api;
+using BotX.Api.HttpClients;
 using BotX.Api.StateMachine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,45 +19,34 @@ namespace BotX.Api.Extensions
 		/// Добавляет поддержку BotX Api, позволяя создавать ботов для мессенджера Express
 		/// </summary>
 		/// <param name="externalServices"></param>
-		/// <param name="ctsServiceUrl">Адрес сервиса cts. Например https://cts.example.com</param>
-		/// <param name="botId">Идентификатор бота</param>
-		/// <param name="inChatExceptions">Нужно ли выводить сообщения об ошибках в чат</param>
+		/// <param name="config">Конфиг для BotX Api</param>
 		/// <returns></returns>
-		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices, 
-			string ctsServiceUrl, Guid botId, bool inChatExceptions = false)
+		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices, BotXConfig config)
 		{
-			
+			if (string.IsNullOrEmpty(config.CtsServiceUrl))
+				throw new NullReferenceException("Отсутствует адрес cts");
+
 			externalServices.AddRouting();
-			externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
-			externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), ctsServiceUrl));
+			externalServices.AddSingleton(config);
+
+			externalServices.AddHttpClient<IBotXHttpClient, BotXHttpClient>();
+			externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), x.GetService<IBotXHttpClient>()));
 			externalServices.AddSingleton<ActionExecutor>();
 			ConfigureBotActions(Assembly.GetEntryAssembly(), externalServices);
 
-			return new ExpressBotService(botId, inChatExceptions, externalServices);
+			return new ExpressBotService(config.BotId, config.InChatExceptions, externalServices);
 		}
 
-		/// <summary>
-		/// Добавляет поддержку BotX Api, позволяя создавать ботов для мессенджера Express. Без поддержки исходящих сообщений
-		/// </summary>
-		/// <param name="externalServices"></param>
-		/// <param name="ctsServiceUrl">Адрес сервиса cts. Например https://cts.example.com</param>
-		/// <param name="inChatExceptions">Нужно ли выводить сообщения об ошибках в чат</param>
-		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices,
-			string ctsServiceUrl, bool inChatExceptions = false)
+		public static void AddStateMachine<T>(this IServiceCollection externalServices) where T : BaseStateMachine
 		{
-			return AddExpressBot(externalServices, ctsServiceUrl, Guid.Empty, inChatExceptions);
-		}
+			if (ExpressBotService.Configuration == null)
+				throw new Exception($"Перед использованием {nameof(AddStateMachine)} необходимо сначала вызвать {nameof(AddExpressBot)}");
 
-        public static void AddStateMachine<T>(this IServiceCollection externalServices) where T : BaseStateMachine
-        {
-            if (ExpressBotService.Configuration == null)
-                throw new Exception($"Перед использованием {nameof(AddStateMachine)} необходимо сначала вызвать {nameof(AddExpressBot)}");
-
-            if (!ExpressBotService.Configuration.StateMachines.Any(x => x == typeof(T)))
-            {
-                externalServices.AddTransient<T>();
-                ExpressBotService.Configuration.StateMachines.Add(typeof(T));
-            }
+			if (!ExpressBotService.Configuration.StateMachines.Any(x => x == typeof(T)))
+			{
+				externalServices.AddTransient<T>();
+				ExpressBotService.Configuration.StateMachines.Add(typeof(T));
+			}
 
 			var allStateTypes = Assembly.GetEntryAssembly().ExportedTypes
 				.Where(x => x.IsSubclassOf(typeof(BaseState)));
@@ -64,7 +55,7 @@ namespace BotX.Api.Extensions
 				externalServices.AddTransient(t);
 		}
 
-        private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)
+		private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)
 		{
 			services.AddScoped<ActionExecutor>();
 			var typesWithAttribute = applicationAssembly.GetExportedTypes()
