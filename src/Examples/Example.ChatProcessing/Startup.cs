@@ -28,6 +28,7 @@ namespace Example.ChatProcessing
 				throw new Exception("cts server address is not found");
 
 			// example bot configuration with authorization 
+
 			//services.AddExpressBot(new BotXConfig()
 			//{
 			//	CtsServiceUrl = cts,

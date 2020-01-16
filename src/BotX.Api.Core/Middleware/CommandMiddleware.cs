@@ -21,7 +21,7 @@ namespace BotX.Api.Middleware
 			this.next = next;
 		}
 
-		public async Task InvokeAsync(HttpContext context, ILogger<CommandMiddleware> logger, IServiceProvider serviceProvider, IBotMessageSender sender)
+		public async Task InvokeAsync(HttpContext context, ILogger<CommandMiddleware> logger, IServiceProvider serviceProvider)
 		{
 			using (var scope = serviceProvider.CreateScope())
 			{
@@ -36,10 +36,10 @@ namespace BotX.Api.Middleware
 
 				_ = Task.Run(async () =>
 				  {
+					  var sender = ExpressBotService.Configuration.ServiceProvider.GetService<IBotMessageSender>();
 					  try
 					  {
 						  bool stateMachineLaunched = false;
-
 						  foreach (var smType in ExpressBotService.Configuration.StateMachines)
 						  {
 							  var machine = ExpressBotService.Configuration.ServiceProvider.GetService(smType) as BaseStateMachine;
@@ -75,8 +75,11 @@ namespace BotX.Api.Middleware
 					  }
 					  catch (Exception ex)
 					  {
-						  await sender.ReplyTextMessageAsync(message, ex.ToString());
-						  throw;
+						  var config = ExpressBotService.Configuration.ServiceProvider.GetService<BotXConfig>();
+						  if (config.InChatExceptions == true)
+							  await sender.ReplyTextMessageAsync(message, ex.ToString());
+						  else
+							  throw;
 					  }
 				  });
 			}
