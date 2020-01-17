@@ -13,5 +13,8 @@ namespace BotX.Api.JsonModel.Response
 
 		[JsonProperty("command")]
 		public string Command { get; set; }
+
+		[JsonProperty("data")]
+		public Data Data { get; set; }
 	}
 }

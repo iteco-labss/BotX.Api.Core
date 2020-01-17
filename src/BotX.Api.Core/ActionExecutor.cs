@@ -1,10 +1,11 @@
 ﻿using BotX.Api.Abstract;
 using BotX.Api.Attributes;
 using BotX.Api.Delegates;
-using BotX.Api.Internal;
 using BotX.Api.JsonModel.Request;
+using BotX.Api.JsonModel.Response;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,7 @@ namespace BotX.Api
 	{
 		private static Dictionary<string, Type> actions = new Dictionary<string, Type>();
 		private static HashSet<Type> unnamedActions = new HashSet<Type>();
-		internal static Dictionary<string, MethodInfo> actionEvents = new Dictionary<string, MethodInfo>();
+		internal static Dictionary<string, EventValue> actionEvents = new Dictionary<string, EventValue>();
 
 		private readonly IServiceScope scope;
 		private readonly ILogger<ActionExecutor> logger;
@@ -32,46 +33,52 @@ namespace BotX.Api
 			this.logger = logger;
 		}
 
-		internal static void AddAction(string name, Type botActionClass) // where T : class, IBotAction
+		internal static void AddAction(string name, Type botActionClass) 
 		{
 			var attribute = botActionClass.GetCustomAttribute<BotActionAttribute>();
 			if (attribute == null)
 				throw new InvalidOperationException($"The type {botActionClass.Name} doesn't have the {nameof(BotActionAttribute)} attribute");
 
 			actions.Add(name, botActionClass);
-			ProcessEvents(name, botActionClass);
+			AddEvent(botActionClass);
 		}
 
 		internal static void AddUnnamedAction(Type botActionClass)
 		{
 			unnamedActions.Add(botActionClass);
-            if (!actions.ContainsKey(botActionClass.Name.ToLower()))
-                actions.Add(botActionClass.Name.ToLower(), botActionClass);
-			ProcessEvents(botActionClass.Name.ToLower(), botActionClass);
+			if (!actions.ContainsKey(botActionClass.Name.ToLower()))
+				actions.Add(botActionClass.Name.ToLower(), botActionClass);
+			AddEvent(botActionClass);
 		}
 
 		internal static void AddEventReceiver(Type botEventReceiverClass)
 		{
-            if (!actions.ContainsKey(botEventReceiverClass.Name.ToLower()))
-            {
-                actions.Add(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
-                ProcessEvents(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
+			if (!actions.ContainsKey(botEventReceiverClass.Name.ToLower()))
+			{
+				actions.Add(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
+				AddEvent(botEventReceiverClass);
 			}
 		}
 
-		internal static string MakeEventKey(string actionName, string eventName)
+		internal static void AddEvent(Type eventClass)
 		{
-			return $"{actionName} {eventName}";
-		}
-
-		private static void ProcessEvents(string actionName, Type botActionClass)
-		{
-			var methods = botActionClass.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-				.Where(x => x.GetCustomAttribute<BotButtonEventAttribute>() != null)
-				.ToDictionary(x => MakeEventKey(actionName, x.GetCustomAttribute<BotButtonEventAttribute>().EventName));
+			var methods = eventClass.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+				.Where(x => x.GetCustomAttribute<BotButtonEventAttribute>() != null);
 
 			foreach (var method in methods)
-				actionEvents.Add(method.Key, method.Value);
+			{
+				string eventName = method.GetCustomAttribute<BotButtonEventAttribute>()?.EventName;
+				if (string.IsNullOrEmpty(eventName))
+					throw new InvalidOperationException($"'EventName' is required with 'BotButtonEventAttribute'");
+				if (actionEvents.ContainsKey(eventName))
+					throw new InvalidOperationException($"Event with name '{eventName}' already exists");
+
+				actionEvents.Add(eventName, new EventValue()
+				{
+					Event = method,
+					EventClass = eventClass,
+				});
+			}
 		}
 
 		internal async Task ExecuteAsync(UserMessage request)
@@ -83,35 +90,33 @@ namespace BotX.Api
 				logger.LogInformation("The message is empty");
 				return;
 			}
+			if (!string.IsNullOrEmpty(request.Command.Data?.EventType))
+			{
+				var payload = JsonConvert.DeserializeObject<Payload>(request.Command.Data?.Payload, new JsonSerializerSettings()
+				{
+					TypeNameHandling = TypeNameHandling.All,
+					MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
+				});
+
+				await InvokeEvent(request, actionEvents[request.Command.Data.EventType], payload);
+				return;
+			}
 
 			bool messageIsAction = request.Command.Body.StartsWith('/');
 			var msg = request.Command.Body.ToLower().Substring(1);
 			var words = messageIsAction ? msg.Split(' ') : new string[0];
 			var actionName = words.Length == 0 ? string.Empty : words.First();
 
-			string command = null;
 			string[] args = null;
 
 			if (words.Length > 1)
 			{
-				command = words[1];
 				args = words.Skip(1).ToArray();
 			}
 
-			var commandKey = MakeEventKey(actionName, command);
-
 			if (!string.IsNullOrEmpty(actionName) && actions.ContainsKey(actionName))
-			{
-				if (string.IsNullOrEmpty(command) || !actionEvents.ContainsKey(commandKey))
-					await InvokeNamedAction(request, actionName, args);
-				else
-					await InvokeEvent(
-						request: request, 
-						actionName: actionName, 
-						@event: actionEvents[commandKey], 
-						args: args.Skip(1).ToArray());
-			}
-			else if (!actionEvents.ContainsKey(commandKey))
+				await InvokeNamedAction(request, actionName, args);
+			else
 				await InvokeUnnamedAction(request);
 		}
 
@@ -119,23 +124,23 @@ namespace BotX.Api
 		{
 			logger.LogInformation("Enter InvokeNamedAction");
 			try
-			{				
+			{
 				var action = (IBotAction)scope.ServiceProvider.GetService(actions[actionName]);
 				await action.InternalExecuteAsync(request, args);
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				logger.LogCritical(ex.ToString());
 				throw;
 			}
 		}
 
-		private async Task InvokeEvent(UserMessage request, string actionName, MethodInfo @event, string[] args)
+		private async Task InvokeEvent(UserMessage request, EventValue @event, Payload payload)
 		{
 			logger.LogInformation("Enter InvokeEvent");
-			var action = scope.ServiceProvider.GetService(actions[actionName]);
-			var eventInstance = Delegate.CreateDelegate(typeof(BotEventHandler), action, @event) as BotEventHandler;
-			await eventInstance(request, args);
+			var action = scope.ServiceProvider.GetService(@event.EventClass);
+			var eventInstance = Delegate.CreateDelegate(typeof(BotEventHandler), action, @event.Event) as BotEventHandler;
+			await eventInstance(request, payload);
 		}
 
 		private async Task InvokeUnnamedAction(UserMessage request)
@@ -147,5 +152,11 @@ namespace BotX.Api
 				await action.InternalExecuteAsync(request, null);
 			}
 		}
+	}
+
+	internal class EventValue
+	{
+		internal Type EventClass { get; set; }
+		internal MethodInfo Event { get; set; }
 	}
 }

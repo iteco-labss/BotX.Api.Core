@@ -1,6 +1,7 @@
 ﻿using BotX.Api.Abstract;
 using BotX.Api.Attributes;
 using BotX.Api.Delegates;
+using BotX.Api.JsonModel.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,15 +27,15 @@ namespace BotX.Api.BotUI
 		/// <param name="handler">Метод-обработчик нажатия на кнопку</param>
 		/// <param name="args">Дополнитеьные аргументы, которые будут возвращены в метод-обработчик</param>
 		/// <returns></returns>
-		public MessageButton AddButton(string title, BotEventHandler handler, params string[] args)
+		public MessageButton AddButton(string title, BotEventHandler handler, Payload payload)
 		{
-			if (args != null && args.Any(x => x.Contains(' ')))
-				throw new ArgumentException($"The button's argument '{nameof(args)}' should not contains whitespace");
+			//if (args != null && args.Any(x => x.Contains(' ')))
+			//	throw new ArgumentException($"The button's argument '{nameof(args)}' should not contains whitespace");
 
 			var btn = new MessageButton(
 				title: title,
 				@event: handler,
-				args: args);
+				payload: payload);
 
 			Buttons.Add(btn);
 			return btn;
@@ -47,7 +48,8 @@ namespace BotX.Api.BotUI
 		/// <returns></returns>
 		public MessageButton AddButton(string title)
 		{
-			return AddButton(title, null);
+			// TODO узнать зачем это и возможно удалить, если это нужно для очеловечивания бота
+			return AddButton(title, null, null);
 		}
 
 		/// <summary>

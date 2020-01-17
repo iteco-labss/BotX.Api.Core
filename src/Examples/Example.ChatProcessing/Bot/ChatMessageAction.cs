@@ -2,10 +2,13 @@
 using BotX.Api.Abstract;
 using BotX.Api.Attributes;
 using BotX.Api.BotUI;
+using BotX.Api.Delegates;
 using BotX.Api.JsonModel.Request;
+using BotX.Api.JsonModel.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Example.ChatProcessing.Bot
@@ -21,16 +24,32 @@ namespace Example.ChatProcessing.Bot
 		{
 			var buttons = new MessageButtonsGrid();
 			var row = buttons.AddRow();
-			row.AddButton("click me!", testClick, "first");
-			row.AddButton("push me!", testClick, "second");
+			row.AddButton("click me!", CountClick, new CountClickPayload());
+			row.AddButton("push me!", NullArgsClick, null);
 			await MessageSender.ReplyTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
+			
 		}
 
-		[BotButtonEvent("testClick")]
-		private async Task testClick(UserMessage userMessage, string[] args)
+		[BotButtonEvent("count")]
+		private async Task CountClick(UserMessage userMessage, Payload payload)
 		{
-			var btn = args.Length > 0 ? args[0] : string.Empty;
-			await MessageSender.ReplyTextMessageAsync(userMessage, $"Button pressed {btn}");
+			var data = (CountClickPayload)payload;
+			await MessageSender.ReplyTextMessageAsync(userMessage, $"Button pressed {data.Count}");
+			data.Increment();
 		}
+
+		[BotButtonEvent("nullArgs")]
+		private async Task NullArgsClick(UserMessage userMessage, Payload payload)
+		{
+			await MessageSender.ReplyTextMessageAsync(userMessage, $"Button pressed without arguments");
+		}
+	}
+
+	public class CountClickPayload : Payload
+	{
+		private static int count = 0;
+
+		public int Count => count;
+		public void Increment() => Interlocked.Increment(ref count);
 	}
 }
