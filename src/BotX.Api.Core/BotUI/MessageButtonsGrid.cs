@@ -35,7 +35,8 @@ namespace BotX.Api.BotUI
 					new Bubble
 					{
 						Command = btn.InternalCommand,
-						Label = btn.Title
+						Label = btn.Title,
+						Data = btn.Data
 					} : new Bubble { Label = " ✖️ ", Command = string.Empty }));
 		}
 	}

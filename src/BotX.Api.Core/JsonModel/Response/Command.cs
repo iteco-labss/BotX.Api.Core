@@ -23,9 +23,15 @@ namespace BotX.Api.JsonModel.Response
 
 		[JsonProperty("elements")]
 		public Element[] Elements { get; set; } = new Element[0];
+
+		[JsonProperty("data")]
+		public Data Data { get; set; }
 	}
 
-
+	public abstract class Payload
+	{
+		
+	}
 
 
 }

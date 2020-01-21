@@ -1,4 +1,6 @@
 ﻿using BotX.Api.Delegates;
+using BotX.Api.JsonModel.Response;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,42 +24,31 @@ namespace BotX.Api.BotUI
 		/// </summary>
 		public string Command { get; }
 
-		internal string[] Arguments { get; set; }
+		internal Data Data { get; set; }
 
 		internal string InternalCommand { get; }
-
-		/// <summary>
-		/// Событие, которое будет вызвано при нажатии на кнопку (либо получении команды из свойства Command)
-		/// Указанное событие должно быть предварительно зарегистрировано
-		/// </summary>
-		public BotEventHandler Event { get; }
 
 		/// <summary>
 		/// Создаёт кнопку, привязанную к действию
 		/// </summary>
 		/// <param name="title">Текст на кнопке</param>
 		/// <param name="event">Событие, выполняемое при нажатии</param>
-		/// <param name="args"></param>
-		internal MessageButton(string title, BotEventHandler @event, string[] args)
+		/// <param name="payload"></param>
+		internal MessageButton(string title, BotEventHandler @event, Payload payload)
 		{
 			Title = title;
-			Event = @event;
-			Arguments = args;
-
-			if (@event == null)
+			Data = new Data();
+			var pair = ActionExecutor.actionEvents.SingleOrDefault(x => x.Value.Event == @event.GetMethodInfo());
+			if (!pair.Equals(default(KeyValuePair<string, EventValue>)))
 			{
-				InternalCommand = title;
+				Data.EventType = pair.Key;
+				Data.Payload = JsonConvert.SerializeObject(payload, new JsonSerializerSettings()
+				{
+					TypeNameHandling = TypeNameHandling.All,
+					MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
+				});
 			}
-			else
-			{
-				var pair = ActionExecutor.actionEvents.SingleOrDefault(x => x.Value == @event.GetMethodInfo());
-
-				if (!pair.Equals(default(KeyValuePair<string, MethodInfo>)))
-					InternalCommand = $"/{pair.Key}";
-
-				if (args != null && args.Length > 0)
-					InternalCommand += $" {string.Join(" ", args)}";
-			}
+			InternalCommand = title;
 		}
 	}
 }
