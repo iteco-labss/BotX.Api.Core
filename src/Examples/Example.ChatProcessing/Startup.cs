@@ -28,7 +28,6 @@ namespace Example.ChatProcessing
 				throw new Exception("cts server address is not found");
 
 			// example bot configuration with authorization 
-
 			//services.AddExpressBot(new BotXConfig()
 			//{
 			//	CtsServiceUrl = cts,
@@ -36,13 +35,14 @@ namespace Example.ChatProcessing
 			//	SecretKey = "SecretKey",
 			//	InChatExceptions = true
 			//});
-
 			services.AddExpressBot(new BotXConfig()
 			{
 				CtsServiceUrl = cts,
 				InChatExceptions = true
 			}).AddBaseCommand("sayhello", "скажи привет")
 				.AddBaseCommand("saydate", "скажи дату");
+
+			services.AddMiddleware<HelloBotMiddleware>();
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
