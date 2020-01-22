@@ -1,4 +1,5 @@
 ﻿using BotX.Api.Delegates;
+using BotX.Api.Executors;
 using BotX.Api.JsonModel.Response;
 using Newtonsoft.Json;
 using System;
@@ -39,7 +40,7 @@ namespace BotX.Api.BotUI
 			Title = title;
 			Data = new Data();
 			var pair = ActionExecutor.actionEvents.SingleOrDefault(x => x.Value.Event == @event.GetMethodInfo());
-			if (!pair.Equals(default(KeyValuePair<string, EventValue>)))
+			if (!pair.Equals(default(KeyValuePair<string, EventData>)))
 			{
 				Data.EventType = pair.Key;
 				Data.Payload = JsonConvert.SerializeObject(payload, new JsonSerializerSettings()

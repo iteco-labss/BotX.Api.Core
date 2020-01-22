@@ -1,5 +1,4 @@
 ﻿using BotX.Api.Attributes;
-using BotX.Api;
 using BotX.Api.HttpClients;
 using BotX.Api.StateMachine;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Reflection;
+using BotX.Api.Executors;
 
 namespace BotX.Api.Extensions
 {
@@ -32,9 +32,20 @@ namespace BotX.Api.Extensions
 			externalServices.AddHttpClient<IBotXHttpClient, BotXHttpClient>();
 			externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), x.GetService<IBotXHttpClient>()));
 			externalServices.AddSingleton<ActionExecutor>();
+			externalServices.AddSingleton<MiddlewareExecutor>();
 			ConfigureBotActions(Assembly.GetEntryAssembly(), externalServices);
 
-			return new ExpressBotService(config.BotId, config.InChatExceptions, externalServices);
+			return new ExpressBotService(config.BotId, config.InChatExceptions);
+		}
+
+		/// <summary>
+		/// Добавляем обработчик, который вызывается до срабатывания эвента, экшена или стейт машины.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="externalServices"></param>
+		public static void AddMiddleware<T>(this IServiceCollection externalServices)
+		{
+			MiddlewareExecutor.AddMiddleware(typeof(T));
 		}
 
 		public static void AddStateMachine<T>(this IServiceCollection externalServices) where T : BaseStateMachine

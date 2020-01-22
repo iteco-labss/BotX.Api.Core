@@ -17,30 +17,15 @@ namespace BotX.Api
 		/// Конфигурация бота
 		/// </summary>
 		public static ExpressBotService Configuration { get; private set; }
-
-		private IServiceProvider serviceProvider;
-
 		internal List<Command> Commands { get; private set; }
         internal List<Type> StateMachines { get; private set; }
 		internal bool ThrowExceptions { get; private set; }
-		private IServiceCollection ServiceCollection { get; }
-		internal IServiceProvider ServiceProvider
-		{
-			get
-			{
-				if (serviceProvider == null)
-					serviceProvider = ServiceCollection.BuildServiceProvider();
-				return serviceProvider;
-			}
-		}
-
 		internal Guid BotId { get; private set; }
 
-		internal ExpressBotService(Guid botId, bool throwExceptions, IServiceCollection serviceDescriptors)
+		internal ExpressBotService(Guid botId, bool throwExceptions)
 		{
 			BotId = botId;
 			ThrowExceptions = throwExceptions;
-			ServiceCollection = serviceDescriptors;
 			Commands = new List<Command>();
             StateMachines = new List<Type>();
 			Configuration = this;

@@ -27,11 +27,4 @@ namespace BotX.Api.JsonModel.Response
 		[JsonProperty("data")]
 		public Data Data { get; set; }
 	}
-
-	public abstract class Payload
-	{
-		
-	}
-
-
 }
