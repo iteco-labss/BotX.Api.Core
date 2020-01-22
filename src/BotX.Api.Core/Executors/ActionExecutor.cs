@@ -13,16 +13,16 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BotX.Api
+namespace BotX.Api.Executors
 {
 	/// <summary>
 	/// Класс, производящий маршрутизацию команд бота между контроллерами
 	/// </summary>
-	internal sealed class ActionExecutor
+	internal sealed class ActionExecutor : IDisposable
 	{
 		private static Dictionary<string, Type> actions = new Dictionary<string, Type>();
 		private static HashSet<Type> unnamedActions = new HashSet<Type>();
-		internal static Dictionary<string, EventValue> actionEvents = new Dictionary<string, EventValue>();
+		internal static Dictionary<string, EventData> actionEvents = new Dictionary<string, EventData>();
 
 		private readonly IServiceScope scope;
 		private readonly ILogger<ActionExecutor> logger;
@@ -73,7 +73,7 @@ namespace BotX.Api
 				if (actionEvents.ContainsKey(eventName))
 					throw new InvalidOperationException($"Event with name '{eventName}' already exists");
 
-				actionEvents.Add(eventName, new EventValue()
+				actionEvents.Add(eventName, new EventData()
 				{
 					Event = method,
 					EventClass = eventClass,
@@ -135,7 +135,7 @@ namespace BotX.Api
 			}
 		}
 
-		private async Task InvokeEvent(UserMessage request, EventValue @event, Payload payload)
+		private async Task InvokeEvent(UserMessage request, EventData @event, Payload payload)
 		{
 			logger.LogInformation("Enter InvokeEvent");
 			var action = scope.ServiceProvider.GetService(@event.EventClass);
@@ -152,9 +152,14 @@ namespace BotX.Api
 				await action.InternalExecuteAsync(request, null);
 			}
 		}
+
+		public void Dispose()
+		{
+			scope.Dispose();
+		}
 	}
 
-	internal class EventValue
+	internal class EventData
 	{
 		internal Type EventClass { get; set; }
 		internal MethodInfo Event { get; set; }
