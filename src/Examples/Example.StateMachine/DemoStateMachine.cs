@@ -1,6 +1,7 @@
 ﻿using BotX.Api;
 using BotX.Api.StateMachine;
 using Example.StateMachine.States;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace Example.StateMachine
 	{
 		private static Dictionary<Guid, string> statesStorage = new Dictionary<Guid, string>();
 
-		public DemoStateMachine(IBotMessageSender messageSender) : base(messageSender)
+		public DemoStateMachine(IBotMessageSender messageSender, IServiceScopeFactory scopeFactory) : base(messageSender, scopeFactory)
 		{
 		}
 

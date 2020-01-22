@@ -93,7 +93,7 @@ namespace BotX.Api.Executors
 				return null;
 			return async delegate (UserMessage message)
 			{
-				using var scope = ExpressBotService.Configuration.ServiceProvider.CreateScope();
+				using var scope = serviceScopeFactory.CreateScope();
 				var parameters = nextMiddleware.Parameters
 					.Select(x => x == typeof(UserMessage) ? message : scope.ServiceProvider.GetService(x))
 					.ToArray();

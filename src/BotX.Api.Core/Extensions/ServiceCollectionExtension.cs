@@ -35,7 +35,7 @@ namespace BotX.Api.Extensions
 			externalServices.AddSingleton<MiddlewareExecutor>();
 			ConfigureBotActions(Assembly.GetEntryAssembly(), externalServices);
 
-			return new ExpressBotService(config.BotId, config.InChatExceptions, externalServices);
+			return new ExpressBotService(config.BotId, config.InChatExceptions);
 		}
 
 		/// <summary>

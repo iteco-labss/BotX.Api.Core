@@ -17,17 +17,17 @@ namespace BotX.Api.Middleware
 			this.next = next;
 		}
 
-		public async Task InvokeAsync(UserMessage message, IServiceProvider serviceProvider)
+		public async Task InvokeAsync(UserMessage message, IServiceScopeFactory serviceScopeFactory)
 		{
-			var sender = ExpressBotService.Configuration.ServiceProvider.GetService<IBotMessageSender>();
+			using var scope = serviceScopeFactory.CreateScope();
+			var sender = scope.ServiceProvider.GetService<IBotMessageSender>();
 			try
 			{
-				using var scope = serviceProvider.CreateScope();
 				var actionExecutor = scope.ServiceProvider.GetService<ActionExecutor>();
 				bool stateMachineLaunched = false;
 				foreach (var smType in ExpressBotService.Configuration.StateMachines)
 				{
-					var machine = ExpressBotService.Configuration.ServiceProvider.GetService(smType) as BaseStateMachine;
+					var machine = scope.ServiceProvider.GetService(smType) as BaseStateMachine;
 
 					if (machine != null)
 					{
@@ -38,7 +38,7 @@ namespace BotX.Api.Middleware
 
 						if (restored != null)
 						{
-							var state = ExpressBotService.Configuration.ServiceProvider.GetService(restored.State.GetType()) as BaseState;
+							var state = scope.ServiceProvider.GetService(restored.State.GetType()) as BaseState;
 							state.StateMachine = machine;
 							if (state is BaseQuestionState && restored.State is BaseQuestionState)
 								(state as BaseQuestionState).isOpen = (restored.State as BaseQuestionState).isOpen;
@@ -60,7 +60,7 @@ namespace BotX.Api.Middleware
 			}
 			catch (Exception ex)
 			{
-				var config = ExpressBotService.Configuration.ServiceProvider.GetService<BotXConfig>();
+				var config = scope.ServiceProvider.GetService<BotXConfig>();
 				if (config.InChatExceptions == true)
 					await sender.ReplyTextMessageAsync(message, ex.ToString());
 				else

@@ -3,6 +3,7 @@ using BotX.Api.Abstract;
 using BotX.Api.Attributes;
 using BotX.Api.JsonModel.Request;
 using Example.ChatProcessing.Bot.StateMachine;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,14 +15,15 @@ namespace Example.StateMachine
 	[BotAction("start")]
 	public class StartAction : BotAction
 	{
-		public StartAction(IBotMessageSender messageSender) : base(messageSender)
+		private readonly DemoStateMachine stateMachine;
+		public StartAction(IBotMessageSender messageSender, DemoStateMachine stateMachine) : base(messageSender)
 		{
+			this.stateMachine = stateMachine;
 		}
 
 		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
 		{
-			DemoStateMachine dsm = new DemoStateMachine(MessageSender);
-			await dsm.EnterAsync(userMessage);
+			await stateMachine.EnterAsync(userMessage);
 		}
 	}
 }
