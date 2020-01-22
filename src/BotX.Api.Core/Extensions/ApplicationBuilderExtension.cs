@@ -1,13 +1,8 @@
-﻿using BotX.Api.Middleware;
-using BotX.Api.StateMachine;
+﻿using BotX.Api.Executors;
+using BotX.Api.Middleware;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BotX.Api.Extensions
 {
@@ -24,6 +19,9 @@ namespace BotX.Api.Extensions
 			builder.MapMiddlewareGet("status", appBuilder => appBuilder.UseMiddleware<StatusMiddleware>());
 			builder.MapMiddlewarePost("command", appBuilder => appBuilder.UseMiddleware<CommandMiddleware>());
 			app.UseRouter(builder.Build());
+
+			var middlewareService = app.ApplicationServices.GetService<MiddlewareExecutor>();
+			middlewareService.CreateChainMiddlewareCall();
 		}
 	}
 }
