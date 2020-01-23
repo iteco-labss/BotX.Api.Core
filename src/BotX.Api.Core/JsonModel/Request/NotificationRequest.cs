@@ -21,8 +21,5 @@ namespace BotX.Api.JsonModel.Request
 		[JsonProperty("notification")]
 		public CommandResult Notification { get; set; }
 
-        [JsonProperty("mentions")]
-        public CommandResult Mentions { get; set; }
-
     }
 }

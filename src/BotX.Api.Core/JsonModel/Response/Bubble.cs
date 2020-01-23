@@ -16,5 +16,8 @@ namespace BotX.Api.JsonModel.Response
 
 		[JsonProperty("data")]
 		public Data Data { get; set; }
+
+		[JsonProperty("opts")]
+		public BubbleOptions Options { get; set; }
 	}
 }

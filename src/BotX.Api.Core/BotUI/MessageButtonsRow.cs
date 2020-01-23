@@ -19,23 +19,40 @@ namespace BotX.Api.BotUI
 		/// Кнопки внутри данной строки
 		/// </summary>
 		public List<MessageButton> Buttons { get; } = new List<MessageButton>();
-		
+
 		/// <summary>
 		/// Создаёт кнопку внутри данной строки
 		/// </summary>
 		/// <param name="title">Текст на кнопке</param>
 		/// <param name="handler">Метод-обработчик нажатия на кнопку</param>
-		/// <param name="args">Дополнитеьные аргументы, которые будут возвращены в метод-обработчик</param>
+		/// <param name="payload">Дополнитеьные аргументы, которые будут возвращены в метод-обработчик</param>
 		/// <returns></returns>
 		public MessageButton AddButton(string title, BotEventHandler handler, Payload payload)
 		{
-			//if (args != null && args.Any(x => x.Contains(' ')))
-			//	throw new ArgumentException($"The button's argument '{nameof(args)}' should not contains whitespace");
-
 			var btn = new MessageButton(
 				title: title,
 				@event: handler,
-				payload: payload);
+				payload: payload,
+				isSilent: false);
+
+			Buttons.Add(btn);
+			return btn;
+		}
+
+		/// <summary>
+		/// Создает кнопку, нажатие на которую не генирирует сообщение в чат
+		/// </summary>
+		/// <param name="title">Текст на кнопке</param>
+		/// <param name="handler">Метод-обработчик нажатия на кнопку</param>
+		/// <param name="payload">Дополнитеьные аргументы, которые будут возвращены в метод-обработчик</param>
+		/// <returns></returns>
+		public MessageButton AddSilentButton(string title, BotEventHandler handler, Payload payload)
+		{
+			var btn = new MessageButton(
+				title: title,
+				@event: handler,
+				payload: payload,
+				isSilent: true);
 
 			Buttons.Add(btn);
 			return btn;

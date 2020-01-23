@@ -27,6 +27,8 @@ namespace BotX.Api.BotUI
 
 		internal Data Data { get; set; }
 
+		internal bool IsSilent { get; set; }
+
 		internal string InternalCommand { get; }
 
 		/// <summary>
@@ -35,10 +37,12 @@ namespace BotX.Api.BotUI
 		/// <param name="title">Текст на кнопке</param>
 		/// <param name="event">Событие, выполняемое при нажатии</param>
 		/// <param name="payload"></param>
-		internal MessageButton(string title, BotEventHandler @event, Payload payload)
+		/// <param name="isSilent"></param>
+		internal MessageButton(string title, BotEventHandler @event, Payload payload, bool isSilent)
 		{
 			Title = title;
 			Data = new Data();
+			IsSilent = isSilent;
 			var pair = ActionExecutor.actionEvents.SingleOrDefault(x => x.Value.Event == @event.GetMethodInfo());
 			if (!pair.Equals(default(KeyValuePair<string, EventData>)))
 			{
