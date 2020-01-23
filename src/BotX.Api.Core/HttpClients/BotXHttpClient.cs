@@ -23,8 +23,9 @@ namespace BotX.Api.HttpClients
 	{
 		private const string API_VERSION_2 = "api/v2";
 		private const string API_VERSION_3 = "api/v3";
-		private const string API_SEND_MESSAGE_ASNWER = "botx/command/callback";
+		private const string API_SEND_REPLY_MESSAGE = "botx/command/callback";
 		private const string API_SEND_MESSAGE_NOTIFICATION = "botx/notification/callback";
+		private const string API_SEND_EDIT_MESSAGE = "botx/events/edit_event";
 		private const string API_SEND_FILE = "api/v1/botx/file/callback";
 		private const string API_GET_TOKEN = "api/v2/botx/bots/$bot_id$/token?signature=$hash$";
 
@@ -53,16 +54,27 @@ namespace BotX.Api.HttpClients
 
 		public async Task SendNotificationAsync(NotificationMessage message)
 		{
-			ValidateMessage(message);
+			if (message.BotId == Guid.Empty)
+				throw new InvalidOperationException(
+					$"Для отправки сообщений пользователю, необходимо задать идентификатор бота " +
+					$"(метод {nameof(ServiceCollectionExtension.AddExpressBot)}). " +
+					$"Без идентификатора возможно только получение и ответ на полученные сообщения");
 			var requestUrl = $"{apiVersion}/{API_SEND_MESSAGE_NOTIFICATION}";
 			await PostAsJsonAsync(requestUrl, message);			
 		}
 
-		public async Task SendReplyAsync(ResponseMessage message)
+		public async Task<Guid> SendReplyAsync(ResponseMessage message)
 		{
-			ValidateMessage(message);
-			var requestUrl = $"{apiVersion}/{API_SEND_MESSAGE_ASNWER}";
-			await PostAsJsonAsync(requestUrl, message);			
+			var requestUrl = $"{apiVersion}/{API_SEND_REPLY_MESSAGE}";
+			var result = await PostAsJsonAsync(requestUrl, message);
+			var syncId = JsonConvert.DeserializeObject<ReplyMessageResponse>(await result.Content.ReadAsStringAsync())?.Result?.SyncId ?? Guid.Empty;
+			return syncId;
+		}
+
+		public async Task EditMessageAsync(EditEventMessage message)
+		{
+			var requestUrl = $"{API_VERSION_3}/{API_SEND_EDIT_MESSAGE}";
+			await PostAsJsonAsync(requestUrl, message);
 		}
 
 		public async Task SendFileAsync(Guid syncId, Guid botId, string fileName, byte[] data)
@@ -107,11 +119,7 @@ namespace BotX.Api.HttpClients
 		/// <summary>
 		/// Отправляет пост запрос к BotX API, при Unauthorized, повторно авторизется
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="url"></param>
-		/// <param name="data"></param>
 		/// <exception cref="HttpRequestException">Возникает при не успешном ответе апи</exception>
-		/// <returns></returns>
 		private async Task<HttpResponseMessage> PostAsJsonAsync<T>(string url, T data)
 		{
 			if (url == null)
@@ -143,15 +151,6 @@ namespace BotX.Api.HttpClients
 				throw new HttpRequestException(await response.Content.ReadAsStringAsync());
 
 			return response;
-		}
-
-		private void ValidateMessage(IMessage message)
-		{
-			if (message.BotId == Guid.Empty)
-				throw new InvalidOperationException(
-					$"Для отправки сообщений пользователю, необходимо задать идентификатор бота " +
-					$"(метод {nameof(ServiceCollectionExtension.AddExpressBot)}). " +
-					$"Без идентификатора возможно только получение и ответ на полученные сообщения");
 		}
 
 		private HttpRequestMessage CreateRequestMessage(string url, string data)
