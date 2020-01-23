@@ -23,24 +23,24 @@ namespace Example.ChatProcessing
 
 		public void ConfigureServices(IServiceCollection services)
 		{
-			var cts = Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
+			var cts = "https://cts.i-teco.ru/";// Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
 			if (string.IsNullOrEmpty(cts))
 				throw new Exception("cts server address is not found");
 
 			// example bot configuration with authorization 
-			//services.AddExpressBot(new BotXConfig()
-			//{
-			//	CtsServiceUrl = cts,
-			//	BotId = new Guid("botId"),
-			//	SecretKey = "SecretKey",
-			//	InChatExceptions = true
-			//});
 			services.AddExpressBot(new BotXConfig()
 			{
 				CtsServiceUrl = cts,
+				BotId = new Guid("807c20c0-a1d0-54df-b46b-41ddf4f02dd7"),
+				SecretKey = "6311c6234d1b371b62f964527fed3c93",
 				InChatExceptions = true
-			}).AddBaseCommand("sayhello", "скажи привет")
-				.AddBaseCommand("saydate", "скажи дату");
+			});
+			//services.AddExpressBot(new BotXConfig()
+			//{
+			//	CtsServiceUrl = cts,
+			//	InChatExceptions = true
+			//}).AddBaseCommand("sayhello", "скажи привет")
+			//	.AddBaseCommand("saydate", "скажи дату");
 
 			services.AddMiddleware<HelloBotMiddleware>();
 		}

@@ -16,6 +16,7 @@ namespace Example.ChatProcessing.Bot
 	[BotAction]
 	public class ChatMessageAction : BotAction
 	{
+		static Guid lastMessageSyncId = Guid.Empty;
 		public ChatMessageAction(IBotMessageSender messageSender) : base(messageSender)
 		{
 		}
@@ -27,15 +28,21 @@ namespace Example.ChatProcessing.Bot
 			row.AddButton("click me!", CountClick, new CountClickPayload());
 			row.AddButton("push me!", NullArgsClick, null);
 
-			await MessageSender.ReplyTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
-			
+			var syncId = await MessageSender.ReplyTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
+			if (syncId != Guid.Empty)
+				lastMessageSyncId = syncId;
+
+
 		}
 
 		[BotButtonEvent("count")]
 		private async Task CountClick(UserMessage userMessage, Payload payload)
 		{
 			var data = (CountClickPayload)payload;
-			await MessageSender.ReplyTextMessageAsync(userMessage, $"Button pressed {data.Count}");
+			var buttons = new MessageButtonsGrid();
+			var row = buttons.AddRow();
+			row.AddButton("Increment", CountClick, data, true);
+			await MessageSender.EditMessageAsync(lastMessageSyncId, $"Button pressed {data.Count}", buttons);
 			data.Increment();
 		}
 
@@ -44,6 +51,7 @@ namespace Example.ChatProcessing.Bot
 		{
 			await MessageSender.ReplyTextMessageAsync(userMessage, $"Button pressed without arguments");
 		}
+
 	}
 
 	public class CountClickPayload : Payload
