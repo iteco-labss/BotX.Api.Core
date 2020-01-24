@@ -19,7 +19,7 @@ namespace BotX.Api.JsonModel.Response
 		public IEnumerable<IEnumerable<Bubble>> Bubble { get; set; } = new List<List<Bubble>>();
 
 		[JsonProperty("keyboard")]
-		public object[] Keyboard { get; set; } = new object[0];
+		public IEnumerable<IEnumerable<Keyboard>> Keyboard { get; set; } = new List<List<Keyboard>>();
 
 		[JsonProperty("files")]
 		public File[] Files { get; set; } = new File[0];

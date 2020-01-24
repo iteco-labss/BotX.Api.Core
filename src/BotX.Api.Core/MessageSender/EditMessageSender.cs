@@ -45,7 +45,14 @@ namespace BotX.Api
 				{
 					Status = "ok",
 					Body = messageText,
-					Bubble = buttons?.GetBubbles() ?? new List<List<Bubble>>(),
+					Bubble = buttons?.GridType == MessageButtonsGridType.Bubble
+						? buttons?.ToButtonsOfType<Bubble>()
+						: null
+							?? new List<List<Bubble>>(),
+					Keyboard = buttons?.GridType == MessageButtonsGridType.Keyboard
+						? buttons?.ToButtonsOfType<Keyboard>()
+						: null
+							?? new List<List<Keyboard>>(),
 					Mentions = mentions
 				}
 			});

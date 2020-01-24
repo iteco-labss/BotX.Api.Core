@@ -41,7 +41,7 @@ namespace Example.ChatProcessing.Bot
 			var data = (CountClickPayload)payload;
 			var buttons = new MessageButtonsGrid();
 			var row = buttons.AddRow();
-			row.AddButton("Increment", CountClick, data, true);
+			row.AddButton("Increment", CountClick, data);
 			await MessageSender.EditMessageAsync(lastMessageSyncId, $"Button pressed {data.Count}", buttons);
 			data.Increment();
 		}
