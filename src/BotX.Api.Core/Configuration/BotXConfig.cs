@@ -16,13 +16,15 @@ namespace BotX.Api
 		[Required]
 		public string CtsServiceUrl { get; set; }
 		/// <summary>
-		/// Идентификатор бота, если BotId не указанн то бот поддерживает только ответ на входящие сообщения от пользователя
+		/// Идентификатор бота, служит для авторизации на cts.
 		/// </summary>
-		public Guid BotId { get; set; } = Guid.Empty;
+		[Required]
+		public Guid BotId { get; set; }
 		/// <summary>
-		/// Секретный ключ, служит для авторизации на cts.(необходим для 3+ версии АПИ) 
+		/// Секретный ключ, служит для авторизации на cts.
 		/// </summary>
-		public string SecretKey { get; set; } = null;
+		[Required]
+		public string SecretKey { get; set; }
 		/// <summary>
 		/// Нужно ли выводить сообщения об ошибках в чат
 		/// </summary>

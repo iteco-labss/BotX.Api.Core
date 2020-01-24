@@ -25,6 +25,10 @@ namespace BotX.Api.Extensions
 		{
 			if (string.IsNullOrEmpty(config.CtsServiceUrl))
 				throw new NullReferenceException("Отсутствует адрес cts");
+			if (string.IsNullOrEmpty(config.SecretKey))
+				throw new ArgumentException("Отсутствует секретный ключ");
+			if (config.BotId == null || config.BotId == Guid.Empty)
+				throw new ArgumentException("Отсутствует BotId");
 
 			externalServices.AddRouting();
 			externalServices.AddSingleton(config);
