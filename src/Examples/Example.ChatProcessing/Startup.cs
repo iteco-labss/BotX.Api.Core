@@ -28,19 +28,19 @@ namespace Example.ChatProcessing
 				throw new Exception("cts server address is not found");
 
 			// example bot configuration with authorization 
-			//services.AddExpressBot(new BotXConfig()
-			//{
-			//	CtsServiceUrl = cts,
-			//	BotId = new Guid("botId"),
-			//	SecretKey = "SecretKey",
-			//	InChatExceptions = true
-			//});
 			services.AddExpressBot(new BotXConfig()
 			{
 				CtsServiceUrl = cts,
+				BotId = new Guid("807c20c0-a1d0-54df-b46b-41ddf4f02dd7"), //Change this with your botid
+				SecretKey = "6311c6234d1b371b62f964527fed3c93", // Change this with your secret key
 				InChatExceptions = true
-			}).AddBaseCommand("sayhello", "скажи привет")
-				.AddBaseCommand("saydate", "скажи дату");
+			});
+			//services.AddExpressBot(new BotXConfig()
+			//{
+			//	CtsServiceUrl = cts,
+			//	InChatExceptions = true
+			//}).AddBaseCommand("sayhello", "скажи привет")
+			//	.AddBaseCommand("saydate", "скажи дату");
 
 			services.AddMiddleware<HelloBotMiddleware>();
 		}

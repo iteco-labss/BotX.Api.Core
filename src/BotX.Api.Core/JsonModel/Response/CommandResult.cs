@@ -24,8 +24,8 @@ namespace BotX.Api.JsonModel.Response
 		[JsonProperty("files")]
 		public File[] Files { get; set; } = new File[0];
 
-        [JsonProperty("mentions")]
-        public Mention[] Mentions { get; set; } = new Mention[0];
+        [JsonProperty(PropertyName = "mentions", NullValueHandling = NullValueHandling.Ignore)]
+        public Mention[] Mentions { get; set; }
 
     }
 }
