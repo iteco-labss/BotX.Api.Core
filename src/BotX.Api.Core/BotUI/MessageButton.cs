@@ -35,25 +35,30 @@ namespace BotX.Api.BotUI
 		/// Создаёт кнопку, привязанную к действию
 		/// </summary>
 		/// <param name="title">Текст на кнопке</param>
+		/// <param name="command">Команда отправляемая в чат</param>
 		/// <param name="event">Событие, выполняемое при нажатии</param>
 		/// <param name="payload"></param>
 		/// <param name="isSilent"></param>
-		internal MessageButton(string title, BotEventHandler @event, Payload payload, bool isSilent)
+		internal MessageButton(string title, string command, BotEventHandler @event, Payload payload, bool isSilent)
 		{
 			Title = title;
 			Data = new Data();
 			IsSilent = isSilent;
-			var pair = ActionExecutor.actionEvents.SingleOrDefault(x => x.Value.Event == @event.GetMethodInfo());
-			if (!pair.Equals(default(KeyValuePair<string, EventData>)))
+			InternalCommand = string.IsNullOrEmpty(command) ? title : command;
+
+			if (@event != null)
 			{
-				Data.EventType = pair.Key;
-				Data.Payload = JsonConvert.SerializeObject(payload, new JsonSerializerSettings()
+				var pair = ActionExecutor.actionEvents.SingleOrDefault(x => x.Value.Event == @event.GetMethodInfo());
+				if (!pair.Equals(default(KeyValuePair<string, EventData>)))
 				{
-					TypeNameHandling = TypeNameHandling.All,
-					MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
-				});
+					Data.EventType = pair.Key;
+					Data.Payload = JsonConvert.SerializeObject(payload, new JsonSerializerSettings()
+					{
+						TypeNameHandling = TypeNameHandling.All,
+						MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
+					});
+				}
 			}
-			InternalCommand = title;
 		}
 	}
 }
