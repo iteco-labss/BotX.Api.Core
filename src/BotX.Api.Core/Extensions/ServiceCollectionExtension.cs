@@ -88,18 +88,6 @@ namespace BotX.Api.Extensions
 				else
 					ActionExecutor.AddAction(att.Action, type);
 			}
-
-			typesWithAttribute = applicationAssembly.GetExportedTypes()
-				.Where(x => x.GetCustomAttribute(typeof(BotEventReceiverAttribute)) != null);
-
-			foreach (var type in typesWithAttribute)
-			{
-				if (!services.Any(x => x.ImplementationType == type))
-					services.AddTransient(type);
-
-				ActionExecutor.AddEventReceiver(type);
-			}
-
 			ActionExecutor.RegisterEvents(applicationAssembly, services);
 
 		}

@@ -50,14 +50,6 @@ namespace BotX.Api.Executors
 				actions.Add(botActionClass.Name.ToLower(), botActionClass);
 		}
 
-		internal static void AddEventReceiver(Type botEventReceiverClass)
-		{
-			if (!actions.ContainsKey(botEventReceiverClass.Name.ToLower()))
-			{
-				actions.Add(botEventReceiverClass.Name.ToLower(), botEventReceiverClass);
-			}
-		}
-
 		internal static void RegisterEvents(Assembly applicationAssembly, IServiceCollection services)
 		{
 			foreach (var eventClass in applicationAssembly.GetExportedTypes())
