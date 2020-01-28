@@ -18,10 +18,10 @@ namespace Example.StateMachine
 		{
 		}
 
-		public override async Task OnFinishedAsync(dynamic model)
+		public override async Task OnFinishedAsync()
 		{
 			await MessageSender.ReplyTextMessageAsync(UserMessage, "Thank you!!");
-			await MessageSender.ReplyTextMessageAsync(UserMessage, $"result: {JsonConvert.SerializeObject(model)}");
+			await MessageSender.ReplyTextMessageAsync(UserMessage, $"result: {JsonConvert.SerializeObject(Model)}");
 		}
 
 		public override async Task OnStartedAsync()
