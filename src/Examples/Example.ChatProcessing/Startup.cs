@@ -23,7 +23,7 @@ namespace Example.ChatProcessing
 
 		public void ConfigureServices(IServiceCollection services)
 		{
-			var cts = "https://cts.i-teco.ru/";// Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
+			var cts = Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
 			if (string.IsNullOrEmpty(cts))
 				throw new Exception("cts server address is not found");
 
@@ -31,8 +31,8 @@ namespace Example.ChatProcessing
 			services.AddExpressBot(new BotXConfig()
 			{
 				CtsServiceUrl = cts,
-				BotId = new Guid("807c20c0-a1d0-54df-b46b-41ddf4f02dd7"),
-				SecretKey = "6311c6234d1b371b62f964527fed3c93",
+				BotId = new Guid("807c20c0-a1d0-54df-b46b-41ddf4f02dd7"), //Change this with your botid
+				SecretKey = "6311c6234d1b371b62f964527fed3c93", // Change this with your secret key
 				InChatExceptions = true
 			});
 			//services.AddExpressBot(new BotXConfig()
