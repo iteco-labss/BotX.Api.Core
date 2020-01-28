@@ -12,7 +12,7 @@ namespace BotX.Api.Delegates
 	/// Метод события контроллера BotAction
 	/// </summary>
 	/// <param name="userMessage">Входящее сообщение от пользователя</param>
-	/// <param name="args">Дополнительные аргументы, которые были заданы кнопке при её создании</param>
+	/// <param name="payload">Дополнительные параметры, будут переданны в обработчик, при нажатии на кнопку</param>
 	/// <returns></returns>
-	public delegate Task BotEventHandler(UserMessage userMessage, Payload payload);
+	public delegate Task BotEventHandler<T>(UserMessage userMessage, T payload) where T : Payload;
 }

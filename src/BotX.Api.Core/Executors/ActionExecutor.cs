@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,14 +34,13 @@ namespace BotX.Api.Executors
 			this.logger = logger;
 		}
 
-		internal static void AddAction(string name, Type botActionClass) 
+		internal static void AddAction(string name, Type botActionClass)
 		{
 			var attribute = botActionClass.GetCustomAttribute<BotActionAttribute>();
 			if (attribute == null)
 				throw new InvalidOperationException($"The type {botActionClass.Name} doesn't have the {nameof(BotActionAttribute)} attribute");
 
 			actions.Add(name, botActionClass);
-			AddEvent(botActionClass);
 		}
 
 		internal static void AddUnnamedAction(Type botActionClass)
@@ -48,7 +48,6 @@ namespace BotX.Api.Executors
 			unnamedActions.Add(botActionClass);
 			if (!actions.ContainsKey(botActionClass.Name.ToLower()))
 				actions.Add(botActionClass.Name.ToLower(), botActionClass);
-			AddEvent(botActionClass);
 		}
 
 		internal static void AddEventReceiver(Type botEventReceiverClass)
@@ -135,12 +134,14 @@ namespace BotX.Api.Executors
 			}
 		}
 
-		private async Task InvokeEvent(UserMessage request, EventData @event, Payload payload)
+		private async Task InvokeEvent(UserMessage request, EventData @event, Payload payload, object instance)
 		{
 			logger.LogInformation("Enter InvokeEvent");
-			var action = scope.ServiceProvider.GetService(@event.EventClass);
-			var eventInstance = Delegate.CreateDelegate(typeof(BotEventHandler), action, @event.Event) as BotEventHandler;
-			await eventInstance(request, payload);
+			if (instance == null)
+				instance = scope.ServiceProvider.GetService(@event.EventClass);
+
+			object[] param = new object[] { request, payload };
+			await @event.EventInstanse.InvokeAsync(instance, param);
 		}
 
 		private async Task InvokeUnnamedAction(UserMessage request)
@@ -157,11 +158,16 @@ namespace BotX.Api.Executors
 		{
 			scope.Dispose();
 		}
+
 	}
 
 	internal class EventData
 	{
 		internal Type EventClass { get; set; }
 		internal MethodInfo Event { get; set; }
+		internal FastMethodInfo EventInstanse { get; set; }
+		internal Type DelegateType { get; set; }
 	}
+
+	
 }
