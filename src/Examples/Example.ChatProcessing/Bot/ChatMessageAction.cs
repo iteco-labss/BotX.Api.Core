@@ -37,9 +37,9 @@ namespace Example.ChatProcessing.Bot
 		}
 
 		[BotButtonEvent("count")]
-		private async Task CountClick(UserMessage userMessage, Payload payload)
+		private async Task CountClick(UserMessage userMessage, CountClickPayload payload)
 		{
-			var data = (CountClickPayload)payload;
+			var data = payload;
 			var buttons = new MessageButtonsGrid();
 			var row = buttons.AddRow();
 			row.AddSilentButton("Increment", CountClick, data);

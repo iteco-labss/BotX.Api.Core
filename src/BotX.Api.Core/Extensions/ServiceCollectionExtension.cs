@@ -97,6 +97,9 @@ namespace BotX.Api.Extensions
 
 				ActionExecutor.AddEventReceiver(type);
 			}
+
+			ActionExecutor.RegisterEvents(applicationAssembly, services);
+
 		}
 	}
 }
