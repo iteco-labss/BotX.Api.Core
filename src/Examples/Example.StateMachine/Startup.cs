@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BotX.Api;
 using BotX.Api.Extensions;
 using Example.ChatProcessing.Bot.StateMachine;
 using Microsoft.AspNetCore.Builder;
@@ -28,9 +29,11 @@ namespace Example.StateMachine
 			if (string.IsNullOrEmpty(cts))
 				throw new Exception("cts server address is not found");
 
-			services.AddExpressBot(new BotX.Api.BotXConfig()
+			services.AddExpressBot(new BotXConfig()
 			{
 				CtsServiceUrl = cts,
+				BotId = new Guid("BOTID"),
+				SecretKey = "SecretKey",
 				InChatExceptions = true
 			}).AddBaseCommand("start", "State machine");
 			services.AddStateMachine<DemoStateMachine>();
