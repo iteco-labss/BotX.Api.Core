@@ -37,6 +37,7 @@ namespace BotX.Api.Extensions
 			externalServices.AddSingleton(typeof(IBotMessageSender), x => new BotMessageSender(x.GetService<ILogger<BotMessageSender>>(), x.GetService<IBotXHttpClient>()));
 			externalServices.AddSingleton<ActionExecutor>();
 			externalServices.AddSingleton<MiddlewareExecutor>();
+			externalServices.AddSingleton<StateMachineExecutor>();
 			ConfigureBotActions(Assembly.GetEntryAssembly(), externalServices);
 
 			return new ExpressBotService(config.BotId, config.InChatExceptions);
@@ -52,22 +53,23 @@ namespace BotX.Api.Extensions
 			MiddlewareExecutor.AddMiddleware(typeof(T));
 		}
 
-		public static void AddStateMachine<T>(this IServiceCollection externalServices) where T : BaseStateMachine
+		public static void AddStateMachine<T>(this IServiceCollection services) where T : BaseStateMachine
 		{
 			if (ExpressBotService.Configuration == null)
 				throw new Exception($"Перед использованием {nameof(AddStateMachine)} необходимо сначала вызвать {nameof(AddExpressBot)}");
 
-			if (!ExpressBotService.Configuration.StateMachines.Any(x => x == typeof(T)))
+			if (!StateMachineExecutor.StateMachines.Any(x => x == typeof(T)))
 			{
-				externalServices.AddTransient<T>();
-				ExpressBotService.Configuration.StateMachines.Add(typeof(T));
+				services.AddTransient<T>();
+				StateMachineExecutor.StateMachines.Add(typeof(T));
 			}
 
 			var allStateTypes = Assembly.GetEntryAssembly().ExportedTypes
 				.Where(x => x.IsSubclassOf(typeof(BaseState)));
 
-			foreach (var t in allStateTypes)
-				externalServices.AddTransient(t);
+			foreach (var type in allStateTypes)
+				if (!services.Any(x => x.ImplementationType == type))
+					services.AddTransient(type);
 		}
 
 		private static void ConfigureBotActions(Assembly applicationAssembly, IServiceCollection services)
