@@ -48,13 +48,13 @@ namespace BotX.Api.Executors
 						machine.isFinished = restored.isFinished;
 						machine.State = state;
 						stateMachineLaunched = !machine.isFinished;
-						if (stateMachineLaunched)
+						if (!string.IsNullOrEmpty(message.Command.Data?.EventType))
 						{
-							if (!string.IsNullOrEmpty(message.Command.Data?.EventType))
-								await ExecuteStateMachineEventAsync(message, machine);
-							else
-								await machine.EnterAsync(message);
+							await ExecuteStateMachineEventAsync(message, machine);
+							return true;
 						}
+						if (stateMachineLaunched)
+							await machine.EnterAsync(message);
 						break;
 					}
 				}

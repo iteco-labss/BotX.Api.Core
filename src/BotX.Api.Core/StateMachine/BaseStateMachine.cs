@@ -140,6 +140,7 @@ namespace BotX.Api.StateMachine
 		{
 			State = firstStep;
 			await State.StartAsync(UserMessage);
+			SaveState(); // TODO узнать почему при переходе в новое состояние, мы не вызываем SaveSate
 		}
 
 		/// <summary>
