@@ -27,7 +27,7 @@ namespace Example.StateMachine
 			await MessageSender.ReplyTextMessageAsync(UserMessage, "Thank you!!");
 			var buttons = new MessageButtonsGrid();
 			var row = buttons.AddRow();
-			row.AddSilentButton("Again", AgainClick);
+			row.AddSilentButton("Again", "again");
 			await MessageSender.ReplyTextMessageAsync(UserMessage, $"result: {JsonConvert.SerializeObject(Model)}", buttons);
 		}
 
@@ -51,7 +51,20 @@ namespace Example.StateMachine
 		[BotButtonEvent("Again")]
 		public async Task AgainClick(UserMessage message, Payload payload)
 		{
-			await EnterAsync(message);
+			await ResetAsync();
 		}
+
+		[BotButtonEvent("GenderSelect")]
+		public async Task GenderSelectClick(UserMessage userMessage, GenderPayload payload)
+		{
+			var data = payload;
+			Model.gender = data.Gender;
+			await TransitionToAsync<RecommendState>();
+		}
+	}
+
+	public class GenderPayload : Payload
+	{
+		public string Gender { get; set; }
 	}
 }
