@@ -128,6 +128,8 @@ namespace BotX.Api.StateMachine
 			using var scope = ScopeFactory.CreateScope();
 			var newState = scope.ServiceProvider.GetService(typeof(TState)) as BaseState;
 			State = newState;
+			if (firstStep == null)
+				firstStep = newState;
 			await State.StartAsync(UserMessage);
 			SaveState(); // TODO узнать почему при переходе в новое состояние, мы не вызываем SaveSate
 		}
@@ -139,6 +141,9 @@ namespace BotX.Api.StateMachine
 		public async Task ResetAsync()
 		{
 			State = firstStep;
+			State.ResetState();
+			isFinished = false;
+			Model = null;
 			await State.StartAsync(UserMessage);
 			SaveState(); // TODO узнать почему при переходе в новое состояние, мы не вызываем SaveSate
 		}

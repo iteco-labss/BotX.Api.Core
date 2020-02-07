@@ -37,5 +37,13 @@ namespace BotX.Api.StateMachine
 		/// </summary>
 		/// <returns></returns>
 		public abstract Task ExecuteAsync();
+
+		/// <summary>
+		/// Вызывается при сбросе состояния Стейт машины
+		/// </summary>
+		public virtual void ResetState()
+		{
+
+		}
 	}
 }
