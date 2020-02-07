@@ -61,19 +61,26 @@ namespace BotX.Api.Executors
 
 				foreach (var method in methods)
 				{
-					string eventName = method.GetCustomAttribute<BotButtonEventAttribute>()?.EventName;
+					string eventName = method.GetCustomAttribute<BotButtonEventAttribute>()?.EventName?.ToLower();
 					if (string.IsNullOrEmpty(eventName))
 						throw new InvalidOperationException($"'EventName' is required with 'BotButtonEventAttribute'");
 					if (actionEvents.ContainsKey(eventName))
 						throw new InvalidOperationException($"Event with name '{eventName}' already exists");
+					if (typeof(BaseState).IsAssignableFrom(eventClass))
+						throw new Exception("Buttons executor cannot be in a class inherited from `BaseState`");
+					if (method.ReturnType != typeof(Task))
+						throw new Exception("The return value must be `Task`");
 
 					var types = method.GetParameters().Select(p => p.ParameterType).Concat(new[] { method.ReturnType }).ToArray();
+					if (types.Length != 3 || types[0] != typeof(UserMessage) || !typeof(Payload).IsAssignableFrom(types[1]))
+						throw new Exception("the method signature should be `(UserMessage message, Payload payload)`");
+
 					actionEvents.Add(eventName, new EventData()
 					{
 						Event = method,
-						EventClass = eventClass,
-						EventInstanse = new FastMethodInfo(method),
-						DelegateType = Expression.GetFuncType(types)
+						Class = eventClass,
+						Instanse = new FastMethodInfo(method),
+						Type = typeof(BaseStateMachine).IsAssignableFrom(eventClass) ? EventType.StateMachineEvent : EventType.Event
 					});
 				}
 

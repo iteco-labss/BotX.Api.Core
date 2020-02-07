@@ -25,15 +25,15 @@ namespace BotX.Api.BotUI
 		/// </summary>
 		/// <param name="title">Текст на кнопке</param>
 		/// <param name="command">Текст отправляемый в чат, при нажатии кнопки</param>
-		/// <param name="handler">Метод-обработчик нажатия на кнопку</param>
+		/// <param name="eventName">Имя события, которое будет вызванно при нажатии на кнопку</param>
 		/// <param name="payload">Дополнитеьные аргументы, которые будут переданны в метод-обработчик</param>
 		/// <returns></returns>
-		public MessageButton AddButton<T>(string title, string command, BotEventHandler<T> handler, T payload) where T : Payload
+		public MessageButton AddButton<T>(string title, string command, string eventName, T payload) where T : Payload
 		{
 			var btn = MessageButton.Create(
 				title: title,
 				command: command,
-				@event: handler,
+				eventName: eventName,
 				payload: payload,
 				isSilent: false);
 
@@ -45,15 +45,15 @@ namespace BotX.Api.BotUI
 		/// Создаёт кнопку внутри данной строки
 		/// </summary>
 		/// <param name="title">Текст на кнопке</param>
-		/// <param name="handler">Метод-обработчик нажатия на кнопку</param>
+		/// <param name="eventName">Имя события, которое будет вызванно при нажатии на кнопку</param>
 		/// <param name="payload">Дополнитеьные аргументы, которые будут переданны в метод-обработчик</param>
 		/// <returns></returns>
-		public MessageButton AddButton<T>(string title, BotEventHandler<T> handler, T payload) where T : Payload
+		public MessageButton AddButton<T>(string title, string eventName, T payload) where T : Payload
 		{
 			var btn = MessageButton.Create(
 				title: title,
 				command: null,
-				@event: handler,
+				eventName: eventName,
 				payload: payload,
 				isSilent: false);
 
@@ -65,14 +65,14 @@ namespace BotX.Api.BotUI
 		/// Создаёт кнопку внутри данной строки
 		/// </summary>
 		/// <param name="title">Текст на кнопке</param>
-		/// <param name="handler">Метод-обработчик нажатия на кнопку</param>
+		/// <param name="eventName">Имя события, которое будет вызванно при нажатии на кнопку</param>
 		/// <returns></returns>
-		public MessageButton AddButton(string title, BotEventHandler<Payload> handler)
+		public MessageButton AddButton(string title, string eventName)
 		{
-			var btn = MessageButton.Create(
+			var btn = MessageButton.Create<Payload>(
 				title: title,
 				command: null,
-				@event: handler,
+				eventName: eventName,
 				payload: null,
 				isSilent: false);
 
@@ -84,15 +84,15 @@ namespace BotX.Api.BotUI
 		/// Создает кнопку, нажатие на которую не генирирует сообщение в чат
 		/// </summary>
 		/// <param name="title">Текст на кнопке</param>
-		/// <param name="handler">Метод-обработчик нажатия на кнопку</param>
+		/// <param name="eventName">Имя события, которое будет вызванно при нажатии на кнопку</param>
 		/// <param name="payload">Дополнитеьные аргументы, которые будут переданны в метод-обработчик</param>
 		/// <returns></returns>
-		public MessageButton AddSilentButton<T>(string title, BotEventHandler<T> handler, T payload) where T : Payload
+		public MessageButton AddSilentButton<T>(string title, string eventName, T payload) where T : Payload
 		{
 			var btn = MessageButton.Create(
 				title: title,
 				command: null,
-				@event: handler,
+				eventName: eventName,
 				payload: payload,
 				isSilent: true);
 
@@ -104,14 +104,14 @@ namespace BotX.Api.BotUI
 		/// Создает кнопку, нажатие на которую не генирирует сообщение в чат
 		/// </summary>
 		/// <param name="title">Текст на кнопке</param>
-		/// <param name="handler">Метод-обработчик нажатия на кнопку</param>
+		/// <param name="eventName">Имя события, которое будет вызванно при нажатии на кнопку</param>
 		/// <returns></returns>
-		public MessageButton AddSilentButton(string title, BotEventHandler<Payload> handler)
+		public MessageButton AddSilentButton(string title, string eventName)
 		{
-			var btn = MessageButton.Create(
+			var btn = MessageButton.Create<Payload>(
 				title: title,
 				command: null,
-				@event: handler,
+				eventName: eventName,
 				payload: null,
 				isSilent: true);
 
@@ -129,7 +129,7 @@ namespace BotX.Api.BotUI
 			var btn = MessageButton.Create<Payload>(
 				title: title,
 				command: null,
-				@event: null,
+				eventName: null,
 				payload: null,
 				isSilent: false);
 
