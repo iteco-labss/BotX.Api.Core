@@ -111,8 +111,6 @@ namespace BotX.Api.Executors
 				logger.LogInformation("The message is empty");
 				return;
 			}
-			if (await ExecuteEventAsync(request))
-				return;
 
 			bool messageIsAction = request.Command.Body.StartsWith('/');
 			var msg = request.Command.Body.ToLower().Substring(1);
