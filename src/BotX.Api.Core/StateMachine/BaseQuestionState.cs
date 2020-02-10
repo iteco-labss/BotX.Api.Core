@@ -34,10 +34,6 @@ namespace BotX.Api.StateMachine
 		/// <summary>
 		/// Вызывается при сбросе состояния Стейт машины
 		/// </summary>
-		public override void ResetState()
-		{
-			isOpen = false;
-			base.ResetState();
-		}
+		public override void ResetState() => isOpen = false;
 	}
 }

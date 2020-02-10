@@ -41,9 +41,6 @@ namespace BotX.Api.StateMachine
 		/// <summary>
 		/// Вызывается при сбросе состояния Стейт машины
 		/// </summary>
-		public virtual void ResetState()
-		{
-
-		}
+		public abstract void ResetState();
 	}
 }
