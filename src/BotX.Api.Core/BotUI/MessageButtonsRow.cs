@@ -26,7 +26,7 @@ namespace BotX.Api.BotUI
 		/// <param name="title">Текст на кнопке</param>
 		/// <param name="command">Текст отправляемый в чат, при нажатии кнопки</param>
 		/// <param name="eventName">Имя события, которое будет вызванно при нажатии на кнопку</param>
-		/// <param name="payload">Дополнитеьные аргументы, которые будут переданны в метод-обработчик</param>
+		/// <param name="payload">Дополнительные аргументы, которые будут переданны в метод-обработчик</param>
 		/// <returns></returns>
 		public MessageButton AddButton<T>(string title, string command, string eventName, T payload) where T : Payload
 		{
@@ -46,7 +46,7 @@ namespace BotX.Api.BotUI
 		/// </summary>
 		/// <param name="title">Текст на кнопке</param>
 		/// <param name="eventName">Имя события, которое будет вызванно при нажатии на кнопку</param>
-		/// <param name="payload">Дополнитеьные аргументы, которые будут переданны в метод-обработчик</param>
+		/// <param name="payload">Дополнительные аргументы, которые будут переданны в метод-обработчик</param>
 		/// <returns></returns>
 		public MessageButton AddButton<T>(string title, string eventName, T payload) where T : Payload
 		{
@@ -85,7 +85,7 @@ namespace BotX.Api.BotUI
 		/// </summary>
 		/// <param name="title">Текст на кнопке</param>
 		/// <param name="eventName">Имя события, которое будет вызванно при нажатии на кнопку</param>
-		/// <param name="payload">Дополнитеьные аргументы, которые будут переданны в метод-обработчик</param>
+		/// <param name="payload">Дополнительные аргументы, которые будут переданны в метод-обработчик</param>
 		/// <returns></returns>
 		public MessageButton AddSilentButton<T>(string title, string eventName, T payload) where T : Payload
 		{
