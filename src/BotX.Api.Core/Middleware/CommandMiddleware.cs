@@ -31,9 +31,7 @@ namespace BotX.Api.Middleware
 				var message = JsonConvert.DeserializeObject<UserMessage>(body);
 				if (message == null)
 					throw new FormatException("body is not UserMessage");
-				await processingMiddleware.RunMiddlewareAsync(message);
-
-				
+				_ = processingMiddleware.RunMiddlewareAsync(message).ConfigureAwait(false);
 			}
 
 			context.Response.StatusCode = StatusCodes.Status200OK;
