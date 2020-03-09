@@ -24,15 +24,56 @@ namespace BotX.Api.BotUI
 		/// Создаёт кнопку внутри данной строки
 		/// </summary>
 		/// <param name="title">Текст на кнопке</param>
+		/// <param name="command">Текст отправляемый в чат, при нажатии кнопки</param>
 		/// <param name="handler">Метод-обработчик нажатия на кнопку</param>
-		/// <param name="payload">Дополнитеьные аргументы, которые будут возвращены в метод-обработчик</param>
+		/// <param name="payload">Дополнитеьные аргументы, которые будут переданны в метод-обработчик</param>
 		/// <returns></returns>
-		public MessageButton AddButton(string title, BotEventHandler handler, Payload payload)
+		public MessageButton AddButton<T>(string title, string command, BotEventHandler<T> handler, T payload) where T : Payload
 		{
-			var btn = new MessageButton(
+			var btn = MessageButton.Create(
 				title: title,
+				command: command,
 				@event: handler,
 				payload: payload,
+				isSilent: false);
+
+			Buttons.Add(btn);
+			return btn;
+		}
+
+		/// <summary>
+		/// Создаёт кнопку внутри данной строки
+		/// </summary>
+		/// <param name="title">Текст на кнопке</param>
+		/// <param name="handler">Метод-обработчик нажатия на кнопку</param>
+		/// <param name="payload">Дополнитеьные аргументы, которые будут переданны в метод-обработчик</param>
+		/// <returns></returns>
+		public MessageButton AddButton<T>(string title, BotEventHandler<T> handler, T payload) where T : Payload
+		{
+			var btn = MessageButton.Create(
+				title: title,
+				command: null,
+				@event: handler,
+				payload: payload,
+				isSilent: false);
+
+			Buttons.Add(btn);
+			return btn;
+		}
+
+		/// <summary>
+		/// Создаёт кнопку внутри данной строки
+		/// </summary>
+		/// <param name="title">Текст на кнопке</param>
+		/// <param name="handler">Метод-обработчик нажатия на кнопку</param>
+		/// <returns></returns>
+		public MessageButton AddButton(string title, BotEventHandler<Payload> handler)
+		{
+			var btn = MessageButton.Create(
+				title: title,
+				command: null,
+				@event: handler,
+				payload: null,
 				isSilent: false);
 
 			Buttons.Add(btn);
@@ -44,14 +85,34 @@ namespace BotX.Api.BotUI
 		/// </summary>
 		/// <param name="title">Текст на кнопке</param>
 		/// <param name="handler">Метод-обработчик нажатия на кнопку</param>
-		/// <param name="payload">Дополнитеьные аргументы, которые будут возвращены в метод-обработчик</param>
+		/// <param name="payload">Дополнитеьные аргументы, которые будут переданны в метод-обработчик</param>
 		/// <returns></returns>
-		public MessageButton AddSilentButton(string title, BotEventHandler handler, Payload payload)
+		public MessageButton AddSilentButton<T>(string title, BotEventHandler<T> handler, T payload) where T : Payload
 		{
-			var btn = new MessageButton(
+			var btn = MessageButton.Create(
 				title: title,
+				command: null,
 				@event: handler,
 				payload: payload,
+				isSilent: true);
+
+			Buttons.Add(btn);
+			return btn;
+		}
+
+		/// <summary>
+		/// Создает кнопку, нажатие на которую не генирирует сообщение в чат
+		/// </summary>
+		/// <param name="title">Текст на кнопке</param>
+		/// <param name="handler">Метод-обработчик нажатия на кнопку</param>
+		/// <returns></returns>
+		public MessageButton AddSilentButton(string title, BotEventHandler<Payload> handler)
+		{
+			var btn = MessageButton.Create(
+				title: title,
+				command: null,
+				@event: handler,
+				payload: null,
 				isSilent: true);
 
 			Buttons.Add(btn);
@@ -65,8 +126,15 @@ namespace BotX.Api.BotUI
 		/// <returns></returns>
 		public MessageButton AddButton(string title)
 		{
-			// TODO узнать зачем это и возможно удалить, если это нужно для очеловечивания бота
-			return AddButton(title, null, null);
+			var btn = MessageButton.Create<Payload>(
+				title: title,
+				command: null,
+				@event: null,
+				payload: null,
+				isSilent: false);
+
+			Buttons.Add(btn);
+			return btn;
 		}
 
 		/// <summary>

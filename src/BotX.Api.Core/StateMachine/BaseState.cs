@@ -14,23 +14,28 @@ namespace BotX.Api.StateMachine
 		/// </summary>
 		[JsonIgnore]
 		public BaseStateMachine StateMachine { get; internal set; }
+
+		/// <summary>
+		/// Текущий стейт
+		/// </summary>
+		[JsonIgnore]
+		public dynamic Model { get => StateMachine.Model; set => StateMachine.Model = value; }
 		
 		internal void SetContext(BaseStateMachine machine)
 		{
 			StateMachine = machine;
 		}
 
-		internal virtual async Task StartAsync(UserMessage userMessage, dynamic model)
+		internal virtual async Task StartAsync(UserMessage userMessage)
 		{
 			if (!StateMachine.isFinished)
-				await ExecuteAsync(model);
+				await ExecuteAsync();
 		}
 
 		/// <summary>
 		/// Реализует логику данного состояния. Тут можно обработать ответ пользователя
 		/// </summary>
-		/// <param name="model">Модель данных, формируемая конечным автоматом (передаётся между всеми состояниями)</param>
 		/// <returns></returns>
-		public abstract Task ExecuteAsync(dynamic model);
+		public abstract Task ExecuteAsync();
 	}
 }

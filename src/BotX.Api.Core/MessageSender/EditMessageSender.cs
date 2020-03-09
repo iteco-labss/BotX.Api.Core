@@ -15,7 +15,10 @@ namespace BotX.Api
 		{
 			await EditMessageInternalAsync(
 				syncId: syncId,
-				messageText: messageText);
+				messageText: messageText,
+				buttons: null,
+				mentions: null
+				);
 		}
 
 		public async Task EditMessageAsync(Guid syncId, string messageText, MessageButtonsGrid buttons)
@@ -23,7 +26,8 @@ namespace BotX.Api
 			await EditMessageInternalAsync(
 				syncId: syncId,
 				messageText: messageText,
-				buttons: buttons
+				buttons: buttons,
+				mentions: null
 				);
 		}
 
@@ -33,10 +37,11 @@ namespace BotX.Api
 			await EditMessageInternalAsync(
 				syncId: syncId,
 				messageText: messageText,
+				buttons: null,
 				mentions: mentions
 				);
 		}
-		private async Task EditMessageInternalAsync(Guid syncId, string messageText, MessageButtonsGrid buttons = null, Mention[] mentions = null)
+		private async Task EditMessageInternalAsync(Guid syncId, string messageText, MessageButtonsGrid buttons, Mention[] mentions)
 		{
 			await httpClient.EditMessageAsync(new EditEventMessage
 			{

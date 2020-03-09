@@ -38,7 +38,7 @@ namespace BotX.Api.Executors
 			}
 			var middleware = new MiddlewareData();
 			middleware.Class = middlewareClass;
-			middleware.Method = method;
+			middleware.Method = new FastMethodInfo(method);
 			middleware.Parameters = method.GetParameters().Select(x => x.ParameterType).ToList();
 			Middlewares.Add(middleware);
 		}
@@ -84,7 +84,7 @@ namespace BotX.Api.Executors
 			var middleware = Middlewares.First();
 			var parameters = middleware.Parameters.Select(x => x == typeof(UserMessage) ? message : scope.ServiceProvider.GetService(x)).ToArray();
 
-			await (Task)middleware.Method.Invoke(middleware.Instance, parameters);
+			await middleware.Method.InvokeAsync(middleware.Instance, parameters);
 		}
 
 		private BotMiddlewareHandler CreateDelegate(MiddlewareData nextMiddleware)
@@ -98,7 +98,7 @@ namespace BotX.Api.Executors
 					.Select(x => x == typeof(UserMessage) ? message : scope.ServiceProvider.GetService(x))
 					.ToArray();
 
-				await (Task)nextMiddleware.Method.Invoke(nextMiddleware.Instance, parameters);
+				await nextMiddleware.Method.InvokeAsync(nextMiddleware.Instance, parameters);
 			};
 		}
 	}
@@ -116,7 +116,7 @@ namespace BotX.Api.Executors
 		/// <summary>
 		/// Ссылка на метод "Invoke" или "InvokeAsync", который необходимо вызвать
 		/// </summary>
-		public MethodInfo Method { get; set; }
+		public FastMethodInfo Method { get; set; }
 		/// <summary>
 		/// Список параметров для <see cref="Method"/>
 		/// </summary>

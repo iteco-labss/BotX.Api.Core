@@ -21,15 +21,12 @@ namespace BotX.Api.HttpClients
 {
 	internal class BotXHttpClient : IBotXHttpClient
 	{
-		private const string API_VERSION_2 = "api/v2";
-		private const string API_VERSION_3 = "api/v3";
-		private const string API_SEND_REPLY_MESSAGE = "botx/command/callback";
-		private const string API_SEND_MESSAGE_NOTIFICATION = "botx/notification/callback";
-		private const string API_SEND_EDIT_MESSAGE = "botx/events/edit_event";
+		private const string API_SEND_REPLY_MESSAGE = "api/v3/botx/command/callback";
+		private const string API_SEND_MESSAGE_NOTIFICATION = "api/v3/botx/notification/callback";
+		private const string API_SEND_EDIT_MESSAGE = "api/v3/botx/events/edit_event";
 		private const string API_SEND_FILE = "api/v1/botx/file/callback";
 		private const string API_GET_TOKEN = "api/v2/botx/bots/$bot_id$/token?signature=$hash$";
 
-		private readonly string apiVersion;
 		private readonly HttpClient client;
 		private readonly BotXConfig config;
 		private readonly ILogger<BotXHttpClient> logger;
@@ -44,37 +41,32 @@ namespace BotX.Api.HttpClients
 			this.client = client;
 			this.config = config;
 			this.logger = logger;
-			this.apiVersion = !string.IsNullOrEmpty(config.SecretKey) ? API_VERSION_3 : API_VERSION_2;
 
 			client.BaseAddress = new Uri(config.CtsServiceUrl);
+			if (string.IsNullOrEmpty(config.SecretKey))
+			{
+				throw new ArgumentException($"SecretKey is required");
+			}
 
-			if (authToken == null && !string.IsNullOrEmpty(config.SecretKey))
+			if (authToken == null)
 				AuthorizeAsync().Wait();
 		}
 
 		public async Task SendNotificationAsync(NotificationMessage message)
 		{
-			if (message.BotId == Guid.Empty)
-				throw new InvalidOperationException(
-					$"Для отправки сообщений пользователю, необходимо задать идентификатор бота " +
-					$"(метод {nameof(ServiceCollectionExtension.AddExpressBot)}). " +
-					$"Без идентификатора возможно только получение и ответ на полученные сообщения");
-			var requestUrl = $"{apiVersion}/{API_SEND_MESSAGE_NOTIFICATION}";
-			await PostAsJsonAsync(requestUrl, message);			
+			await PostAsJsonAsync(API_SEND_MESSAGE_NOTIFICATION, message);			
 		}
 
 		public async Task<Guid> SendReplyAsync(ResponseMessage message)
 		{
-			var requestUrl = $"{apiVersion}/{API_SEND_REPLY_MESSAGE}";
-			var result = await PostAsJsonAsync(requestUrl, message);
+			var result = await PostAsJsonAsync(API_SEND_REPLY_MESSAGE, message);
 			var syncId = JsonConvert.DeserializeObject<ReplyMessageResponse>(await result.Content.ReadAsStringAsync())?.Result?.SyncId ?? Guid.Empty;
 			return syncId;
 		}
 
 		public async Task EditMessageAsync(EditEventMessage message)
 		{
-			var requestUrl = $"{API_VERSION_3}/{API_SEND_EDIT_MESSAGE}";
-			await PostAsJsonAsync(requestUrl, message);
+			await PostAsJsonAsync(API_SEND_EDIT_MESSAGE, message);
 		}
 
 		public async Task SendFileAsync(Guid syncId, Guid botId, string fileName, byte[] data)

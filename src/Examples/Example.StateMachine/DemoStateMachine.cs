@@ -1,4 +1,8 @@
 ﻿using BotX.Api;
+using BotX.Api.Attributes;
+using BotX.Api.BotUI;
+using BotX.Api.JsonModel.Request;
+using BotX.Api.JsonModel.Response;
 using BotX.Api.StateMachine;
 using Example.StateMachine.States;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,10 +22,13 @@ namespace Example.StateMachine
 		{
 		}
 
-		public override async Task OnFinishedAsync(dynamic model)
+		public override async Task OnFinishedAsync()
 		{
 			await MessageSender.ReplyTextMessageAsync(UserMessage, "Thank you!!");
-			await MessageSender.ReplyTextMessageAsync(UserMessage, $"result: {JsonConvert.SerializeObject(model)}");
+			var buttons = new MessageButtonsGrid();
+			var row = buttons.AddRow();
+			row.AddSilentButton("Again", AgainClick);
+			await MessageSender.ReplyTextMessageAsync(UserMessage, $"result: {JsonConvert.SerializeObject(Model)}", buttons);
 		}
 
 		public override async Task OnStartedAsync()
@@ -39,6 +46,12 @@ namespace Example.StateMachine
 		public override void SaveState()
 		{
 			statesStorage[UserMessage.From.Huid] = ToJson();
+		}
+
+		[BotButtonEvent("Again")]
+		public async Task AgainClick(UserMessage message, Payload payload)
+		{
+			await EnterAsync(message);
 		}
 	}
 }

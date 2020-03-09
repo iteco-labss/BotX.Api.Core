@@ -8,14 +8,14 @@ namespace Example.StateMachine.States
 {
 	public class BudgetState : BaseQuestionState
 	{
-		public override Task ExecuteAsync(dynamic model)
+		public override Task ExecuteAsync()
 		{
-			model.budget = StateMachine.UserMessage.Command.Body;
+			Model.budget = StateMachine.UserMessage.Command.Body;
 			StateMachine.Finish();
 			return Task.CompletedTask;
 		}
 
-		public override async Task WelcomeAsync(dynamic model)
+		public override async Task WelcomeAsync()
 		{
 			await StateMachine.MessageSender.ReplyTextMessageAsync(
 				StateMachine.UserMessage,

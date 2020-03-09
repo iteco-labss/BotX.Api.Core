@@ -26,7 +26,8 @@ namespace Example.ChatProcessing.Bot
 			var buttons = new MessageButtonsGrid();
 			var row = buttons.AddRow();
 			row.AddButton("click me!", CountClick, new CountClickPayload());
-			row.AddButton("push me!", NullArgsClick, null);
+			row.AddButton("push me!", NullArgsClick);
+			row.AddButton("push me!");
 
 			var syncId = await MessageSender.ReplyTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
 			if (syncId != Guid.Empty)
@@ -36,12 +37,12 @@ namespace Example.ChatProcessing.Bot
 		}
 
 		[BotButtonEvent("count")]
-		private async Task CountClick(UserMessage userMessage, Payload payload)
+		private async Task CountClick(UserMessage userMessage, CountClickPayload payload)
 		{
-			var data = (CountClickPayload)payload;
+			var data = payload;
 			var buttons = new MessageButtonsGrid();
 			var row = buttons.AddRow();
-			row.AddButton("Increment", CountClick, data, true);
+			row.AddSilentButton("Increment", CountClick, data);
 			await MessageSender.EditMessageAsync(lastMessageSyncId, $"Button pressed {data.Count}", buttons);
 			data.Increment();
 		}

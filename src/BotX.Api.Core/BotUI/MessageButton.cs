@@ -18,42 +18,43 @@ namespace BotX.Api.BotUI
 		/// <summary>
 		/// Текст на кнопке
 		/// </summary>
-		public string Title { get; }
+		public string Title { get; set; }
 
 		/// <summary>
 		/// Команда, которая будет отправлена в чат, при нажатии этой кнопки
 		/// </summary>
-		public string Command { get; }
+		public string Command { get; set; }
 
 		internal Data Data { get; set; }
 
 		internal bool IsSilent { get; set; }
 
-		internal string InternalCommand { get; }
-
-		/// <summary>
-		/// Создаёт кнопку, привязанную к действию
-		/// </summary>
-		/// <param name="title">Текст на кнопке</param>
-		/// <param name="event">Событие, выполняемое при нажатии</param>
-		/// <param name="payload"></param>
-		/// <param name="isSilent"></param>
-		internal MessageButton(string title, BotEventHandler @event, Payload payload, bool isSilent)
+		internal string InternalCommand { get; set; }
+		
+		internal static MessageButton Create<T>(string title, string command, BotEventHandler<T> @event, T payload, bool isSilent) where T : Payload
 		{
-			Title = title;
-			Data = new Data();
-			IsSilent = isSilent;
-			var pair = ActionExecutor.actionEvents.SingleOrDefault(x => x.Value.Event == @event.GetMethodInfo());
-			if (!pair.Equals(default(KeyValuePair<string, EventData>)))
+			MessageButton res = new MessageButton()
 			{
-				Data.EventType = pair.Key;
-				Data.Payload = JsonConvert.SerializeObject(payload, new JsonSerializerSettings()
+				Title = title,
+				Data = new Data(),
+				IsSilent = isSilent,
+				InternalCommand = string.IsNullOrEmpty(command) ? title : command
+			};
+
+			if (@event != null)
+			{
+				var pair = ActionExecutor.actionEvents.SingleOrDefault(x => x.Value.Event == @event.GetMethodInfo());
+				if (!pair.Equals(default(KeyValuePair<string, EventData>)))
 				{
-					TypeNameHandling = TypeNameHandling.All,
-					MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
-				});
+					res.Data.EventType = pair.Key;
+					res.Data.Payload = JsonConvert.SerializeObject(payload, new JsonSerializerSettings()
+					{
+						TypeNameHandling = TypeNameHandling.All,
+						MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
+					});
+				}
 			}
-			InternalCommand = title;
+			return res;
 		}
 	}
 }

@@ -9,13 +9,13 @@ namespace Example.StateMachine.States
 {
 	public class RecommendState : BaseQuestionState
 	{
-		public override async Task ExecuteAsync(dynamic model)
+		public override async Task ExecuteAsync()
 		{
-			model.recommend = StateMachine.UserMessage.Command.Body;
+			Model.recommend = StateMachine.UserMessage.Command.Body;
 			await StateMachine.TransitionToAsync<BudgetState>();
 		}
 
-		public override async Task WelcomeAsync(dynamic model)
+		public override async Task WelcomeAsync()
 		{
 			var buttons = new MessageButtonsGrid();
 			var row = buttons.AddRow();

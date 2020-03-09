@@ -74,6 +74,21 @@ namespace BotX.Api
 		Task SendFileAsync(UserMessage requestMessage, string fileName, byte[] data);
 
 		/// <summary>
+		/// Отправляет текстовое сообщение (нотификацию) всем пользователям, которые писали боту или чатам, в которых есть бот
+		/// </summary>
+		/// <param name="messageText">Текст сообщения</param>
+		/// <returns></returns>
+		Task SendTextMessageAsync(string messageText);
+
+		/// <summary>
+		/// Отправляет текстовое сообщение (нотификацию) всем пользователям, которые писали боту или чатам, в которых есть бот
+		/// </summary>
+		/// <param name="messageText">Текст сообщения</param>
+		/// <param name="buttons">Кнопки с действиями в сообщении</param>
+		/// <returns></returns>
+		Task SendTextMessageAsync(string messageText, MessageButtonsGrid buttons);
+
+		/// <summary>
 		/// Отправляет текстовое сообщение (нотификацию) пользователю
 		/// </summary>
 		/// <param name="chatId">Идентификатор чата, куда будет отправлено сообщение</param>

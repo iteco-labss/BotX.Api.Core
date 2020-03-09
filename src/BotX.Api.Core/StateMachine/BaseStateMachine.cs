@@ -50,7 +50,7 @@ namespace BotX.Api.StateMachine
 		internal bool isFinished;
 
 		[JsonProperty]
-		internal dynamic model = new ExpandoObject();
+		public dynamic Model { get; set; } = new ExpandoObject();
 
 		//TODO: сделать init
 		//public static T Create<T>() where T : BaseStateMachine
@@ -75,7 +75,7 @@ namespace BotX.Api.StateMachine
 				diSm.firstStep = restoredSm.firstStep;
 				diSm.isFinished = restoredSm.isFinished;
 				diSm.MessageSender = messageSender;
-				diSm.model = restoredSm.model;
+				diSm.Model = restoredSm.Model;
 				diSm.state = restoredSm.state;
 				diSm.state.StateMachine = diSm;
 				diSm.UserMessage = userMessage;
@@ -117,7 +117,7 @@ namespace BotX.Api.StateMachine
 		/// </summary>
 		/// <param name="model"></param>
 		/// <returns></returns>
-		public abstract Task OnFinishedAsync(dynamic model);
+		public abstract Task OnFinishedAsync();
 
 		/// <summary>
 		/// Переводит конечный автомат в новое состояние
@@ -128,7 +128,8 @@ namespace BotX.Api.StateMachine
 			using var scope = ScopeFactory.CreateScope();
 			var newState = scope.ServiceProvider.GetService(typeof(TState)) as BaseState;
 			State = newState;
-			await State.StartAsync(UserMessage, model);
+			await State.StartAsync(UserMessage);
+			SaveState(); // TODO узнать почему при переходе в новое состояние, мы не вызываем SaveSate
 		}
 
 		/// <summary>
@@ -138,7 +139,8 @@ namespace BotX.Api.StateMachine
 		public async Task ResetAsync()
 		{
 			State = firstStep;
-			await State.StartAsync(UserMessage, model);
+			await State.StartAsync(UserMessage);
+			SaveState(); // TODO узнать почему при переходе в новое состояние, мы не вызываем SaveSate
 		}
 
 		/// <summary>
@@ -147,7 +149,7 @@ namespace BotX.Api.StateMachine
 		public void Finish()
 		{
 			isFinished = true;
-			OnFinishedAsync(model);
+			OnFinishedAsync();
 			SaveState();
 		}
 
@@ -170,7 +172,7 @@ namespace BotX.Api.StateMachine
 				if (State == null)
 					await OnStartedAsync();
 				else
-					await State.StartAsync(userMessage, model);
+					await State.StartAsync(userMessage);
 
 				this.SaveState();
 			}
