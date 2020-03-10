@@ -25,6 +25,11 @@ namespace BotX.Api.Middleware
 				var actionExecutor = scope.ServiceProvider.GetService<ActionExecutor>();
 				var stateMachineExecutor = scope.ServiceProvider.GetService<StateMachineExecutor>();
 
+				if (!string.IsNullOrEmpty(message.Command.Data?.EventType))
+				{
+					await actionExecutor.ExecuteEventAsync(message);
+					return;
+				}
 				bool stateMachineLaunched = await stateMachineExecutor.ExecuteAsync(message);
 
 				if (!stateMachineLaunched)

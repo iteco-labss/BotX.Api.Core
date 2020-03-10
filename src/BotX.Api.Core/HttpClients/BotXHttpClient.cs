@@ -32,7 +32,7 @@ namespace BotX.Api.HttpClients
 		private readonly ILogger<BotXHttpClient> logger;
 
 		private static string authToken = null;
-		
+
 		private static ManualResetEvent manualReset = new ManualResetEvent(true);
 		private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1);
 
@@ -54,7 +54,7 @@ namespace BotX.Api.HttpClients
 
 		public async Task SendNotificationAsync(NotificationMessage message)
 		{
-			await PostAsJsonAsync(API_SEND_MESSAGE_NOTIFICATION, message);			
+			await PostAsJsonAsync(API_SEND_MESSAGE_NOTIFICATION, message);
 		}
 
 		public async Task<Guid> SendReplyAsync(ResponseMessage message)
@@ -73,14 +73,14 @@ namespace BotX.Api.HttpClients
 		{
 			if (botId == Guid.Empty)
 				throw new InvalidOperationException("Для отправки файлов требуется задать идентификатор бота в AddExpressBot");
-			
-			var requestUri = new Uri(API_SEND_FILE);
+
+			//var requestUri = new Uri(new Uri(config.CtsServiceUrl), new Uri(API_SEND_FILE));
 			var content = new MultipartFormDataContent();
 			content.Add(new StringContent(syncId.ToString()), "sync_id");
 			content.Add(new StringContent(botId.ToString()), "bot_id");
 			content.Add(new StreamContent(new MemoryStream(data)), "file", fileName);
 
-			var response = await client.PostAsync(requestUri, content);
+			var response = await client.PostAsync(API_SEND_FILE, content);
 			if (!response.IsSuccessStatusCode)
 				throw new HttpRequestException(await response.Content.ReadAsStringAsync());
 		}
@@ -129,7 +129,8 @@ namespace BotX.Api.HttpClients
 			{
 				// Если сразу на нескольких запросах получен Unauthorized, запускаем авторизацию только 1 раз
 				await semaphoreSlim.WaitAsync();
-				try { 
+				try
+				{
 					if (authToken == response.RequestMessage.Headers.Authorization.Parameter)
 						await AuthorizeAsync();
 				}

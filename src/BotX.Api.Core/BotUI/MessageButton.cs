@@ -30,8 +30,8 @@ namespace BotX.Api.BotUI
 		internal bool IsSilent { get; set; }
 
 		internal string InternalCommand { get; set; }
-		
-		internal static MessageButton Create<T>(string title, string command, BotEventHandler<T> @event, T payload, bool isSilent) where T : Payload
+
+		internal static MessageButton Create<T>(string title, string command, string eventName, T payload, bool isSilent) where T : Payload
 		{
 			MessageButton res = new MessageButton()
 			{
@@ -41,18 +41,17 @@ namespace BotX.Api.BotUI
 				InternalCommand = string.IsNullOrEmpty(command) ? title : command
 			};
 
-			if (@event != null)
+			if (!string.IsNullOrEmpty(eventName))
 			{
-				var pair = ActionExecutor.actionEvents.SingleOrDefault(x => x.Value.Event == @event.GetMethodInfo());
-				if (!pair.Equals(default(KeyValuePair<string, EventData>)))
+				if (!ActionExecutor.actionEvents.ContainsKey(eventName.ToLower()))
+					throw new Exception($"Button event with key:{eventName.ToLower()} not found.");
+
+				res.Data.EventType = eventName.ToLower();
+				res.Data.Payload = JsonConvert.SerializeObject(payload, new JsonSerializerSettings()
 				{
-					res.Data.EventType = pair.Key;
-					res.Data.Payload = JsonConvert.SerializeObject(payload, new JsonSerializerSettings()
-					{
-						TypeNameHandling = TypeNameHandling.All,
-						MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
-					});
-				}
+					TypeNameHandling = TypeNameHandling.All,
+					MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
+				});
 			}
 			return res;
 		}

@@ -48,11 +48,6 @@ namespace BotX.Api.Executors
 						machine.isFinished = restored.isFinished;
 						machine.State = state;
 						stateMachineLaunched = !machine.isFinished;
-						if (!string.IsNullOrEmpty(message.Command.Data?.EventType))
-						{
-							await ExecuteStateMachineEventAsync(message, machine);
-							return true;
-						}
 						if (stateMachineLaunched)
 							await machine.EnterAsync(message);
 						break;
@@ -61,23 +56,6 @@ namespace BotX.Api.Executors
 			}
 
 			return stateMachineLaunched;
-		}
-
-		private async Task ExecuteStateMachineEventAsync(UserMessage message, BaseStateMachine machine)
-		{
-			var actionExecutor = scope.ServiceProvider.GetService<ActionExecutor>();
-			var @event = ActionExecutor.actionEvents[message.Command.Data.EventType];
-			if (typeof(BaseStateMachine).IsAssignableFrom(@event.EventClass))
-			{
-				await actionExecutor.ExecuteEventAsync(message, machine);
-				return;
-			}
-			if (typeof(BaseState).IsAssignableFrom(@event.EventClass))
-			{
-				await actionExecutor.ExecuteEventAsync(message, machine.State);
-				return;
-			}
-			await actionExecutor.ExecuteEventAsync(message);
 		}
 
 		public void Dispose()

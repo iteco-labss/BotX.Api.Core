@@ -3,6 +3,7 @@ using BotX.Api.Attributes;
 using BotX.Api.Delegates;
 using BotX.Api.JsonModel.Request;
 using BotX.Api.JsonModel.Response;
+using BotX.Api.StateMachine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -61,19 +62,26 @@ namespace BotX.Api.Executors
 
 				foreach (var method in methods)
 				{
-					string eventName = method.GetCustomAttribute<BotButtonEventAttribute>()?.EventName;
+					string eventName = method.GetCustomAttribute<BotButtonEventAttribute>()?.EventName?.ToLower();
 					if (string.IsNullOrEmpty(eventName))
 						throw new InvalidOperationException($"'EventName' is required with 'BotButtonEventAttribute'");
 					if (actionEvents.ContainsKey(eventName))
 						throw new InvalidOperationException($"Event with name '{eventName}' already exists");
+					if (typeof(BaseState).IsAssignableFrom(eventClass))
+						throw new Exception("Buttons executor cannot be in a class inherited from `BaseState`");
+					if (method.ReturnType != typeof(Task))
+						throw new Exception("The return value must be `Task`");
 
 					var types = method.GetParameters().Select(p => p.ParameterType).Concat(new[] { method.ReturnType }).ToArray();
+					if (types.Length != 3 || types[0] != typeof(UserMessage) || !typeof(Payload).IsAssignableFrom(types[1]))
+						throw new Exception("the method signature should be `(UserMessage message, Payload payload)`");
+
 					actionEvents.Add(eventName, new EventData()
 					{
 						Event = method,
-						EventClass = eventClass,
-						EventInstanse = new FastMethodInfo(method),
-						DelegateType = Expression.GetFuncType(types)
+						Class = eventClass,
+						Instanse = new FastMethodInfo(method),
+						Type = typeof(BaseStateMachine).IsAssignableFrom(eventClass) ? EventType.StateMachineEvent : EventType.Event
 					});
 				}
 
@@ -87,7 +95,7 @@ namespace BotX.Api.Executors
 		/// </summary>
 		/// <param name="request"></param>
 		/// <returns>true - если событие было обработаано, false - если нет</returns>
-		internal async Task<bool> ExecuteEventAsync(UserMessage request, object instance = null)
+		internal async Task<bool> ExecuteEventAsync(UserMessage request)
 		{
 			if (string.IsNullOrEmpty(request.Command.Data?.EventType))
 				return false;
@@ -97,8 +105,32 @@ namespace BotX.Api.Executors
 				TypeNameHandling = TypeNameHandling.All,
 				MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
 			});
+			var @event = actionEvents[request.Command.Data.EventType];
+			object instance = null;
+			if (@event.Type == EventType.StateMachineEvent)
+			{
 
-			await InvokeEvent(request, actionEvents[request.Command.Data.EventType], payload, instance);
+				var machine = scope.ServiceProvider.GetService(@event.Class) as BaseStateMachine;
+
+				machine.UserMessage = request;
+				machine.MessageSender = scope.ServiceProvider.GetService<IBotMessageSender>();
+
+				var restored = machine.RestoreState();
+				if (restored != null)
+				{
+					var state = scope.ServiceProvider.GetService(restored.State.GetType()) as BaseState;
+					state.StateMachine = machine;
+					if (state is BaseQuestionState && restored.State is BaseQuestionState)
+						(state as BaseQuestionState).isOpen = (restored.State as BaseQuestionState).isOpen;
+					machine.Model = restored.Model;
+					machine.firstStep = restored.firstStep;
+					machine.isFinished = restored.isFinished;
+					machine.State = state;
+				}
+				instance = machine;
+			}
+
+			await InvokeEvent(request, @event, payload, instance);
 			return true;
 		}
 
@@ -111,8 +143,6 @@ namespace BotX.Api.Executors
 				logger.LogInformation("The message is empty");
 				return;
 			}
-			if (await ExecuteEventAsync(request))
-				return;
 
 			bool messageIsAction = request.Command.Body.StartsWith('/');
 			var msg = request.Command.Body.ToLower().Substring(1);
@@ -151,10 +181,10 @@ namespace BotX.Api.Executors
 		{
 			logger.LogInformation("Enter InvokeEvent");
 			if (instance == null)
-				instance = scope.ServiceProvider.GetService(@event.EventClass);
+				instance = scope.ServiceProvider.GetService(@event.Class);
 
 			object[] param = new object[] { request, payload };
-			await @event.EventInstanse.InvokeAsync(instance, param);
+			await @event.Instanse.InvokeAsync(instance, param);
 		}
 
 		private async Task InvokeUnnamedAction(UserMessage request)
@@ -176,11 +206,17 @@ namespace BotX.Api.Executors
 
 	internal class EventData
 	{
-		internal Type EventClass { get; set; }
+		internal Type Class { get; set; }
 		internal MethodInfo Event { get; set; }
-		internal FastMethodInfo EventInstanse { get; set; }
-		internal Type DelegateType { get; set; }
+		internal FastMethodInfo Instanse { get; set; }
+		internal EventType Type { get; set; }
 	}
 
-	
+	internal enum EventType
+	{
+		Event = 0,
+		StateMachineEvent = 1
+	}
+
+
 }
