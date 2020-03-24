@@ -13,5 +13,8 @@ namespace BotX.Api.JsonModel.Response.Mentions
         [JsonProperty("name")]
         public string UserName { get; set; }
 
+        // TODO возможно стоит сделать перечисление?
+        [JsonProperty("conn_type")]
+        public string ConnectionType { get; set; }
     }
 }

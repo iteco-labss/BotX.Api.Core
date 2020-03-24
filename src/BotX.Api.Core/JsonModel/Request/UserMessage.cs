@@ -24,5 +24,8 @@ namespace BotX.Api.JsonModel.Request
 
 		[JsonProperty("bot_id")]
 		public Guid BotId { get; set; }
+
+		[JsonProperty("entities")]
+		public List<Entitie> Entities { get; set; }
 	}
 }
