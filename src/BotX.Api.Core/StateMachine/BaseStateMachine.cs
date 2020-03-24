@@ -67,7 +67,10 @@ namespace BotX.Api.StateMachine
 		/// <returns></returns>
 		public T FromJson<T>(string value, IBotMessageSender messageSender, UserMessage userMessage) where T : BaseStateMachine
 		{
-			var restoredSm = JsonConvert.DeserializeObject<T>(value, serializerSettings);
+			var restoredObject = JsonConvert.DeserializeObject(value, serializerSettings);
+			if (!(restoredObject is T restoredSm))
+				return null;
+
 			using var scope = ScopeFactory.CreateScope();
 			var diSm = scope.ServiceProvider.GetService<T>();
 			if (diSm != null)
@@ -195,7 +198,7 @@ namespace BotX.Api.StateMachine
 		private static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
 		{
 			TypeNameHandling = TypeNameHandling.All,
-			MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
+			MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead,
 		};
 
 
