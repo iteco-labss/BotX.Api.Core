@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace BotX.Api.Executors
 {
@@ -15,10 +16,12 @@ namespace BotX.Api.Executors
 		static List<MiddlewareData> Middlewares { get; set; } = new List<MiddlewareData>();
 
 		private readonly IServiceScopeFactory serviceScopeFactory;
+		private readonly ILogger<MiddlewareExecutor> logger;
 
-		public MiddlewareExecutor(IServiceScopeFactory serviceScopeFactory)
+		public MiddlewareExecutor(IServiceScopeFactory serviceScopeFactory, ILogger<MiddlewareExecutor> logger)
 		{
 			this.serviceScopeFactory = serviceScopeFactory;
+			this.logger = logger;
 		}
 
 		/// <summary>
@@ -84,7 +87,15 @@ namespace BotX.Api.Executors
 			var middleware = Middlewares.First();
 			var parameters = middleware.Parameters.Select(x => x == typeof(UserMessage) ? message : scope.ServiceProvider.GetService(x)).ToArray();
 
-			await middleware.Method.InvokeAsync(middleware.Instance, parameters);
+			try
+			{
+				await middleware.Method.InvokeAsync(middleware.Instance, parameters);
+			}
+			catch (Exception ex)
+			{
+				logger.LogError(ex, "Error inside middleware");
+				throw;
+			}
 		}
 
 		private BotMiddlewareHandler CreateDelegate(MiddlewareData nextMiddleware)
