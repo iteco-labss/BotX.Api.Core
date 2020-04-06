@@ -128,6 +128,9 @@ namespace BotX.Api.StateMachine
 		/// <returns></returns>
 		public async Task TransitionToAsync<TState>() where TState : BaseState
 		{
+			if (isFinished)
+				return;
+
 			using var scope = ScopeFactory.CreateScope();
 			var newState = scope.ServiceProvider.GetService(typeof(TState)) as BaseState;
 			State = newState;
