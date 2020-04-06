@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Extensions;
 
 namespace BotX.Api.Middleware
 {
@@ -27,7 +28,10 @@ namespace BotX.Api.Middleware
 				StreamReader reader = new StreamReader(context.Request.Body);
 				string body = string.Empty;
 
-				if (context.Request.ContentLength < maxLength)
+				logger.LogInformation($"Request {context.Request.Method} {context.Request.GetDisplayUrl()}");
+
+				if (context.Request.ContentLength != null && 
+				    context.Request.ContentLength < maxLength)
 					body = await reader.ReadToEndAsync();
 				else
 				{
