@@ -41,8 +41,7 @@ namespace BotX.Api.Middleware
 				var sender = scope.ServiceProvider.GetService<IBotMessageSender>();
 				if (config.InChatExceptions == true)
 					await sender.ReplyTextMessageAsync(message, ex.ToString());
-				else
-					throw;
+				throw;
 			}
 		}
 	}
