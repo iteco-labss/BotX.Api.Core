@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Extensions;
 
 namespace BotX.Api.Middleware
 {
@@ -24,18 +25,23 @@ namespace BotX.Api.Middleware
 			try
 			{
 				context.Request.EnableBuffering();
-				StreamReader reader = new StreamReader(context.Request.Body);
-				string body = string.Empty;
+				logger.LogInformation($"Request {context.Request.Method} {context.Request.GetDisplayUrl()}");
 
-				if (context.Request.ContentLength < maxLength)
-					body = await reader.ReadToEndAsync();
-				else
+				if (context.Request.ContentLength != null)
 				{
-					var buffer = new char[maxLength];
-					await reader.ReadAsync(buffer, 0, maxLength);
-					body = new string(buffer) + "... (the message was trimmed)";
+					StreamReader reader = new StreamReader(context.Request.Body);
+					string body = string.Empty;
+					if (context.Request.ContentLength < maxLength)
+						body = await reader.ReadToEndAsync();
+					else
+					{
+						var buffer = new char[maxLength];
+						await reader.ReadAsync(buffer, 0, maxLength);
+						body = new string(buffer) + "... (the message was trimmed)";
+					}
+
+					logger.LogInformation(body);
 				}
-				logger.LogInformation(body);
 			}
 			finally
 			{
