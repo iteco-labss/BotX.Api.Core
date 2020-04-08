@@ -122,7 +122,7 @@ namespace BotX.Api.HttpClients
 
 			manualReset.WaitOne();
 			var dataAsString = JsonConvert.SerializeObject(data);
-			logger.LogInformation($"POST: {url}\r\nDATA: {dataAsString}");
+			logger.LogDebug($"POST: {url}\r\nDATA: {dataAsString}");
 
 			var response = await client.SendAsync(CreateRequestMessage(url, dataAsString));
 			if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -141,7 +141,11 @@ namespace BotX.Api.HttpClients
 				response = await client.SendAsync(CreateRequestMessage(url, dataAsString));
 			}
 			if (!response.IsSuccessStatusCode)
-				throw new HttpRequestException(await response.Content.ReadAsStringAsync());
+			{
+				var content = await response.Content.ReadAsStringAsync();
+				logger.LogError($"Request Exception: {response.StatusCode} - {content}");
+				throw new HttpRequestException(content);
+			}
 
 			return response;
 		}

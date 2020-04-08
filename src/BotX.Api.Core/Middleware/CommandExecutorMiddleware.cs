@@ -5,6 +5,7 @@ using BotX.Api.StateMachine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace BotX.Api.Middleware
@@ -17,7 +18,7 @@ namespace BotX.Api.Middleware
 			this.next = next;
 		}
 
-		public async Task InvokeAsync(UserMessage message, IServiceScopeFactory serviceScopeFactory)
+		public async Task InvokeAsync(UserMessage message, IServiceScopeFactory serviceScopeFactory, ILogger<CommandExecutorMiddleware> logger)
 		{
 			using var scope = serviceScopeFactory.CreateScope();
 			try
@@ -39,8 +40,17 @@ namespace BotX.Api.Middleware
 			{
 				var config = scope.ServiceProvider.GetService<BotXConfig>();
 				var sender = scope.ServiceProvider.GetService<IBotMessageSender>();
-				if (config.InChatExceptions == true)
-					await sender.ReplyTextMessageAsync(message, ex.ToString());
+				if (config.InChatExceptions)
+				{
+					try
+					{
+						await sender.ReplyTextMessageAsync(message, ex.ToString());
+					}
+					catch(HttpRequestException httpEx)
+					{
+						logger.LogError(httpEx, "Http exception while sending message");
+					}
+				}
 				throw;
 			}
 		}

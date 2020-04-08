@@ -40,7 +40,7 @@ namespace BotX.Api.Middleware
 						body = new string(buffer) + "... (the message was trimmed)";
 					}
 
-					logger.LogInformation(body);
+					logger.LogDebug(body);
 				}
 			}
 			finally
