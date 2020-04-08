@@ -136,7 +136,7 @@ namespace BotX.Api.Executors
 
 		internal async Task ExecuteAsync(UserMessage request)
 		{
-			logger.LogInformation("Enter the 'Execute' method");
+			logger.LogDebug("Enter the 'Execute' method");
 
 			if (request.Command.Body.Length == 0)
 			{
@@ -164,7 +164,7 @@ namespace BotX.Api.Executors
 
 		private async Task InvokeNamedAction(UserMessage request, string actionName, string[] args)
 		{
-			logger.LogInformation("Enter InvokeNamedAction");
+			logger.LogDebug("Enter InvokeNamedAction");
 			try
 			{
 				var action = (IBotAction)scope.ServiceProvider.GetService(actions[actionName]);
@@ -179,7 +179,7 @@ namespace BotX.Api.Executors
 
 		private async Task InvokeEvent(UserMessage request, EventData @event, Payload payload, object instance)
 		{
-			logger.LogInformation("Enter InvokeEvent");
+			logger.LogDebug("Enter InvokeEvent");
 			if (instance == null)
 				instance = scope.ServiceProvider.GetService(@event.Class);
 
@@ -189,7 +189,7 @@ namespace BotX.Api.Executors
 
 		private async Task InvokeUnnamedAction(UserMessage request)
 		{
-			logger.LogInformation("Enter InvokeUnnamedAction");
+			logger.LogDebug("Enter InvokeUnnamedAction");
 			foreach (var actionType in unnamedActions)
 			{
 				var action = (IBotAction)scope.ServiceProvider.GetService(actionType);
