@@ -18,5 +18,7 @@ namespace BotX.Api.JsonModel.Request
 		[JsonProperty("notification")]
 		public CommandResult Notification { get; set; }
 
+		[JsonProperty("file")]
+		public File File { get; set; }
 	}
 }

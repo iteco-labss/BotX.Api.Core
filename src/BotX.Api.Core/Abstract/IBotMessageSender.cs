@@ -151,5 +151,9 @@ namespace BotX.Api
 		/// <param name="mentionHuid">Идентификатор пользователя, которого нужно упомянуть</param>
 		/// <returns></returns>
 		Task EditMessageAsync(Guid syncId, string messageText, Guid mentionHuid);
+
+		Task SendFileAsync(Guid chatId, Guid huid, string fileName, byte[] data);
+
+		Task SendFileAsync(Guid chatId, Guid huid, string caption, string fileName, byte[] data);
 	}
 }
