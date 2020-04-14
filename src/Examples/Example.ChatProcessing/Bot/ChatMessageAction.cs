@@ -32,8 +32,6 @@ namespace Example.ChatProcessing.Bot
 			var syncId = await MessageSender.ReplyTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
 			if (syncId != Guid.Empty)
 				lastMessageSyncId = syncId;
-
-
 		}
 
 		[BotButtonEvent("count")]
@@ -52,7 +50,6 @@ namespace Example.ChatProcessing.Bot
 		{
 			await MessageSender.ReplyTextMessageAsync(userMessage, $"Button pressed without arguments");
 		}
-
 	}
 
 	public class CountClickPayload : Payload
