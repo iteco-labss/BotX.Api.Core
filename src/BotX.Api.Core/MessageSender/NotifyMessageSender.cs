@@ -15,7 +15,7 @@ namespace BotX.Api
 		public async Task SendTextMessageAsync(string messageText)
 		{
 			await SendTextMessageAsync(
-				chatIds: null,
+				chatId: Guid.Empty, 
 				recipients: null,
 				messageText: messageText,
 				buttons: new MessageButtonsGrid()
@@ -25,7 +25,7 @@ namespace BotX.Api
 		public async Task SendTextMessageAsync(string messageText, MessageButtonsGrid buttons)
 		{
 			await SendTextMessageAsync(
-				chatIds: null,
+				chatId: Guid.Empty, 
 				recipients: null,
 				messageText: messageText,
 				buttons: buttons
@@ -36,7 +36,7 @@ namespace BotX.Api
 		public async Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText)
 		{
 			await SendTextMessageAsync(
-				chatIds: new Guid[] { chatId },
+				chatId: chatId,
 				recipients: new Guid[] { huid },
 				messageText: messageText,
 				buttons: new MessageButtonsGrid()
@@ -46,28 +46,28 @@ namespace BotX.Api
 		public async Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, MessageButtonsGrid buttons)
 		{
 			await SendTextMessageAsync(
-				chatIds: new Guid[] { chatId },
+				chatId: chatId,
 				recipients: new Guid[] { huid },
 				messageText: messageText,
 				buttons: buttons
 				);
 
 		}
-		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText)
+		public async Task SendTextMessageAsync(Guid chatId, Guid[] recipients, string messageText)
 		{
 			await SendTextMessageAsync(
-				chatIds: chatIds,
+				chatId: chatId,
 				recipients: recipients,
 				messageText: messageText,
 				buttons: new MessageButtonsGrid()
 				);
 		}
 
-		public async Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons)
+		public async Task SendTextMessageAsync(Guid chatId, Guid[] recipients, string messageText, MessageButtonsGrid buttons)
 		{
 			var notification = new NotificationMessage
 			{
-				GroupChatIds = chatIds,
+				GroupChatId = chatId,
 				Recipients = recipients,
 				Notification = new CommandResult
 				{

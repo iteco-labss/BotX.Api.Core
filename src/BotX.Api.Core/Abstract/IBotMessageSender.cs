@@ -114,7 +114,7 @@ namespace BotX.Api
 		/// <param name="recipients">Идентификаторы получателей (пользователей) сообщения</param>
 		/// <param name="messageText">Текст сообщения</param>
 		/// <returns></returns>	
-		Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText);
+		Task SendTextMessageAsync(Guid chatId, Guid[] recipients, string messageText);
 
 		/// <summary>
 		/// Отправляет текстовое сообщение (нотификацию) с кнопками пользователю
@@ -124,7 +124,7 @@ namespace BotX.Api
 		/// <param name="messageText">Текст сообщения</param>
 		/// <param name="buttons">Кнопки с действиями в сообщении</param>
 		/// <returns></returns>
-		Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons);
+		Task SendTextMessageAsync(Guid chatId, Guid[] recipients, string messageText, MessageButtonsGrid buttons);
 
 		/// <summary>
 		/// Редактирует сообщение отправленное пользователю
