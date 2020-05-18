@@ -9,6 +9,10 @@ namespace BotX.Api.JsonModel.Response
 	/// </summary>
 	public abstract class Payload
 	{
-
+		/// <summary>
+		/// Идентификатор сообщения в Express (по которому его можно редактировать).
+		/// Его можно передать в метод отправки сообщения (параметр messageSyncId)
+		/// </summary>
+		public Guid? MessageSyncId { get; set; }
 	}
 }

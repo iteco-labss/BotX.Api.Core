@@ -14,6 +14,9 @@ namespace BotX.Api.JsonModel.Response
 		[JsonProperty(PropertyName = "recipients", NullValueHandling =NullValueHandling.Ignore)]
 		public Guid[] Recipients { get; set; }
 
+		[JsonProperty(PropertyName = "event_sync_id", NullValueHandling = NullValueHandling.Ignore)]
+		public Guid? MessageSyncId { get; set; }
+
 		[JsonProperty(PropertyName = "command_result")]
 		public CommandResult CommandResult { get; set; }
 
