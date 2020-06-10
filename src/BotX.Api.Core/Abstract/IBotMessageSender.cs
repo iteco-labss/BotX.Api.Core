@@ -56,6 +56,54 @@ namespace BotX.Api
 		Task<Guid> ReplyTextMessageAsync(UserMessage requestMessage, string messageText, MessageButtonsGrid buttons);
 
 		/// <summary>
+		/// Отправляет ответ в виде текстового сообщения
+		/// </summary>
+		/// <param name="syncId">Идентификатор чата</param>
+		/// <param name="messageSyncId">Идентификатор сообщения в Express (по которому его можно редактировать)</param>
+		/// <param name="messageText">Текст сообщения</param>
+		/// <returns>Идентификатор сообщения(необходим для его редактирования)</returns>
+		Task<Guid> ReplyTextMessageAsync(Guid syncId, Guid messageSyncId, string messageText);
+
+		/// <summary>
+		/// Отправляет текствое сообщение с кнопками в ответ пользователю
+		/// </summary>
+		/// <param name="syncId">Идентификатор чата</param>
+		/// <param name="messageSyncId">Идентификатор сообщения в Express (по которому его можно редактировать)</param>
+		/// <param name="messageText">Текст сообщения</param>
+		/// <param name="buttons">Кнопки с действиями в сообщении</param>
+		/// <returns>Идентификатор сообщения(необходим для его редактирования)</returns>
+		Task<Guid> ReplyTextMessageAsync(Guid syncId, Guid messageSyncId, string messageText, MessageButtonsGrid buttons);
+
+		/// <summary>
+		/// Отправляет текстовое сообщение в ответ пользователю
+		/// </summary>
+		/// <param name="requestMessage">Сообщение от пользователя</param>
+		/// <param name="messageSyncId">Идентификатор сообщения в Express (по которому его можно редактировать)</param>
+		/// <param name="messageText">Текст ответа</param>
+		/// <returns>Идентификатор сообщения(необходим для его редактирования)</returns>
+		Task<Guid> ReplyTextMessageAsync(UserMessage requestMessage, Guid messageSyncId, string messageText);
+
+		/// <summary>
+		/// Отправляет текстовое сообщение в ответ пользователю
+		/// </summary>
+		/// <param name="requestMessage">Сообщение от пользователя</param>
+		/// <param name="messageSyncId">Идентификатор сообщения в Express (по которому его можно редактировать)</param>
+		/// <param name="messageText">Текст ответа</param>
+		/// <param name="mentionHuid">Идентификатор пользователя, которого нужно упомянуть</param>
+		/// <returns>Идентификатор сообщения(необходим для его редактирования)</returns>
+		Task<Guid> ReplyTextMessageAsync(UserMessage requestMessage, Guid messageSyncId, string messageText, Guid mentionHuid);
+
+		/// <summary>
+		/// Отправка текстового сообщения с кнопками (действиями) в ответ пользователю
+		/// </summary>
+		/// <param name="requestMessage">Сообщение пользователя</param>
+		/// <param name="messageSyncId">Идентификатор сообщения в Express (по которому его можно редактировать)</param>
+		/// <param name="messageText">Текст сообщения</param>
+		/// <param name="buttons">Кнопки с действиями в сообщении</param>
+		/// <returns>Идентификатор сообщения(необходим для его редактирования)</returns>
+		Task<Guid> ReplyTextMessageAsync(UserMessage requestMessage, Guid messageSyncId, string messageText, MessageButtonsGrid buttons);
+
+		/// <summary>
 		/// Отправка файла в чат
 		/// </summary>
 		/// <param name="syncId">Идентификатор чата</param>
@@ -72,21 +120,6 @@ namespace BotX.Api
 		/// <param name="data">Данные файла</param>
 		/// <returns></returns>	
 		Task SendFileAsync(UserMessage requestMessage, string fileName, byte[] data);
-
-		/// <summary>
-		/// Отправляет текстовое сообщение (нотификацию) всем пользователям, которые писали боту или чатам, в которых есть бот
-		/// </summary>
-		/// <param name="messageText">Текст сообщения</param>
-		/// <returns></returns>
-		Task SendTextMessageAsync(string messageText);
-
-		/// <summary>
-		/// Отправляет текстовое сообщение (нотификацию) всем пользователям, которые писали боту или чатам, в которых есть бот
-		/// </summary>
-		/// <param name="messageText">Текст сообщения</param>
-		/// <param name="buttons">Кнопки с действиями в сообщении</param>
-		/// <returns></returns>
-		Task SendTextMessageAsync(string messageText, MessageButtonsGrid buttons);
 
 		/// <summary>
 		/// Отправляет текстовое сообщение (нотификацию) пользователю
@@ -110,21 +143,43 @@ namespace BotX.Api
 		/// <summary>
 		/// Отправляет текстовое сообщение (нотификацию) пользователю
 		/// </summary>
-		/// <param name="chatIds">Идентификаторы чатов, куда будет отправлено сообщение</param>
-		/// <param name="recipients">Идентификаторы получателей (пользователей) сообщения</param>
+		/// <param name="chatId">Идентификатор чата, куда будет отправлено сообщение</param>
+		/// <param name="huid">Идентификатор получателя (пользователя) сообщения</param>
+		/// <param name="messageSyncId">Идентификатор сообщения в Express (по которому его можно редактировать)</param>
 		/// <param name="messageText">Текст сообщения</param>
-		/// <returns></returns>	
-		Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText);
+		/// <returns></returns>
+		Task SendTextMessageAsync(Guid chatId, Guid huid, Guid messageSyncId, string messageText);
 
 		/// <summary>
 		/// Отправляет текстовое сообщение (нотификацию) с кнопками пользователю
 		/// </summary>
-		/// <param name="chatIds">Идентификаторы чатов, куда будет отправлено сообщение</param>
-		/// <param name="recipients">Идентификаторы получателей (пользователей) сообщения</param>
+		/// <param name="chatId">Идентификатор чата, куда будет отправлено сообщение</param>
+		/// <param name="huid">Идентификатор получателя (пользователя) сообщения</param>
+		/// <param name="messageSyncId">Идентификатор сообщения в Express (по которому его можно редактировать)</param>
 		/// <param name="messageText">Текст сообщения</param>
 		/// <param name="buttons">Кнопки с действиями в сообщении</param>
 		/// <returns></returns>
-		Task SendTextMessageAsync(Guid[] chatIds, Guid[] recipients, string messageText, MessageButtonsGrid buttons);
+		Task SendTextMessageAsync(Guid chatId, Guid huid, Guid messageSyncId, string messageText, MessageButtonsGrid buttons);
+
+		/// <summary>
+		/// Отправляет текстовое сообщение (нотификацию) пользователю
+		/// </summary>
+		/// <param name="chatIds">Идентификаторы чатов, куда будет отправлено сообщение</param>
+		/// <param name="recipients">Идентификаторы получателей (пользователей) сообщения</param>
+		/// <param name="messageText">Текст сообщения</param>
+		/// <returns></returns>	
+		Task SendTextMessageAsync(Guid chatId, Guid[] recipients, string messageText);
+
+		/// <summary>
+		/// Отправляет текстовое сообщение (нотификацию) с кнопками пользователю
+		/// </summary>
+		/// <param name="chatId">Идентификаторы чатов, куда будет отправлено сообщение</param>
+		/// <param name="recipients">Идентификаторы получателей (пользователей) сообщения</param>
+		/// <param name="messageSyncId">Идентификатор сообщения в Express (по которому его можно редактировать)</param>
+		/// <param name="messageText">Текст сообщения</param>
+		/// <param name="buttons">Кнопки с действиями в сообщении</param>
+		/// <returns></returns>
+		Task SendTextMessageAsync(Guid chatId, Guid[] recipients, Guid? messageSyncId, string messageText, MessageButtonsGrid buttons);
 
 		/// <summary>
 		/// Редактирует сообщение отправленное пользователю

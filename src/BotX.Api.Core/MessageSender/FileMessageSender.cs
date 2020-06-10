@@ -45,7 +45,7 @@ namespace BotX.Api
 			var notification = new NotificationMessage
 			{
 				Recipients = new[] { huid },
-				GroupChatIds = new[] { chatId },
+				GroupChatId =  chatId ,
 				File = new File
 				{
 					FileName = fileName,
