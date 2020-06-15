@@ -20,10 +20,8 @@
 	    "httpPort": 5000,
       "commandName": "Docker",
       "environmentVariables": {
-        //"BOT_ID": "00000000-0000-0000-0000-000000000000",
-        //"BOT_SECRET": "your_secret_key"
-        "BOT_SECRET": "85e3c59692633bd842145b29daffb772", // SET YOUR BOT SECRET KEY
-        "BOT_ID": "49de73fe-e3a4-5231-9972-f6690ad28a25" // SET YOUR BOT ID
+        "BOT_ID": "00000000-0000-0000-0000-000000000000",
+        "BOT_SECRET": "your_secret_key"
       }
     }
   }
