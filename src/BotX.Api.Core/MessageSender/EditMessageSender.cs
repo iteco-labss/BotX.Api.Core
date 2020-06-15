@@ -13,15 +13,12 @@ namespace BotX.Api
 	{
 		public async Task EditMessageAsync(UserMessage requestMessage, Guid syncId, string messageText)
 		{
-			var emptyButtons = new MessageButtonsGrid();
-			emptyButtons.AddRow();
-
 			await EditMessageInternalAsync(
 				host: requestMessage.From.Host, 
 				botId: requestMessage.BotId,
 				syncId: syncId,
 				messageText: messageText,
-				buttons: emptyButtons, 
+				buttons: null, 
 				mentions: null
 				);
 		}

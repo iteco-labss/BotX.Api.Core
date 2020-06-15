@@ -13,8 +13,14 @@ namespace BotX.Api.Abstract
 	/// </summary>
 	public abstract class BotAction : IBotAction
 	{
+		/// <summary>
+		/// Отправщик сообщений через мессенджер
+		/// </summary>
 		protected IBotMessageSender MessageSender { get; private set; }
 
+		/// <summary>
+		/// Сериализованное сообщение от пользователя
+		/// </summary>
 		protected UserMessage RequestMessage { get; private set; }
 
 #pragma warning disable CS1591 

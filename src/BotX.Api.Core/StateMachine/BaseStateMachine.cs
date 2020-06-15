@@ -21,7 +21,7 @@ namespace BotX.Api.StateMachine
 		/// Создаёт конечный автомат с начальным состоянием, указанным в качестве аргументоа
 		/// </summary>
 		/// <param name="messageSender">Отправщик сообщений Express</param>
-		public BaseStateMachine(IBotMessageSender messageSender, IServiceScopeFactory scopeFactory)
+		protected BaseStateMachine(IBotMessageSender messageSender, IServiceScopeFactory scopeFactory)
 		{
 			MessageSender = messageSender;
 			ScopeFactory = scopeFactory;
@@ -164,6 +164,9 @@ namespace BotX.Api.StateMachine
 			SaveState();
 		}
 
+		/// <summary>
+		/// Отменяет стеймашину, не вызывая событий завершения
+		/// </summary>
 		public void Cancel()
 		{
 			isFinished = true;

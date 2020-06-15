@@ -7,6 +7,9 @@ using Newtonsoft.Json;
 
 namespace BotX.Api.StateMachine
 {
+	/// <summary>
+	/// Базовый класс состояния для стейтмашины
+	/// </summary>
 	public abstract class BaseState
 	{
 		/// <summary>
