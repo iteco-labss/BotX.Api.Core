@@ -12,40 +12,31 @@ namespace BotX.Api
 {
 	internal partial class BotMessageSender : IBotMessageSender
 	{
-		public async Task SendFileAsync(Guid syncId, string fileName, byte[] data)
-        {
-            CheckFileSize(data);
-			await httpClient.SendFileAsync(
-				syncId: syncId,
-				botId: ExpressBotService.Configuration.BotId,
-				fileName: fileName,
-				data: data
-				);
-		}
-
 		public async Task SendFileAsync(UserMessage requestMessage, string fileName, byte[] data)
         {
             CheckFileSize(data);
-			await SendFileAsync(
+            await httpClient.SendFileAsync(
+				host: requestMessage.From.Host,
+	            botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
 				fileName: fileName,
-				data: data
-				);
+	            data: data
+            );
 		}
 
-		public async Task SendFileAsync(Guid chatId, Guid huid, string fileName, byte[] data)
-        {
-            CheckFileSize(data);
-			await SendFileAsync(chatId, huid, null, fileName, data);
+		public async Task SendFileAsync(Uri cts, Guid botId, Guid chatId, Guid huid, string fileName, byte[] data)
+		{
+			CheckFileSize(data);
+			await SendFileAsync(cts, botId, chatId, huid, null, fileName, data);
 		}
 
-		public async Task SendFileAsync(Guid chatId, Guid huid, string caption, string fileName, byte[] data)
+		public async Task SendFileAsync(Uri cts, Guid botId, Guid chatId, Guid huid, string caption, string fileName, byte[] data)
 		{
 			CheckFileSize(data);
 			var notification = new NotificationMessage
 			{
 				Recipients = new[] { huid },
-				GroupChatId =  chatId ,
+				GroupChatId = chatId,
 				File = new File
 				{
 					FileName = fileName,
@@ -53,10 +44,10 @@ namespace BotX.Api
 					Data = $"data:{GetMimeType(fileName)};base64,{Convert.ToBase64String(data)}"
 				}
 			};
-			await httpClient.SendNotificationAsync(notification);
+			await httpClient.SendNotificationAsync(cts.ToString(), botId, notification);
 		}
 
-        private void CheckFileSize(byte[] fileData)
+		private void CheckFileSize(byte[] fileData)
         {
             const int limitInMb = 100;
 			if (fileData.Length > limitInMb * 1024 * 1024)

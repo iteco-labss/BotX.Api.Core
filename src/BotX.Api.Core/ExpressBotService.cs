@@ -19,11 +19,9 @@ namespace BotX.Api
 		public static ExpressBotService Configuration { get; private set; }
 		internal List<Command> Commands { get; private set; }
 		internal bool ThrowExceptions { get; private set; }
-		internal Guid BotId { get; private set; }
 
-		internal ExpressBotService(Guid botId, bool throwExceptions)
+		internal ExpressBotService(bool throwExceptions)
 		{
-			BotId = botId;
 			ThrowExceptions = throwExceptions;
 			Commands = new List<Command>();
 			Configuration = this;

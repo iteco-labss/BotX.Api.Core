@@ -1,20 +1,5 @@
 {
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:53175",
-      "sslPort": 0
-    }
-  },
   "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
     "Example.ChatProcessing": {
       "commandName": "Project",
       "launchBrowser": true,
@@ -22,6 +7,16 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "http://localhost:5000"
+    },
+    "Docker": {
+	    "httpPort": 5000,
+      "commandName": "Docker",
+      "environmentVariables": {
+        //"BOT_SECRET": "your_secret_key", // SET YOUR BOT SECRET KEY
+        //"BOT_ID": "00000000-0000-0000-0000-000000000000" // SET YOUR BOT ID
+        "BOT_SECRET": "85e3c59692633bd842145b29daffb772", // SET YOUR BOT SECRET KEY
+        "BOT_ID": "49de73fe-e3a4-5231-9972-f6690ad28a25" // SET YOUR BOT ID
+      }
     }
   }
 }

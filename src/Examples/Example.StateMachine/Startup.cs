@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BotX.Api;
 using BotX.Api.Extensions;
-using Example.ChatProcessing.Bot.StateMachine;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -25,17 +25,17 @@ namespace Example.StateMachine
 
 		public void ConfigureServices(IServiceCollection services)
 		{
-			var cts = Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
-			if (string.IsNullOrEmpty(cts))
-				throw new Exception("cts server address is not found");
+			if (!Guid.TryParse(Environment.GetEnvironmentVariable("BOT_ID"), out var botId))
+				throw new Exception("The bot id could not be found. Please set BOT_ID environment variable");
 
-			services.AddExpressBot(new BotXConfig()
-			{
-				CtsServiceUrl = cts,
-				BotId = new Guid("BOTID"),
-				SecretKey = "SecretKey",
-				InChatExceptions = true
-			}).AddBaseCommand("start", "State machine");
+			var secret = Environment.GetEnvironmentVariable("BOT_SECRET");
+			if (string.IsNullOrWhiteSpace(secret))
+				throw new Exception("The secret key could not be found. Please set BOT_SECRET environment variable");
+
+			if (botId == Guid.Empty && secret == "your_secret_key")
+				throw new Exception("Please set your bot id in launchSettings.json");
+
+			services.AddExpressBot(new BotXConfig(botId, secret, true));
 			services.AddStateMachine<DemoStateMachine>();
 		}
 

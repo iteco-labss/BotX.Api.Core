@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Example.ChatProcessing
 {
@@ -23,23 +24,21 @@ namespace Example.ChatProcessing
 
 		public void ConfigureServices(IServiceCollection services)
 		{
-			var cts = Environment.GetEnvironmentVariable("ctsserviceaddress", EnvironmentVariableTarget.Machine);
-			if (string.IsNullOrEmpty(cts))
-				throw new Exception("cts server address is not found");
+			if (!Guid.TryParse(Environment.GetEnvironmentVariable("BOT_ID"), out var botId))
+				throw new Exception("The bot id could not be found. Please set BOT_ID environment variable");
 
-			// example bot configuration with authorization 
-			services.AddExpressBot(new BotXConfig()
-			{
-				CtsServiceUrl = cts,
-				BotId = new Guid("<YOUR_BOT_ID>"), //Change this with your botid
-				SecretKey = "<YOUR_SECRET>", // Change this with your secret key
-				InChatExceptions = true
-			});
+			var secret = Environment.GetEnvironmentVariable("BOT_SECRET");
+			if (string.IsNullOrWhiteSpace(secret))
+				throw new Exception("The secret key could not be found. Please set BOT_SECRET environment variable");
 
+			if (botId == Guid.Empty && secret == "your_secret_key")
+				throw new Exception("Please set your bot id in launchSettings.json");
+
+			services.AddExpressBot(new BotXConfig(botId, secret, true));
 			services.AddMiddleware<HelloBotMiddleware>();
 		}
 
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			if (env.IsDevelopment())
 			{

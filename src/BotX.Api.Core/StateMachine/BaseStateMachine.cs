@@ -149,7 +149,7 @@ namespace BotX.Api.StateMachine
 			State = firstStep;
 			State.ResetState();
 			isFinished = false;
-			Model = null;
+			Model = new ExpandoObject();
 			await State.StartAsync(UserMessage);
 			SaveState(); // TODO узнать почему при переходе в новое состояние, мы не вызываем SaveSate
 		}
