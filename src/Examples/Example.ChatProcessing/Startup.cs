@@ -32,7 +32,7 @@ namespace Example.ChatProcessing
 				throw new Exception("The secret key could not be found. Please set BOT_SECRET environment variable");
 
 			if (botId == Guid.Empty && secret == "your_secret_key")
-				throw new Exception("Please set your bot id in launchSettings.json");
+				throw new Exception("Please set your bot id and secret in launchSettings.json");
 
 			services.AddExpressBot(new BotXConfig(botId, secret, true));
 			services.AddMiddleware<HelloBotMiddleware>();
