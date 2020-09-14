@@ -37,5 +37,5 @@ namespace BotX.Api
 			Commands.Add(new Command { Name = command, Body = command, Description = description, Options = new Option { Clickable = true } });
 			return this;
 		}
-    }
+	}
 }

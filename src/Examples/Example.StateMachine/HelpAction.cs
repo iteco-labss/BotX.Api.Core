@@ -6,16 +6,16 @@ using BotX.Api.JsonModel.Request;
 
 namespace Example.StateMachine
 {
-    [BotAction]
-    public class HelpAction : BotAction
-    {
+	[BotAction]
+	public class HelpAction : BotAction
+	{
 		public HelpAction(IBotMessageSender messageSender) : base(messageSender)
 		{
 		}
 
 		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
-        {
-            await MessageSender.ReplyTextMessageAsync(userMessage, "Use /start command for start");
-        }
-    }
+		{
+			await MessageSender.ReplyTextMessageAsync(userMessage, "Use /start command for start");
+		}
+	}
 }

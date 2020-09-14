@@ -13,15 +13,15 @@ namespace BotX.Api
 	internal partial class BotMessageSender : IBotMessageSender
 	{
 		public async Task SendFileAsync(UserMessage requestMessage, string fileName, byte[] data)
-        {
-            CheckFileSize(data);
-            await httpClient.SendFileAsync(
+		{
+			CheckFileSize(data);
+			await httpClient.SendFileAsync(
 				host: requestMessage.From.Host,
-	            botId: requestMessage.BotId,
+				botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
 				fileName: fileName,
-	            data: data
-            );
+				data: data
+			);
 		}
 
 		public async Task SendFileAsync(Uri cts, Guid botId, Guid chatId, Guid huid, string fileName, byte[] data)
@@ -48,11 +48,11 @@ namespace BotX.Api
 		}
 
 		private void CheckFileSize(byte[] fileData)
-        {
-            const int limitInMb = 100;
+		{
+			const int limitInMb = 100;
 			if (fileData.Length > limitInMb * 1024 * 1024)
-                throw new Exception($"The file size is too large. The maximum file size is limited to {limitInMb} MB");
-        }
+				throw new Exception($"The file size is too large. The maximum file size is limited to {limitInMb} MB");
+		}
 
 		private string GetMimeType(string fileName)
 		{
