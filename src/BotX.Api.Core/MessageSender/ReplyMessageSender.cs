@@ -14,7 +14,6 @@ namespace BotX.Api
 		public async Task<Guid> ReplyTextMessageAsync(UserMessage requestMessage, string messageText)
 		{
 			return await ReplyTextMessageInternalAsync(
-				cts: requestMessage.From.Host,
 				botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
 				messageSyncId: null,
@@ -28,7 +27,6 @@ namespace BotX.Api
 		public async Task<Guid> ReplyTextMessageAsync(UserMessage requestMessage, Guid messageSyncId, string messageText)
 		{
 			return await ReplyTextMessageInternalAsync(
-				cts: requestMessage.From.Host,
 				botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
 				messageSyncId: messageSyncId,
@@ -43,7 +41,6 @@ namespace BotX.Api
 		{
 			var mentions = new Mention[] { new Mention() { MentionData = new MentionData() { Huid = mentionHuid } } };
 			return await ReplyTextMessageInternalAsync(
-				cts: requestMessage.From.Host,
 				botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
 				messageSyncId: null,
@@ -58,7 +55,6 @@ namespace BotX.Api
 		{
 			var mentions = new Mention[] { new Mention() { MentionData = new MentionData() { Huid = mentionHuid } } };
 			return await ReplyTextMessageInternalAsync(
-				cts: requestMessage.From.Host,
 				botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
 				messageSyncId: messageSyncId,
@@ -72,7 +68,6 @@ namespace BotX.Api
 		public async Task<Guid> ReplyTextMessageAsync(UserMessage requestMessage, string messageText, MessageButtonsGrid buttons)
 		{
 			return await ReplyTextMessageInternalAsync(
-				cts: requestMessage.From.Host,
 				botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
 				messageSyncId: null,
@@ -86,7 +81,6 @@ namespace BotX.Api
 		public async Task<Guid> ReplyTextMessageAsync(UserMessage requestMessage, Guid messageSyncId, string messageText, MessageButtonsGrid buttons)
 		{
 			return await ReplyTextMessageInternalAsync(
-				cts: requestMessage.From.Host,
 				botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
 				messageSyncId: messageSyncId,
@@ -97,9 +91,9 @@ namespace BotX.Api
 			);
 		}
 
-		private async Task<Guid> ReplyTextMessageInternalAsync(string cts, Guid botId, Guid syncId, string messageText, Guid? messageSyncId, Guid[] to, MessageButtonsGrid buttons, Mention[] mentions)
+		private async Task<Guid> ReplyTextMessageInternalAsync(Guid botId, Guid syncId, string messageText, Guid? messageSyncId, Guid[] to, MessageButtonsGrid buttons, Mention[] mentions)
 		{
-			return await httpClient.SendReplyAsync(cts, botId, new ResponseMessage
+			return await httpClient.SendReplyAsync(botId, new ResponseMessage
 			{
 				SyncId = syncId,
 				Recipients = to,

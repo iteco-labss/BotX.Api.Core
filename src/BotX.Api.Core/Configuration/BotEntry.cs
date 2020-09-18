@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace BotX.Api.Configuration
@@ -7,7 +8,7 @@ namespace BotX.Api.Configuration
 	/// <summary>
 	/// Запись о боте
 	/// </summary>
-	public class BotEntry
+	public class BotEntry : IEquatable<BotEntry>
 	{
 		/// <summary>
 		/// Идентификатор бота
@@ -22,14 +23,31 @@ namespace BotX.Api.Configuration
 		public string Secret { get; }
 
 		/// <summary>
+		/// Адрес сервера CTS
+		/// </summary>
+		public Uri Cts { get; }
+
+		/// <summary>
 		/// Создаёт экземпляр записи о боте
 		/// </summary>
+		/// <param name="cts">Адрес сервера CTS</param>
 		/// <param name="botId">Идентификатор бота (<c>свойство ID в настройках бота на cts</c>)</param>
 		/// <param name="secret">Секретный ключ бота (<c>свойство Secret key в настройках бота на cts</c>)</param>
-		public BotEntry(Guid botId, string secret)
+		public BotEntry(Uri cts, Guid botId, string secret)
 		{
+			Cts = cts;
 			BotId = botId;
 			Secret = secret;
+		}
+
+		/// <summary>
+		/// Сравнивает BotEntry по идентификатору BotId
+		/// </summary>
+		/// <param name="other"></param>
+		/// <returns></returns>
+		public bool Equals([AllowNull] BotEntry other)
+		{
+			return BotId.Equals(other.BotId);
 		}
 	}
 }

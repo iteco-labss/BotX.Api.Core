@@ -16,7 +16,6 @@ namespace BotX.Api
 		{
 			CheckFileSize(data);
 			await httpClient.SendFileAsync(
-				host: requestMessage.From.Host,
 				botId: requestMessage.BotId,
 				syncId: requestMessage.SyncId,
 				fileName: fileName,
@@ -24,13 +23,13 @@ namespace BotX.Api
 			);
 		}
 
-		public async Task SendFileAsync(Uri cts, Guid botId, Guid chatId, Guid huid, string fileName, byte[] data)
+		public async Task SendFileAsync(Guid botId, Guid chatId, Guid huid, string fileName, byte[] data)
 		{
 			CheckFileSize(data);
-			await SendFileAsync(cts, botId, chatId, huid, null, fileName, data);
+			await SendFileAsync(botId, chatId, huid, null, fileName, data);
 		}
 
-		public async Task SendFileAsync(Uri cts, Guid botId, Guid chatId, Guid huid, string caption, string fileName, byte[] data)
+		public async Task SendFileAsync(Guid botId, Guid chatId, Guid huid, string caption, string fileName, byte[] data)
 		{
 			CheckFileSize(data);
 			var notification = new NotificationMessage
@@ -44,7 +43,7 @@ namespace BotX.Api
 					Data = $"data:{GetMimeType(fileName)};base64,{Convert.ToBase64String(data)}"
 				}
 			};
-			await httpClient.SendNotificationAsync(cts.ToString(), botId, notification);
+			await httpClient.SendNotificationAsync(botId, notification);
 		}
 
 		private void CheckFileSize(byte[] fileData)

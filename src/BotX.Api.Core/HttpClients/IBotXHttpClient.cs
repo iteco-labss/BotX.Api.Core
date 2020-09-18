@@ -9,9 +9,9 @@ namespace BotX.Api.HttpClients
 {
 	internal interface IBotXHttpClient
 	{
-		public Task SendFileAsync(string host, Guid botId, Guid syncId, string fileName, byte[] data);
-		public Task<Guid> SendReplyAsync(string host, Guid botId, ResponseMessage message);
-		public Task EditMessageAsync(string host, Guid botId, EditEventMessage message);
-		public Task SendNotificationAsync(string host, Guid botId, NotificationMessage message);
+		public Task SendFileAsync(Guid botId, Guid syncId, string fileName, byte[] data);
+		public Task<Guid> SendReplyAsync(Guid botId, ResponseMessage message);
+		public Task EditMessageAsync(Guid botId, EditEventMessage message);
+		public Task SendNotificationAsync(Guid botId, NotificationMessage message);
 	}
 }

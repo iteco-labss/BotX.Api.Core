@@ -1,4 +1,5 @@
 ﻿using BotX.Api;
+using BotX.Api.Configuration;
 using BotX.Api.Extensions;
 using BotX.Api.JsonModel;
 using BotX.Api.JsonModel.Request;
@@ -45,29 +46,27 @@ namespace BotX.Api.HttpClients
 			this.logger = logger;
 		}
 
-		public async Task SendNotificationAsync(string host, Guid botId, NotificationMessage message)
+		public async Task SendNotificationAsync(Guid botId, NotificationMessage message)
 		{
-			await PostAsJsonAsync(host, botId, API_SEND_MESSAGE_NOTIFICATION, message);
+			await PostAsJsonAsync(botId, API_SEND_MESSAGE_NOTIFICATION, message);
 		}
 
-		public async Task<Guid> SendReplyAsync(string host, Guid botId, ResponseMessage message)
+		public async Task<Guid> SendReplyAsync(Guid botId, ResponseMessage message)
 		{
-			var result = await PostAsJsonAsync(host, botId, API_SEND_REPLY_MESSAGE, message);
+			var result = await PostAsJsonAsync(botId, API_SEND_REPLY_MESSAGE, message);
 			var syncId = JsonConvert.DeserializeObject<ReplyMessageResponse>(await result.Content.ReadAsStringAsync())?.Result?.SyncId ?? Guid.Empty;
 			return syncId;
 		}
 
-		public async Task EditMessageAsync(string host, Guid botId, EditEventMessage message)
+		public async Task EditMessageAsync(Guid botId, EditEventMessage message)
 		{
-			await PostAsJsonAsync(host, botId,API_SEND_EDIT_MESSAGE, message);
+			await PostAsJsonAsync(botId,API_SEND_EDIT_MESSAGE, message);
 		}
 
-		public async Task SendFileAsync(string host, Guid botId, Guid syncId, string fileName, byte[] data)
+		public async Task SendFileAsync(Guid botId, Guid syncId, string fileName, byte[] data)
 		{
-			if (botId == Guid.Empty)
-				throw new InvalidOperationException("Для отправки файлов требуется задать идентификатор бота в AddExpressBot");
-
-			var requestUri = new Uri(GetUriFromHost(host), API_SEND_FILE);
+			var entry = config.GetEntryBy(botId);
+			var requestUri = new Uri(entry.Cts, API_SEND_FILE);
 			var content = new MultipartFormDataContent();
 			content.Add(new StringContent(syncId.ToString()), "sync_id");
 			content.Add(new StringContent(botId.ToString()), "bot_id");
@@ -78,19 +77,13 @@ namespace BotX.Api.HttpClients
 				throw new HttpRequestException(await response.Content.ReadAsStringAsync());
 		}
 
-		private Uri GetUriFromHost(string host)
-		{
-			return host.ToLower().StartsWith("https://") ? new Uri(host) : new Uri("https://" + host);
-		}
-
-		private async Task AuthorizeAsync(Uri cts, Guid botId)
+		private async Task AuthorizeAsync(Guid botId)
 		{
 			// Блокируем отправку новых запросов, пока не закончится авторизация
 			manualReset.Reset();
 			logger.LogInformation("Authentication");
-			var botEntry = config.BotEntries.SingleOrDefault(x => x.BotId == botId);
-			if (botEntry == null)
-				throw new IndexOutOfRangeException($"The configuration does not contain 'Secret' for bot with id {botId}. Please add the pair botId\\secret to your startup (services.AddExpressBot())");
+
+			var botEntry = config.GetEntryBy(botId);
 
 			var key = Encoding.ASCII.GetBytes(botEntry.Secret);
 			var val = Encoding.ASCII.GetBytes(botEntry.BotId.ToString());
@@ -98,7 +91,7 @@ namespace BotX.Api.HttpClients
 			{
 				var hash = BitConverter.ToString(hmac.ComputeHash(val)).Replace("-", "");
 				var url = API_GET_TOKEN.Replace("$bot_id$", botEntry.BotId.ToString()).Replace("$hash$", hash);
-				var resp = await client.GetAsync(new Uri(cts, url));
+				var resp = await client.GetAsync(new Uri(botEntry.Cts, url));
 				if (resp.IsSuccessStatusCode)
 				{
 					var body = await resp.Content.ReadAsStringAsync();
@@ -114,11 +107,8 @@ namespace BotX.Api.HttpClients
 		/// Отправляет пост запрос к BotX API, при Unauthorized, повторно авторизется
 		/// </summary>
 		/// <exception cref="HttpRequestException">Возникает при не успешном ответе апи</exception>
-		private async Task<HttpResponseMessage> PostAsJsonAsync<T>(string host, Guid botId, string url, T data)
+		private async Task<HttpResponseMessage> PostAsJsonAsync<T>(Guid botId, string url, T data)
 		{
-			if (string.IsNullOrWhiteSpace(host))
-				throw new ArgumentNullException(nameof(host));
-
 			if (string.IsNullOrWhiteSpace(url))
 				throw new ArgumentNullException(nameof(url));
 
@@ -129,21 +119,20 @@ namespace BotX.Api.HttpClients
 			var dataAsString = JsonConvert.SerializeObject(data);
 			logger.LogDebug($"POST: {url}\r\nDATA: {dataAsString}");
 
-			var ctsUri = GetUriFromHost(host);
-			var response = await client.SendAsync(CreateRequestMessage(ctsUri, botId, url, dataAsString));
+			var response = await client.SendAsync(CreateRequestMessage(botId, url, dataAsString));
 			if (response.StatusCode == HttpStatusCode.Unauthorized)
 			{
 				// Если сразу на нескольких запросах получен Unauthorized, запускаем авторизацию только 1 раз
 				await semaphoreSlim.WaitAsync();
 				try
 				{
-					await AuthorizeAsync(ctsUri, botId);
+					await AuthorizeAsync(botId);
 				}
 				finally
 				{
 					semaphoreSlim.Release();
 				}
-				response = await client.SendAsync(CreateRequestMessage(ctsUri, botId, url, dataAsString));
+				response = await client.SendAsync(CreateRequestMessage(botId, url, dataAsString));
 			}
 			if (!response.IsSuccessStatusCode)
 			{
@@ -155,9 +144,10 @@ namespace BotX.Api.HttpClients
 			return response;
 		}
 
-		private HttpRequestMessage CreateRequestMessage(Uri cts, Guid botId, string path, string data)
+		private HttpRequestMessage CreateRequestMessage(Guid botId, string path, string data)
 		{
-			var requestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri(cts, path));
+			var entry = config.GetEntryBy(botId);
+			var requestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri(entry.Cts, path));
 			requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authTokens[botId]?.ToString());
 			requestMessage.Content = new StringContent(data);
 			requestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");

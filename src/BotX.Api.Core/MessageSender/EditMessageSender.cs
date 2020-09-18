@@ -14,7 +14,6 @@ namespace BotX.Api
 		public async Task EditMessageAsync(UserMessage requestMessage, Guid syncId, string messageText)
 		{
 			await EditMessageInternalAsync(
-				host: requestMessage.From.Host, 
 				botId: requestMessage.BotId,
 				syncId: syncId,
 				messageText: messageText,
@@ -26,7 +25,6 @@ namespace BotX.Api
 		public async Task EditMessageAsync(UserMessage requestMessage, Guid syncId, string messageText, MessageButtonsGrid buttons)
 		{
 			await EditMessageInternalAsync(
-				host: requestMessage.From.Host, 
 				botId: requestMessage.BotId,
 				syncId: syncId,
 				messageText: messageText,
@@ -35,11 +33,10 @@ namespace BotX.Api
 				);
 		}
 
-		public async Task EditMessageAsync(Uri cts, Guid botId, Guid syncId, string messageText, Guid mentionHuid)
+		public async Task EditMessageAsync(Guid botId, Guid syncId, string messageText, Guid mentionHuid)
 		{
 			var mentions = new Mention[] { new Mention() { MentionData = new MentionData() { Huid = mentionHuid } } };
 			await EditMessageInternalAsync(
-				host: cts.ToString(),
 				botId: botId,
 				syncId: syncId,
 				messageText: messageText,
@@ -47,9 +44,9 @@ namespace BotX.Api
 				mentions: mentions
 				);
 		}
-		private async Task EditMessageInternalAsync(string host, Guid botId, Guid syncId, string messageText, MessageButtonsGrid buttons, Mention[] mentions)
+		private async Task EditMessageInternalAsync(Guid botId, Guid syncId, string messageText, MessageButtonsGrid buttons, Mention[] mentions)
 		{
-			await httpClient.EditMessageAsync(host, botId, new EditEventMessage
+			await httpClient.EditMessageAsync(botId, new EditEventMessage
 			{
 				SyncId = syncId,
 				Payload = new CommandResult
