@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotX.Api", "BotX.Api.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.ChatProcessing", "..\Examples\Example.ChatProcessing\Example.ChatProcessing.csproj", "{0797F00C-DA5D-4E1C-A2D4-25FA72EB47AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.StateMachine", "..\Examples\Example.StateMachine\Example.StateMachine.csproj", "{223B8FB1-8AF2-4D1A-A77B-8E017AB8AA27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.StateMachine", "..\Examples\Example.StateMachine\Example.StateMachine.csproj", "{223B8FB1-8AF2-4D1A-A77B-8E017AB8AA27}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

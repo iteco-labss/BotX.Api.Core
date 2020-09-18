@@ -1,15 +1,14 @@
-#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
 WORKDIR /app
 EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
-COPY ["Example.StateMachine.csproj", ""]
-RUN dotnet restore "./Example.StateMachine.csproj"
+COPY ["Examples/Example.StateMachine/Example.StateMachine.csproj", "Examples/Example.StateMachine/"]
+COPY ["BotX.Api.Core/BotX.Api.csproj", "BotX.Api.Core/"]
+RUN dotnet restore "Examples/Example.StateMachine/Example.StateMachine.csproj"
 COPY . .
-WORKDIR "/src/."
+WORKDIR "/src/Examples/Example.StateMachine"
 RUN dotnet build "Example.StateMachine.csproj" -c Release -o /app/build
 
 FROM build AS publish
