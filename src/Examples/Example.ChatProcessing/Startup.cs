@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BotX.Api;
+using BotX.Api.Configuration;
 using BotX.Api.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -35,7 +36,11 @@ namespace Example.ChatProcessing
 			if (string.IsNullOrWhiteSpace(secret))
 				throw new Exception("The bot secret could not be found. Please set the BOT_SECRET variable in your 'User Secret' or Environment variables");
 
-			services.AddExpressBot(new BotXConfig(cts, botId, secret, true));
+			var entOne = new BotEntry(cts, botId, secret);
+			var entTwo = new BotEntry(cts, botId, secret);
+
+			List<BotEntry> entries = new List<BotEntry>() { entOne, entTwo };
+			services.AddExpressBot(new BotXConfig(entries, true));
 			services.AddMiddleware<HelloBotMiddleware>();
 		}
 

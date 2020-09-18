@@ -8,7 +8,7 @@ namespace BotX.Api.Configuration
 	/// <summary>
 	/// Запись о боте
 	/// </summary>
-	public class BotEntry : IEquatable<BotEntry>
+	public class BotEntry
 	{
 		/// <summary>
 		/// Идентификатор бота
@@ -38,16 +38,6 @@ namespace BotX.Api.Configuration
 			Cts = cts;
 			BotId = botId;
 			Secret = secret;
-		}
-
-		/// <summary>
-		/// Сравнивает BotEntry по идентификатору BotId
-		/// </summary>
-		/// <param name="other"></param>
-		/// <returns></returns>
-		public bool Equals([AllowNull] BotEntry other)
-		{
-			return BotId.Equals(other.BotId);
 		}
 	}
 }
