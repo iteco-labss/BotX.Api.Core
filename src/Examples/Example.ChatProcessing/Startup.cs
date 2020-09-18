@@ -24,17 +24,18 @@ namespace Example.ChatProcessing
 
 		public void ConfigureServices(IServiceCollection services)
 		{
-			if (!Guid.TryParse(Environment.GetEnvironmentVariable("BOT_ID"), out var botId))
-				throw new Exception("The bot id could not be found. Please set BOT_ID environment variable");
+			if (!Uri.TryCreate(configuration["BOT_CTS"], UriKind.Absolute, out var cts))
+				throw new Exception("The cts url could not be found. Please set the BOT_CTS variable in your 'User Secret' or Environment variables");
 
-			var secret = Environment.GetEnvironmentVariable("BOT_SECRET");
+			if (!Guid.TryParse(configuration["BOT_ID"], out var botId))
+				throw new Exception("The bot id could not be found. Please set the BOT_ID variable in your 'User Secret' or Environment variables");
+
+			var secret = configuration["BOT_SECRET"];
+
 			if (string.IsNullOrWhiteSpace(secret))
-				throw new Exception("The secret key could not be found. Please set BOT_SECRET environment variable");
+				throw new Exception("The bot secret could not be found. Please set the BOT_SECRET variable in your 'User Secret' or Environment variables");
 
-			if (botId == Guid.Empty && secret == "your_secret_key")
-				throw new Exception("Please set your bot id and secret in launchSettings.json");
-
-			services.AddExpressBot(new BotXConfig(botId, secret, true));
+			services.AddExpressBot(new BotXConfig(cts, botId, secret, true));
 			services.AddMiddleware<HelloBotMiddleware>();
 		}
 

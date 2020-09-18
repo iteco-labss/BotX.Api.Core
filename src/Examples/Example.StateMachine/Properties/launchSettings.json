@@ -10,19 +10,14 @@
   "profiles": {
     "Example.StateMachine": {
       "commandName": "Project",
-      "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "http://localhost:5000"
     },
     "Docker": {
-	    "httpPort": 5000,
       "commandName": "Docker",
-      "environmentVariables": {
-        "BOT_ID": "00000000-0000-0000-0000-000000000000",
-        "BOT_SECRET": "your_secret_key"
-      }
+      "httpPort": 5000
     }
   }
 }

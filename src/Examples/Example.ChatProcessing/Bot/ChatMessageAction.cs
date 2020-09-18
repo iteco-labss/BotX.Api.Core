@@ -44,7 +44,7 @@ namespace Example.ChatProcessing.Bot
 		[BotButtonEvent("nullArgs")]
 		private async Task NullArgsClick(UserMessage userMessage, Payload payload)
 		{
-			await MessageSender.ReplyTextMessageAsync(userMessage, $"Button pressed without arguments");
+			await MessageSender.ReplyTextMessageAsync(userMessage, $"Button pressed without any arguments");
 		}
 	}
 
