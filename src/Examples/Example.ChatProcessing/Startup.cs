@@ -36,11 +36,7 @@ namespace Example.ChatProcessing
 			if (string.IsNullOrWhiteSpace(secret))
 				throw new Exception("The bot secret could not be found. Please set the BOT_SECRET variable in your 'User Secret' or Environment variables");
 
-			var entOne = new BotEntry(cts, botId, secret);
-			var entTwo = new BotEntry(cts, botId, secret);
-
-			List<BotEntry> entries = new List<BotEntry>() { entOne, entTwo };
-			services.AddExpressBot(new BotXConfig(entries, true));
+			services.AddExpressBot(new BotXConfig(cts, botId, secret, true));
 			services.AddMiddleware<HelloBotMiddleware>();
 		}
 
