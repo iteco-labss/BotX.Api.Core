@@ -6,6 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace BotX.Api.Extensions
 {
+	/// <summary>
+	/// Расширение для IApplicationBuilder, добавляющее поддержку Express
+	/// </summary>
 	public static class ApplicationBuilderExtension
 	{
        /// <summary>

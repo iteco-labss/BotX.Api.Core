@@ -23,12 +23,11 @@ namespace BotX.Api.Extensions
 		/// <returns></returns>
 		public static ExpressBotService AddExpressBot(this IServiceCollection externalServices, BotXConfig config)
 		{
-			if (string.IsNullOrEmpty(config.CtsServiceUrl))
-				throw new NullReferenceException("Отсутствует адрес cts");
-			if (string.IsNullOrEmpty(config.SecretKey))
-				throw new ArgumentException("Отсутствует секретный ключ");
-			if (config.BotId == null || config.BotId == Guid.Empty)
-				throw new ArgumentException("Отсутствует BotId");
+			if (config == null)
+				throw new ArgumentNullException(nameof(config));
+
+			if (config.BotEntries.Count == 0)
+				throw new ArgumentException("Configuration doesn't contain a bot entry. Array must contain at least 1 item");
 
 			externalServices.AddRouting();
 			externalServices.AddSingleton(config);
@@ -40,7 +39,7 @@ namespace BotX.Api.Extensions
 			externalServices.AddSingleton<StateMachineExecutor>();
 			ConfigureBotActions(Assembly.GetEntryAssembly(), externalServices);
 
-			return new ExpressBotService(config.BotId, config.InChatExceptions);
+			return new ExpressBotService(config.InChatExceptions);
 		}
 
 		/// <summary>

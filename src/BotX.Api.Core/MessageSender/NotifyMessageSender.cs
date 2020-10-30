@@ -10,9 +10,22 @@ namespace BotX.Api
 {
 	internal partial class BotMessageSender : IBotMessageSender
 	{
-		public async Task SendTextMessageAsync(Guid chatId, Guid huid, Guid messageSyncId, string messageText)
+		public async Task SendTextMessageAsync(Guid botId, Guid chatId, Guid huid, string messageText, MessageButtonsGrid buttons)
 		{
 			await SendTextMessageAsync(
+				botId: botId,
+				chatId: chatId,
+				recipients: new Guid[] { huid },
+				messageSyncId: null,
+				messageText: messageText,
+				buttons: buttons
+			);
+		}
+
+		public async Task SendTextMessageAsync(Guid botId, Guid chatId, Guid huid, Guid messageSyncId, string messageText)
+		{
+			await SendTextMessageAsync(
+				botId: botId,
 				chatId: chatId,
 				recipients: new Guid[] { huid },
 				messageSyncId: messageSyncId,
@@ -21,51 +34,45 @@ namespace BotX.Api
 			);
 		}
 
-		public async Task SendTextMessageAsync(Guid chatId, Guid huid, Guid messageSyncId, string messageText, MessageButtonsGrid buttons)
+		public async Task SendTextMessageAsync(Guid botId, Guid chatId, Guid huid, Guid messageSyncId, string messageText,
+			MessageButtonsGrid buttons)
 		{
 			await SendTextMessageAsync(
+				botId: botId,
 				chatId: chatId,
 				recipients: new Guid[] { huid },
 				messageSyncId: messageSyncId,
 				messageText: messageText,
 				buttons: buttons
 			);
-
 		}
-		public async Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText)
+
+		public async Task SendTextMessageAsync(Guid botId, Guid chatId, Guid huid, string messageText)
 		{
 			await SendTextMessageAsync(
-				chatId: chatId ,
+				botId: botId,
+				chatId: chatId,
 				recipients: new Guid[] { huid },
 				messageSyncId: null,
 				messageText: messageText,
 				buttons: new MessageButtonsGrid()
-				);
+			);
 		}
 
-		public async Task SendTextMessageAsync(Guid chatId, Guid huid, string messageText, MessageButtonsGrid buttons)
+		public async Task SendTextMessageAsync(Guid botId, Guid chatId, Guid[] recipients, string messageText)
 		{
 			await SendTextMessageAsync(
-				chatId: chatId ,
-				recipients: new Guid[] { huid },
-				messageSyncId: null,
-				messageText: messageText,
-				buttons: buttons
-				);
-
-		}
-		public async Task SendTextMessageAsync(Guid chatId, Guid[] recipients, string messageText)
-		{
-			await SendTextMessageAsync(
+				botId: botId,
 				chatId: chatId,
 				recipients: recipients,
 				messageSyncId: null,
 				messageText: messageText,
 				buttons: new MessageButtonsGrid()
-				);
+			);
 		}
 
-		public async Task SendTextMessageAsync(Guid chatId, Guid[] recipients, Guid? messageSyncId, string messageText, MessageButtonsGrid buttons)
+		public async Task SendTextMessageAsync(Guid botId, Guid chatId, Guid[] recipients, Guid? messageSyncId, string messageText,
+			MessageButtonsGrid buttons)
 		{
 			var notification = new NotificationMessage
 			{
@@ -80,7 +87,7 @@ namespace BotX.Api
 				}
 			};
 
-			await httpClient.SendNotificationAsync(notification);
+			await httpClient.SendNotificationAsync(botId, notification);
 		}
 	}
 }

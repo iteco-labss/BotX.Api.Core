@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Example.ChatProcessing
@@ -19,6 +20,12 @@ namespace Example.ChatProcessing
 
 		public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
 			WebHost.CreateDefaultBuilder(args)
-				.UseStartup<Startup>();
+			.ConfigureAppConfiguration((context, builder) =>
+			{
+				builder.AddEnvironmentVariables();
+				if (context.HostingEnvironment.IsDevelopment())
+					builder.AddUserSecrets<Program>();
+			})
+			.UseStartup<Startup>();
 	}
 }

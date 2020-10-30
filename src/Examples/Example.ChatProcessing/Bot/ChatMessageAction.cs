@@ -16,47 +16,47 @@ namespace Example.ChatProcessing.Bot
 	[BotAction]
 	public class ChatMessageAction : BotAction
 	{
-		static Guid lastMessageSyncId = Guid.Empty;
 		public ChatMessageAction(IBotMessageSender messageSender) : base(messageSender)
 		{
 		}
 
 		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
 		{
+			var syncId = Guid.NewGuid();
 			var buttons = new MessageButtonsGrid();
-			var row = buttons.AddRow();
-			row.AddButton("click me!", "count", new CountClickPayload());
-			row.AddButton("push me!", "nullArgs");
-			row.AddButton("push me!");
+			buttons.AddRow().AddSilentButton("Edit message", "edit", new CountClickPayload(syncId));
+			buttons.AddRow().AddSilentButton("Simple button handler", "nullArgs");
+			buttons.AddRow().AddButton("Button as message");
 
-			var syncId = await MessageSender.ReplyTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
-			if (syncId != Guid.Empty)
-				lastMessageSyncId = syncId;
+			await MessageSender.ReplyTextMessageAsync(userMessage, syncId, $"You said: {userMessage.Command.Body}", buttons);
 		}
 
-		[BotButtonEvent("count")]
-		private async Task CountClick(UserMessage userMessage, CountClickPayload payload)
+		[BotButtonEvent("edit")]
+		private async Task Edit(UserMessage userMessage, CountClickPayload payload)
 		{
-			var data = payload;
+			payload.Increment();
 			var buttons = new MessageButtonsGrid();
 			var row = buttons.AddRow();
-			row.AddSilentButton("Increment", "count", data);
-			await MessageSender.EditMessageAsync(lastMessageSyncId, $"Button pressed {data.Count}", buttons);
-			data.Increment();
+			row.AddSilentButton("Increment", "edit", payload);
+			await MessageSender.EditMessageAsync(userMessage, payload.SyncId, $"Button pressed {payload.Count} times", buttons);
 		}
 
 		[BotButtonEvent("nullArgs")]
 		private async Task NullArgsClick(UserMessage userMessage, Payload payload)
 		{
-			await MessageSender.ReplyTextMessageAsync(userMessage, $"Button pressed without arguments");
+			await MessageSender.ReplyTextMessageAsync(userMessage, $"Button pressed without any arguments");
 		}
 	}
 
 	public class CountClickPayload : Payload
 	{
-		private static int count = 0;
+		public int Count { get; set; }
+		public void Increment() => Count++;
+		public Guid SyncId { get; }
 
-		public int Count => count;
-		public void Increment() => Interlocked.Increment(ref count);
+		public CountClickPayload(Guid syncId)
+		{
+			SyncId = syncId;
+		}
 	}
 }
