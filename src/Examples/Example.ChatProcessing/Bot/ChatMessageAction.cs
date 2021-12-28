@@ -3,8 +3,10 @@ using BotX.Api.Abstract;
 using BotX.Api.Attributes;
 using BotX.Api.BotUI;
 using BotX.Api.Delegates;
+using BotX.Api.JsonModel.Api.Request;
 using BotX.Api.JsonModel.Request;
 using BotX.Api.JsonModel.Response;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,13 +24,24 @@ namespace Example.ChatProcessing.Bot
 
 		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
 		{
-			var syncId = Guid.NewGuid();
+			var fakeSyncId = Guid.NewGuid();
+			var fakeButtons = new MessageButtonsGrid();
+			fakeButtons.AddRow().AddSilentButton("Edit message", "edit", new CountClickPayload(fakeSyncId));
+			fakeButtons.AddRow().AddSilentButton("Simple button handler", "nullArgs");
+			fakeButtons.AddRow().AddButton("Button as message");
+			fakeButtons.AddRow().AddSilentButton("Get my file!", "fileRequest");
+			fakeButtons.AddRow().AddSilentButton("Upload my file!", "uploadFileRequest");
+
+			var syncId = await MessageSender.ReplyTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", fakeButtons);
+
 			var buttons = new MessageButtonsGrid();
 			buttons.AddRow().AddSilentButton("Edit message", "edit", new CountClickPayload(syncId));
 			buttons.AddRow().AddSilentButton("Simple button handler", "nullArgs");
 			buttons.AddRow().AddButton("Button as message");
+			buttons.AddRow().AddSilentButton("Get my file!", "fileRequest");
+			buttons.AddRow().AddSilentButton("Upload my file!", "uploadFileRequest");
 
-			await MessageSender.ReplyTextMessageAsync(userMessage, syncId, $"You said: {userMessage.Command.Body}", buttons);
+			await MessageSender.EditMessageAsync(userMessage, syncId, $"You said: {userMessage.Command.Body}", buttons);
 		}
 
 		[BotButtonEvent("edit")]
@@ -45,6 +58,21 @@ namespace Example.ChatProcessing.Bot
 		private async Task NullArgsClick(UserMessage userMessage, Payload payload)
 		{
 			await MessageSender.ReplyTextMessageAsync(userMessage, $"Button pressed without any arguments");
+		}
+
+		[BotButtonEvent("fileRequest")]
+		private async Task GetFileClick(UserMessage userMessage, Payload payload)
+		{
+			await MessageSender.SendFileAsync(userMessage, "simple_file.txt", System.Text.Encoding.UTF8.GetBytes("Yes, I'm File!"));
+		}
+
+		[BotButtonEvent("uploadFileRequest")]
+		private async Task UploadFileClick(UserMessage userMessage, Payload payload)
+		{
+			var fileName = "simple_file.txt";
+			var data = System.Text.Encoding.UTF8.GetBytes("Yes, I'm File!");
+			var response = await MessageSender.UploadFileAsync(userMessage, fileName, data, new FileMetaInfo { Caption = "test caption" });
+			await MessageSender.ReplyTextMessageAsync(userMessage, $"File info:\r\n{JsonConvert.SerializeObject(response, Formatting.Indented)}");
 		}
 	}
 
