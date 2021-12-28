@@ -1,4 +1,6 @@
-﻿using BotX.Api.JsonModel.Request;
+﻿using BotX.Api.JsonModel.Api.Request;
+using BotX.Api.JsonModel.Api.Response;
+using BotX.Api.JsonModel.Request;
 using BotX.Api.JsonModel.Response;
 using System;
 using System.Collections.Generic;
@@ -9,7 +11,7 @@ namespace BotX.Api.HttpClients
 {
 	internal interface IBotXHttpClient
 	{
-		public Task SendFileAsync(Guid botId, Guid syncId, string fileName, byte[] data);
+		public Task<FileMetadata> UploadFileAsync(Guid botId, Guid chatId, string fileName, byte[] data, string mimeType, FileMetaInfo meta);
 		public Task<Guid> SendReplyAsync(Guid botId, ResponseMessage message);
 		public Task EditMessageAsync(Guid botId, EditEventMessage message);
 		public Task SendNotificationAsync(Guid botId, NotificationMessage message);
