@@ -24,7 +24,7 @@ namespace Example.ChatProcessing
 			{
 				builder.AddEnvironmentVariables();
 				if (context.HostingEnvironment.IsDevelopment())
-					builder.AddUserSecrets<Program>();
+					builder.AddUserSecrets<Program>(true);
 			})
 			.UseStartup<Startup>();
 	}
