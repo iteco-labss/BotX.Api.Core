@@ -24,6 +24,12 @@ namespace Example.ChatProcessing.Bot
 
 		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
 		{
+            if (userMessage.Attachments.Any())
+            {
+                await UploadFile(userMessage);
+				return;
+            }
+
             var payload = new CountClickPayload(Guid.NewGuid()); // фейковый id, т.к. id сообщения не известен до отправки самого сообщения
 
 			var buttons = new MessageButtonsGrid();
@@ -31,9 +37,8 @@ namespace Example.ChatProcessing.Bot
             buttons.AddRow().AddSilentButton("Simple button handler", "nullArgs");
             buttons.AddRow().AddButton("Button as message");
             buttons.AddRow().AddSilentButton("Get my file!", "fileRequest");
-            buttons.AddRow().AddSilentButton("Upload my file!", "uploadFileRequest");
 
-            var syncId = await MessageSender.ReplyTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
+			var syncId = await MessageSender.ReplyTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
             payload.SyncId = syncId;
 
             buttons.Rows.First().Buttons.First().ChangePayload(payload);
@@ -60,16 +65,15 @@ namespace Example.ChatProcessing.Bot
 		[BotButtonEvent("fileRequest")]
 		private async Task GetFileClick(UserMessage userMessage, Payload payload)
 		{
-			await MessageSender.SendFileAsync(userMessage, "simple_file.txt", System.Text.Encoding.UTF8.GetBytes("Yes, I'm File!"));
+			await MessageSender.SendFileAsync(userMessage, "simple_file.txt", System.Text.Encoding.UTF8.GetBytes("Yes, I'm Attachments!"));
 		}
 
-		[BotButtonEvent("uploadFileRequest")]
-		private async Task UploadFileClick(UserMessage userMessage, Payload payload)
+		private async Task UploadFile(UserMessage userMessage)
 		{
-			var fileName = "simple_file.txt";
-			var data = System.Text.Encoding.UTF8.GetBytes("Yes, I'm File!");
-			var response = await MessageSender.UploadFileAsync(userMessage, fileName, data, new FileMetaInfo { Caption = "test caption" });
-			await MessageSender.ReplyTextMessageAsync(userMessage, $"File info:\r\n{JsonConvert.SerializeObject(response, Formatting.Indented)}");
+			var attachment = userMessage.Attachments.First();
+			var data = System.Text.Encoding.UTF8.GetBytes(attachment.Data.Content ?? "");
+			var response = await MessageSender.UploadFileAsync(userMessage, attachment.Data.FileName ?? "", data, new FileMetaInfo { Duration = attachment.Data.Duration });
+			await MessageSender.ReplyTextMessageAsync(userMessage, $"Attachments info:\r\n{JsonConvert.SerializeObject(response.Result, Formatting.Indented)}");
 		}
 	}
 
