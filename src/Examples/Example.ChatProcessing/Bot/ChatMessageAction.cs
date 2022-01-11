@@ -24,22 +24,19 @@ namespace Example.ChatProcessing.Bot
 
 		public override async Task ExecuteAsync(UserMessage userMessage, string[] args)
 		{
-			var fakeSyncId = Guid.NewGuid();
-			var fakeButtons = new MessageButtonsGrid();
-			fakeButtons.AddRow().AddSilentButton("Edit message", "edit", new CountClickPayload(fakeSyncId));
-			fakeButtons.AddRow().AddSilentButton("Simple button handler", "nullArgs");
-			fakeButtons.AddRow().AddButton("Button as message");
-			fakeButtons.AddRow().AddSilentButton("Get my file!", "fileRequest");
-			fakeButtons.AddRow().AddSilentButton("Upload my file!", "uploadFileRequest");
-
-			var syncId = await MessageSender.ReplyTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", fakeButtons);
+            var payload = new CountClickPayload(Guid.NewGuid()); // фейковый id, т.к. id сообщения не известен до отправки самого сообщения
 
 			var buttons = new MessageButtonsGrid();
-			buttons.AddRow().AddSilentButton("Edit message", "edit", new CountClickPayload(syncId));
-			buttons.AddRow().AddSilentButton("Simple button handler", "nullArgs");
-			buttons.AddRow().AddButton("Button as message");
-			buttons.AddRow().AddSilentButton("Get my file!", "fileRequest");
-			buttons.AddRow().AddSilentButton("Upload my file!", "uploadFileRequest");
+            buttons.AddRow().AddSilentButton("Edit message", "edit", payload);
+            buttons.AddRow().AddSilentButton("Simple button handler", "nullArgs");
+            buttons.AddRow().AddButton("Button as message");
+            buttons.AddRow().AddSilentButton("Get my file!", "fileRequest");
+            buttons.AddRow().AddSilentButton("Upload my file!", "uploadFileRequest");
+
+            var syncId = await MessageSender.ReplyTextMessageAsync(userMessage, $"You said: {userMessage.Command.Body}", buttons);
+            payload.SyncId = syncId;
+
+            buttons.Rows.First().Buttons.First().ChangePayload(payload);
 
 			await MessageSender.EditMessageAsync(userMessage, syncId, $"You said: {userMessage.Command.Body}", buttons);
 		}
@@ -80,7 +77,7 @@ namespace Example.ChatProcessing.Bot
 	{
 		public int Count { get; set; }
 		public void Increment() => Count++;
-		public Guid SyncId { get; }
+		public Guid SyncId { get; set; }
 
 		public CountClickPayload(Guid syncId)
 		{
