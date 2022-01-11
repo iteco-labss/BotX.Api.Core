@@ -14,7 +14,7 @@ namespace BotX.Api
 {
 	internal partial class BotMessageSender : IBotMessageSender
 	{
-		public async Task<FileMetadata> UploadFileAsync(UserMessage requestMessage, string fileName, byte[] data, FileMetaInfo meta = null)
+		public async Task<FileMetadataResult> UploadFileAsync(UserMessage requestMessage, string fileName, byte[] data, FileMetaInfo meta = null)
         {
 			CheckFileSize(data);
 			return await httpClient.UploadFileAsync(

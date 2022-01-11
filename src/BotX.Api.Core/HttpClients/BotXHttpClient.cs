@@ -65,7 +65,7 @@ namespace BotX.Api.HttpClients
 			await PostAsJsonAsync(botId,API_SEND_EDIT_MESSAGE, message);
 		}
 
-		public async Task<FileMetadata> UploadFileAsync(Guid botId, Guid chatId, string fileName, byte[] data, string mimeType, FileMetaInfo meta)
+		public async Task<FileMetadataResult> UploadFileAsync(Guid botId, Guid chatId, string fileName, byte[] data, string mimeType, FileMetaInfo meta)
 		{
 			var content = new MultipartFormDataContent();
 
@@ -83,7 +83,7 @@ namespace BotX.Api.HttpClients
 			if (!response.IsSuccessStatusCode)
 				throw new HttpRequestException(await response.Content.ReadAsStringAsync());
 
-			return JsonConvert.DeserializeObject<FileMetadata>(await response.Content.ReadAsStringAsync());
+			return JsonConvert.DeserializeObject<FileMetadataResult>(await response.Content.ReadAsStringAsync());
 		}
 
 		private async Task AuthorizeAsync(Guid botId)

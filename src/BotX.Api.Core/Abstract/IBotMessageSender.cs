@@ -173,6 +173,6 @@ namespace BotX.Api
 		/// <param name="data">Данные файла</param>
 		/// <param name="meta">Метаданные файла</param>
 		/// <returns>Информация о сохраненном файле</returns>
-		Task<FileMetadata> UploadFileAsync(UserMessage requestMessage, string fileName, byte[] data, FileMetaInfo meta = null);
+		Task<FileMetadataResult> UploadFileAsync(UserMessage requestMessage, string fileName, byte[] data, FileMetaInfo meta = null);
 	}
 }

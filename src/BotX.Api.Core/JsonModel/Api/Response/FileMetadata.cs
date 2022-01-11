@@ -4,16 +4,16 @@ using System;
 namespace BotX.Api.JsonModel.Api.Response
 {
 #pragma warning disable CS1591
-    public class FileMetadata
+    public class FileMetadataResult
     {
         [JsonProperty("status")]
         public string Status { get; set; }
 
         [JsonProperty("result")]
-        public FileMetadataResult Result { get; set; }
+        public FileMetadata Result { get; set; }
     }
 
-    public class FileMetadataResult
+    public class FileMetadata
     {
         [JsonProperty("type")]
         public string Type { get; set; }

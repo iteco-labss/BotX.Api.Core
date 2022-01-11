@@ -1,4 +1,5 @@
-﻿using BotX.Api.JsonModel.Response;
+﻿using BotX.Api.JsonModel.Api.Response;
+using BotX.Api.JsonModel.Response;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -16,8 +17,11 @@ namespace BotX.Api.JsonModel.Request
 		[JsonProperty("command")]
 		public Command Command { get; set; }
 
-		[JsonProperty("file")]
-		public File File { get; set; }
+		[JsonProperty("attachments")]
+		public IEnumerable<Attachment> Attachments { get; set; }
+
+		[JsonProperty("async_files")]
+		public IEnumerable<FileMetadata> AsyncFiles { get; set; }
 
 		[JsonProperty("from")]
 		public From From { get; set; }
