@@ -5,7 +5,7 @@ namespace BotX.Api.JsonModel.Response
 #pragma warning disable CS1591
     public class Attachment
     {
-		[JsonProperty("type")]
+        [JsonProperty("type")]
         public string Type { get; set; }
 
         [JsonProperty("data")]

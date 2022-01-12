@@ -8,7 +8,7 @@ namespace BotX.Api.JsonModel.Response
 #pragma warning disable CS1591
     public class ResponseMessage
     {
-		[JsonProperty(PropertyName = "recipients", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "recipients", NullValueHandling = NullValueHandling.Ignore)]
         public Guid[] Recipients { get; set; }
 
         [JsonProperty(PropertyName = "group_chat_id", NullValueHandling = NullValueHandling.Ignore)]
@@ -20,5 +20,5 @@ namespace BotX.Api.JsonModel.Response
         [JsonProperty("file")]
         public File File { get; set; }
 
-	}
+    }
 }

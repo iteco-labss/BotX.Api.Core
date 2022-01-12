@@ -25,11 +25,11 @@ using System.Threading.Tasks;
 namespace BotX.Api.HttpClients
 {
 	internal class BotXHttpClient : IBotXHttpClient
-    {
-        private const string API_SEND_REPLY_MESSAGE = "/api/v4/botx/notifications/direct";
+	{
+		private const string API_SEND_REPLY_MESSAGE = "api/v4/botx/notifications/direct";
 		private const string API_SEND_MESSAGE_NOTIFICATION = "api/v3/botx/notification/callback/direct";
 		private const string API_SEND_EDIT_MESSAGE = "api/v3/botx/events/edit_event";
-		private const string API_UPLOAD_FILE = "/api/v3/botx/files/upload";
+		private const string API_UPLOAD_FILE = "api/v3/botx/files/upload";
 		private const string API_GET_TOKEN = "api/v2/botx/bots/$bot_id$/token?signature=$hash$";
 
 		private readonly HttpClient client;
@@ -69,9 +69,9 @@ namespace BotX.Api.HttpClients
 		{
 			var content = new MultipartFormDataContent();
 
-            var fileContent = new StreamContent(new MemoryStream(data));
+			var fileContent = new StreamContent(new MemoryStream(data));
 			fileContent.Headers.Add("Content-Disposition", $"form-data; name=\"content\"; filename=\"{fileName}\"");
-            fileContent.Headers.Add("Content-Type", mimeType);
+			fileContent.Headers.Add("Content-Type", mimeType);
 			content.Add(fileContent);
 
 			content.Add(new StringContent(chatId.ToString()), "\"group_chat_id\"");

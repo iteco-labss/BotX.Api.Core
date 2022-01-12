@@ -15,7 +15,7 @@ namespace BotX.Api
 		{
 			return await ReplyTextMessageInternalAsync(
 				botId: requestMessage.BotId,
-                chatId: requestMessage.From.ChatId,
+				chatId: requestMessage.From.ChatId,
 				to: null,
 				messageText: messageText,
 				buttons: null,
@@ -28,7 +28,7 @@ namespace BotX.Api
 			var mentions = new Mention[] { new Mention() { MentionData = new MentionData() { Huid = mentionHuid } } };
 			return await ReplyTextMessageInternalAsync(
 				botId: requestMessage.BotId,
-                chatId: requestMessage.From.ChatId,
+				chatId: requestMessage.From.ChatId,
 				to: null,
 				messageText: messageText,
 				buttons: null,
@@ -40,7 +40,7 @@ namespace BotX.Api
 		{
 			return await ReplyTextMessageInternalAsync(
 				botId: requestMessage.BotId,
-                chatId: requestMessage.From.ChatId,
+				chatId: requestMessage.From.ChatId,
 				to: null,
 				messageText: messageText,
 				buttons: buttons,
