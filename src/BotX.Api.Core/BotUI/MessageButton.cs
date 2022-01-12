@@ -35,7 +35,7 @@ namespace BotX.Api.BotUI
 		/// Замена payload кнопки
 		/// </summary>
 		/// <typeparam name="T">Тип payload</typeparam>
-		/// <param name="payload">Дополнительные аргументы, которые будут переданны в метод-обработчик</param>
+		/// <param name="payload">Дополнительные аргументы, которые будут переданы в метод-обработчик</param>
 		public void ChangePayload<T>(T payload)
 		{
 			Data.Payload = JsonConvert.SerializeObject(payload, new JsonSerializerSettings()
