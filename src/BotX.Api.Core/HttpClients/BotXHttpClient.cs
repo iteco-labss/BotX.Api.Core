@@ -2,6 +2,8 @@
 using BotX.Api.Configuration;
 using BotX.Api.Extensions;
 using BotX.Api.JsonModel;
+using BotX.Api.JsonModel.Api.Request;
+using BotX.Api.JsonModel.Api.Response;
 using BotX.Api.JsonModel.Request;
 using BotX.Api.JsonModel.Response;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,10 +26,10 @@ namespace BotX.Api.HttpClients
 {
 	internal class BotXHttpClient : IBotXHttpClient
 	{
-		private const string API_SEND_REPLY_MESSAGE = "api/v3/botx/command/callback";
+		private const string API_SEND_REPLY_MESSAGE = "api/v4/botx/notifications/direct";
 		private const string API_SEND_MESSAGE_NOTIFICATION = "api/v3/botx/notification/callback/direct";
 		private const string API_SEND_EDIT_MESSAGE = "api/v3/botx/events/edit_event";
-		private const string API_SEND_FILE = "api/v1/botx/file/callback";
+		private const string API_UPLOAD_FILE = "api/v3/botx/files/upload";
 		private const string API_GET_TOKEN = "api/v2/botx/bots/$bot_id$/token?signature=$hash$";
 
 		private readonly HttpClient client;
@@ -63,18 +65,25 @@ namespace BotX.Api.HttpClients
 			await PostAsJsonAsync(botId,API_SEND_EDIT_MESSAGE, message);
 		}
 
-		public async Task SendFileAsync(Guid botId, Guid syncId, string fileName, byte[] data)
+		public async Task<FileMetadataResult> UploadFileAsync(Guid botId, Guid chatId, string fileName, byte[] data, string mimeType, FileMetaInfo meta)
 		{
-			var entry = config.GetEntryBy(botId);
-			var requestUri = new Uri(entry.Cts, API_SEND_FILE);
 			var content = new MultipartFormDataContent();
-			content.Add(new StringContent(syncId.ToString()), "sync_id");
-			content.Add(new StringContent(botId.ToString()), "bot_id");
-			content.Add(new StreamContent(new MemoryStream(data)), "file", fileName);
-			
-			var response = await client.PostAsync(requestUri, content);
+
+			var fileContent = new StreamContent(new MemoryStream(data));
+			fileContent.Headers.Add("Content-Disposition", $"form-data; name=\"content\"; filename=\"{fileName}\"");
+			fileContent.Headers.Add("Content-Type", mimeType);
+			content.Add(fileContent);
+
+			content.Add(new StringContent(chatId.ToString()), "\"group_chat_id\"");
+
+			content.Add(new StringContent(JsonConvert.SerializeObject(meta, Formatting.Indented), Encoding.UTF8, "application/json"), "\"meta\"");
+
+			var response = await PostAsMultipartAsync(botId, API_UPLOAD_FILE, content);
+
 			if (!response.IsSuccessStatusCode)
 				throw new HttpRequestException(await response.Content.ReadAsStringAsync());
+
+			return JsonConvert.DeserializeObject<FileMetadataResult>(await response.Content.ReadAsStringAsync());
 		}
 
 		private async Task AuthorizeAsync(Guid botId)
@@ -104,7 +113,7 @@ namespace BotX.Api.HttpClients
 		}
 
 		/// <summary>
-		/// Отправляет пост запрос к BotX API, при Unauthorized, повторно авторизется
+		/// Отправляет Json пост запрос к BotX API, при Unauthorized, повторно авторизется
 		/// </summary>
 		/// <exception cref="HttpRequestException">Возникает при не успешном ответе апи</exception>
 		private async Task<HttpResponseMessage> PostAsJsonAsync<T>(Guid botId, string url, T data)
@@ -119,7 +128,7 @@ namespace BotX.Api.HttpClients
 			var dataAsString = JsonConvert.SerializeObject(data);
 			logger.LogDebug($"POST: {url}\r\nDATA: {dataAsString}");
 
-			var response = await client.SendAsync(CreateRequestMessage(botId, url, dataAsString));
+			var response = await client.SendAsync(CreateRequestMessage(botId, url, new StringContent(dataAsString), "application/json"));
 			if (response.StatusCode == HttpStatusCode.Unauthorized)
 			{
 				// Если сразу на нескольких запросах получен Unauthorized, запускаем авторизацию только 1 раз
@@ -132,7 +141,7 @@ namespace BotX.Api.HttpClients
 				{
 					semaphoreSlim.Release();
 				}
-				response = await client.SendAsync(CreateRequestMessage(botId, url, dataAsString));
+				response = await client.SendAsync(CreateRequestMessage(botId, url, new StringContent(dataAsString), "application/json"));
 			}
 			if (!response.IsSuccessStatusCode)
 			{
@@ -144,13 +153,55 @@ namespace BotX.Api.HttpClients
 			return response;
 		}
 
-		private HttpRequestMessage CreateRequestMessage(Guid botId, string path, string data)
+		/// <summary>
+		/// Отправляет Multipart пост запрос к BotX API, при Unauthorized, повторно авторизется
+		/// </summary>
+		/// <exception cref="HttpRequestException">Возникает при не успешном ответе апи</exception>
+		private async Task<HttpResponseMessage> PostAsMultipartAsync(Guid botId, string url, MultipartFormDataContent data)
+		{
+			if (string.IsNullOrWhiteSpace(url))
+				throw new ArgumentNullException(nameof(url));
+
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
+			manualReset.WaitOne();
+			logger.LogDebug($"POST: {url}\r\nDATA: {await data.ReadAsStringAsync()}");
+
+			var response = await client.SendAsync(CreateRequestMessage(botId, url, data));
+			if (response.StatusCode == HttpStatusCode.Unauthorized)
+			{
+				// Если сразу на нескольких запросах получен Unauthorized, запускаем авторизацию только 1 раз
+				await semaphoreSlim.WaitAsync();
+				try
+				{
+					await AuthorizeAsync(botId);
+				}
+				finally
+				{
+					semaphoreSlim.Release();
+				}
+				response = await client.SendAsync(CreateRequestMessage(botId, url, data));
+			}
+			if (!response.IsSuccessStatusCode)
+			{
+				var content = await response.Content.ReadAsStringAsync();
+				logger.LogError($"Request Exception: {response.StatusCode} - {content}");
+				throw new HttpRequestException(content);
+			}
+
+			return response;
+		}
+
+		private HttpRequestMessage CreateRequestMessage(Guid botId, string path, HttpContent data, string encoding = null)
 		{
 			var entry = config.GetEntryBy(botId);
 			var requestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri(entry.Cts, path));
 			requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authTokens[botId]?.ToString());
-			requestMessage.Content = new StringContent(data);
-			requestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+			requestMessage.Content = data;
+
+			if (encoding != null) requestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue(encoding);
+
 			return requestMessage;
 		}
 	}

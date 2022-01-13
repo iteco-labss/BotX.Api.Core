@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using BotX.Api.BotUI;
+using BotX.Api.JsonModel.Api.Request;
+using BotX.Api.JsonModel.Api.Response;
 using BotX.Api.JsonModel.Request;
 
 namespace BotX.Api
@@ -35,16 +37,6 @@ namespace BotX.Api
 		/// <param name="buttons">Кнопки с действиями в сообщении</param>
 		/// <returns>Идентификатор сообщения(необходим для его редактирования)</returns>
 		Task<Guid> ReplyTextMessageAsync(UserMessage requestMessage, string messageText, MessageButtonsGrid buttons);
-
-		/// <summary>
-		/// Отправка текстового сообщения с кнопками (действиями) в ответ пользователю
-		/// </summary>
-		/// <param name="requestMessage">Сообщение пользователя</param>
-		/// <param name="messageSyncId">Идентификатор сообщения в Express (по которому его можно редактировать)</param>
-		/// <param name="messageText">Текст сообщения</param>
-		/// <param name="buttons">Кнопки с действиями в сообщении</param>
-		/// <returns>Идентификатор сообщения(необходим для его редактирования)</returns>
-		Task<Guid> ReplyTextMessageAsync(UserMessage requestMessage, Guid messageSyncId, string messageText, MessageButtonsGrid buttons);
 
 		/// <summary>
 		/// Отправляет файл в ответ на пользовательское сообщение
@@ -172,5 +164,15 @@ namespace BotX.Api
 		/// <param name="data">Данные файла</param>
 		/// <returns></returns>
 		Task SendFileAsync(Guid botId, Guid chatId, Guid huid, string caption, string fileName, byte[] data);
+
+		/// <summary>
+		/// Загружает файл в указанный чат с указанной метаинфой
+		/// </summary>
+		/// <param name="requestMessage">Сообщение пользователя</param>
+		/// <param name="fileName">Имя файла с расширением</param>
+		/// <param name="data">Данные файла</param>
+		/// <param name="meta">Метаданные файла</param>
+		/// <returns>Информация о сохраненном файле</returns>
+		Task<FileMetadataResult> UploadFileAsync(UserMessage requestMessage, string fileName, byte[] data, FileMetaInfo meta = null);
 	}
 }

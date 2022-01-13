@@ -6,19 +6,19 @@ using System.Text;
 namespace BotX.Api.JsonModel.Response
 {
 #pragma warning disable CS1591
-	public class ResponseMessage
+    public class ResponseMessage
     {
-		[JsonProperty(PropertyName = "sync_id")]
-		public Guid SyncId { get; set; }
+        [JsonProperty(PropertyName = "recipients", NullValueHandling = NullValueHandling.Ignore)]
+        public Guid[] Recipients { get; set; }
 
-		[JsonProperty(PropertyName = "recipients", NullValueHandling =NullValueHandling.Ignore)]
-		public Guid[] Recipients { get; set; }
+        [JsonProperty(PropertyName = "group_chat_id", NullValueHandling = NullValueHandling.Ignore)]
+        public Guid GroupChatId { get; set; }
 
-		[JsonProperty(PropertyName = "event_sync_id", NullValueHandling = NullValueHandling.Ignore)]
-		public Guid? MessageSyncId { get; set; }
+        [JsonProperty("notification")]
+        public CommandResult Notification { get; set; }
 
-		[JsonProperty(PropertyName = "command_result")]
-		public CommandResult CommandResult { get; set; }
+        [JsonProperty("file")]
+        public File File { get; set; }
 
-	}
+    }
 }

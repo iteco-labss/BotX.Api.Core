@@ -31,6 +31,29 @@ namespace BotX.Api.BotUI
 
 		internal string InternalCommand { get; set; }
 
+		/// <summary>
+		/// Замена payload кнопки
+		/// </summary>
+		/// <typeparam name="T">Тип payload</typeparam>
+		/// <param name="payload">Дополнительные аргументы, которые будут переданы в метод-обработчик</param>
+		public void ChangePayload<T>(T payload)
+		{
+			Data.Payload = JsonConvert.SerializeObject(payload, new JsonSerializerSettings()
+			{
+				TypeNameHandling = TypeNameHandling.All,
+				MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
+			});
+		}
+
+		/// <summary>
+		/// Замена названия события
+		/// </summary>
+		/// <param name="eventName"></param>
+		public void ChangeEventName(string eventName)
+		{
+			Data.EventType = eventName.ToLower();
+		}
+
 		internal static MessageButton Create<T>(string title, string command, string eventName, T payload, bool isSilent) where T : Payload
 		{
 			MessageButton res = new MessageButton()

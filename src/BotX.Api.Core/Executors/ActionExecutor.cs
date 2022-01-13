@@ -138,14 +138,14 @@ namespace BotX.Api.Executors
 		{
 			logger.LogDebug("Enter the 'Execute' method");
 
-			if (request.Command.Body.Length == 0)
+			if (request.Command.Body.Length == 0 && request.Attachments is null)
 			{
 				logger.LogInformation("The message is empty");
 				return;
 			}
 
 			bool messageIsAction = request.Command.Body.StartsWith('/');
-			var msg = request.Command.Body.ToLower().Substring(1);
+			var msg = request.Command.Body.Any() ? request.Command.Body.ToLower().Substring(1) : "";
 			var words = messageIsAction ? msg.Split(' ') : new string[0];
 			var actionName = words.Length == 0 ? string.Empty : words.First();
 

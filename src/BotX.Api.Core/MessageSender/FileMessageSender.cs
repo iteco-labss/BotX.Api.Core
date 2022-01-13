@@ -7,20 +7,30 @@ using System.Threading.Tasks;
 using BotX.Api.JsonModel.Response;
 using Microsoft.AspNetCore.StaticFiles;
 using Newtonsoft.Json;
+using BotX.Api.JsonModel.Api.Request;
+using BotX.Api.JsonModel.Api.Response;
 
 namespace BotX.Api
 {
 	internal partial class BotMessageSender : IBotMessageSender
 	{
+		public async Task<FileMetadataResult> UploadFileAsync(UserMessage requestMessage, string fileName, byte[] data, FileMetaInfo meta = null)
+		{
+			CheckFileSize(data);
+			return await httpClient.UploadFileAsync(
+				botId: requestMessage.BotId,
+				chatId: requestMessage.From.ChatId,
+				fileName: fileName,
+				data: data,
+				mimeType: GetMimeType(fileName),
+				meta: meta ?? new FileMetaInfo { }
+			);
+		}
+
 		public async Task SendFileAsync(UserMessage requestMessage, string fileName, byte[] data)
 		{
 			CheckFileSize(data);
-			await httpClient.SendFileAsync(
-				botId: requestMessage.BotId,
-				syncId: requestMessage.SyncId,
-				fileName: fileName,
-				data: data
-			);
+			await SendFileAsync(requestMessage.BotId, requestMessage.From.ChatId, requestMessage.From.Huid, null, fileName, data);
 		}
 
 		public async Task SendFileAsync(Guid botId, Guid chatId, Guid huid, string fileName, byte[] data)
